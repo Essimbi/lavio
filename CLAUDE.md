@@ -31,17 +31,26 @@ NestJS (API REST `/v1`), Angular (standalone, signals, OnPush), PostgreSQL avec 
 - Accessibilité et contrastes selon `docs/08-design-system.md` ; jamais de texte blanc sur aqua ou ambre.
 - Pas de dépendance inutile ; préférer l'existant.
 
-## Commandes (à compléter dès la phase 0)
+## Commandes
+
+Prérequis : Node `^22.22.3` ou `>=24.15` (`.nvmrc`), pnpm 10 via corepack, Docker.
 
 ```
 pnpm install
-pnpm dev            # api et web en local
-pnpm test           # tous les tests
+cp apps/api/.env.example apps/api/.env   # puis renseigner les valeurs locales
+pnpm db:up                               # PostgreSQL local (port 54329, bases lavio et lavio_test)
+pnpm --filter api db:migrate             # migrations en développement
+pnpm --filter api db:seed                # seed idempotent
+pnpm dev                                 # API sur :3000, web sur :4200 (proxy /api -> :3000)
+pnpm test                                # tests unitaires (shared, api, web)
+pnpm --filter api test:e2e               # tests e2e de l'API (base lavio_test)
+pnpm --filter web test:e2e               # Playwright (après pnpm build)
 pnpm lint
-pnpm --filter api db:migrate
-pnpm --filter api db:seed
-pnpm --filter api db:deploy
+pnpm build
+pnpm --filter api db:deploy              # migrations en production (prisma migrate deploy)
 ```
+
+Swagger en local : http://localhost:3000/v1/docs. Santé : http://localhost:3000/v1/health.
 
 ## Définition de « terminé » pour une phase
 
