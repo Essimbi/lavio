@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+dist
+coverage
+.angular
+apps/api/src/generated
+apps/api/prisma/migrations
+docs/assets
+PROMPT_CLAUDE_CODE.md
+docs
+CLAUDE.md

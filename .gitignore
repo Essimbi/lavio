@@ -1,0 +1,30 @@
+# Dépendances
+node_modules/
+
+# Builds
+dist/
+.angular/
+coverage/
+*.tsbuildinfo
+apps/api/src/generated/
+
+# Environnement (aucun secret dans le dépôt)
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vercel
+.vercel/
+
+# Tests
+test-results/
+playwright-report/
+blob-report/
+
+# Divers
+.DS_Store
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json

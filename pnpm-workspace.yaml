@@ -1,0 +1,16 @@
+packages:
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/engines'
+  - '@node-rs/argon2'
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+  - prisma
+  - '@parcel/watcher'
+
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
