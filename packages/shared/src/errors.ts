@@ -1,6 +1,11 @@
 /** Codes d'erreur de l'API (docs/04-api.md). */
 export const ErrorCode = Object.freeze({
   UNAUTHENTICATED: 'UNAUTHENTICATED',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+  TENANT_SUSPENDED: 'TENANT_SUSPENDED',
+  PASSWORD_CHANGE_REQUIRED: 'PASSWORD_CHANGE_REQUIRED',
+  INVITATION_INVALID: 'INVITATION_INVALID',
   FORBIDDEN: 'FORBIDDEN',
   LICENSE_INACTIVE: 'LICENSE_INACTIVE',
   LICENSE_READ_ONLY: 'LICENSE_READ_ONLY',
@@ -23,6 +28,11 @@ export type ErrorCode = keyof typeof ErrorCode;
 /** Statut HTTP par défaut de chaque code. */
 export const ERROR_HTTP_STATUS: Readonly<Record<ErrorCode, number>> = Object.freeze({
   UNAUTHENTICATED: 401,
+  INVALID_CREDENTIALS: 401,
+  ACCOUNT_LOCKED: 423,
+  TENANT_SUSPENDED: 403,
+  PASSWORD_CHANGE_REQUIRED: 403,
+  INVITATION_INVALID: 400,
   FORBIDDEN: 403,
   LICENSE_INACTIVE: 402,
   LICENSE_READ_ONLY: 403,
@@ -44,6 +54,12 @@ export const ERROR_HTTP_STATUS: Readonly<Record<ErrorCode, number>> = Object.fre
 /** Messages par défaut, en français, sans jargon technique (docs/08). */
 export const ERROR_DEFAULT_MESSAGES: Readonly<Record<ErrorCode, string>> = Object.freeze({
   UNAUTHENTICATED: 'Veuillez vous connecter.',
+  INVALID_CREDENTIALS: 'Identifiant ou mot de passe incorrect.',
+  ACCOUNT_LOCKED:
+    'Trop de tentatives : votre compte est bloqué pendant 15 minutes. Réessayez plus tard.',
+  TENANT_SUSPENDED: 'Votre accès est suspendu. Contactez le service client.',
+  PASSWORD_CHANGE_REQUIRED: 'Choisissez un nouveau mot de passe pour continuer.',
+  INVITATION_INVALID: "Ce lien d'invitation n'est plus valable. Demandez-en un nouveau.",
   FORBIDDEN: "Vous n'avez pas les droits pour cette action.",
   LICENSE_INACTIVE: "Votre licence n'est pas active. Contactez le service client.",
   LICENSE_READ_ONLY:

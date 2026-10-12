@@ -42,8 +42,25 @@ export const PlatformSettingKey = Object.freeze({
   shareRatePercent: 'shareRatePercent',
   defaultTrialDays: 'defaultTrialDays',
   defaultGraceDays: 'defaultGraceDays',
+  whatsappInvitationMessage: 'whatsappInvitationMessage',
+  whatsappRenewalMessage: 'whatsappRenewalMessage',
+  whatsappExtraUsersMessage: 'whatsappExtraUsersMessage',
 } as const);
 export type PlatformSettingKey = keyof typeof PlatformSettingKey;
+
+/**
+ * Textes par défaut des messages WhatsApp (modifiables par le superadmin).
+ * Variables : {nom}, {pressing}, {lien}, {cle}.
+ */
+export const DEFAULT_WHATSAPP_MESSAGES = Object.freeze({
+  whatsappDefaultMessage: 'Bonjour, je souhaite en savoir plus sur Lavio pour mon pressing.',
+  whatsappInvitationMessage:
+    'Bonjour {nom}, votre espace Lavio pour {pressing} est prêt. Choisissez votre mot de passe avec ce lien, valable 7 jours : {lien}',
+  whatsappRenewalMessage:
+    'Bonjour, je souhaite renouveler la licence Lavio de {pressing} (clé {cle}).',
+  whatsappExtraUsersMessage:
+    'Bonjour, je souhaite ajouter des utilisateurs à la licence Lavio de {pressing} (clé {cle}).',
+});
 
 /** Fuseau d'affichage (stockage en UTC). */
 export const DISPLAY_TIME_ZONE = 'Africa/Douala';
