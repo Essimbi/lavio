@@ -76,6 +76,70 @@ Lint propre, format vérifié, build des trois paquets réussi (coquille initial
 - Vérifié après séparation : API (lint, typage, format, 4 + 28 tests unitaires, 11 e2e, build, démarrage et `/v1/health`) ; web (lint, tests, build, Playwright).
 - Docs 00, 02 et 11 mises à jour. `12-plan-de-realisation.md` (phase 0, « Monorepo pnpm ») décrit le plan initial et n'a pas été modifié.
 
-### Prochaine étape
+### Prochaine étape (phase 0)
 
 Tâche 12 (premier déploiement de test) dès que GitHub, Vercel et Neon sont prêts, puis **phase 1** : authentification, multi-tenant (extension d'isolation et tests), licences et superadmin.
+
+## Phase 1 — Authentification, multi-tenant, licences, superadmin (13/10/2026)
+
+### Fait
+
+**API (`lavio-api`)**
+- Connexion par e-mail ou téléphone (normalisé +237), Argon2id, blocage 15 min après 5 échecs, message d'erreur identique pour un compte inconnu ou un mauvais mot de passe, espaces `app` / `admin` séparés.
+- Sessions : JWT 15 min, rafraîchissement rotatif haché en base avec détection de réutilisation, cookie HttpOnly/Secure/SameSite=Lax, CSRF par `X-Requested-With`, déconnexion.
+- Invitations à usage unique (7 jours) et liens de réinitialisation, avec lien WhatsApp prérempli ; changement de mot de passe imposé au premier accès du superadmin.
+- Contexte de requête (`AsyncLocalStorage`) et client Prisma isolé : `tenant_id` toujours issu du jeton.
+- Gardes globales : authentification, périmètre et rôles (fermées par défaut), `LicenseGuard` (lecture seule, pressing suspendu, limite d'utilisateurs avec lien WhatsApp « Ajouter des utilisateurs »).
+- Utilisateurs du pressing (OWNER) : invitation, rôles cumulables, désactivation, dernière responsable protégée.
+- Superadmin : tableau de bord, pressings (création, fiche, suspension, réactivation, invitation de la responsable), plans, licences (création, renouvellement, changement de plan, suspension, réactivation avec statut précédent restauré, révocation, historique), paiements d'abonnement (prolongation automatique de la licence en transaction, remboursement), leads, utilisateurs plateforme, paramètres plateforme, journal d'audit ; Exploitant en lecture seule sans accès aux leads, paramètres, audit ni données des pressings.
+- Relevé mensuel 50/50 calculé à la demande, exports CSV, XLSX et PDF identiques à l'écran.
+- Cron quotidien `GET /v1/internal/cron/daily` (secret obligatoire, idempotent).
+- Public : `GET /public/config`, `POST /public/leads` (consentement, champ piège, limite par IP hachée).
+- Limitation de débit en base ; audit des connexions, blocages, changements de rôles et d'utilisateurs, actions superadmin, exports.
+- Migration `phase1_auth_platform` (notes des leads, table `rate_limits`).
+
+**Web (`lavio`)**
+- Connexion `/login` et `/admin/login`, invitation `/invitation`, changement de mot de passe ; session restaurée depuis le cookie, jeton en mémoire seulement, rafraîchissement unique partagé et nouvel essai automatique.
+- Gardes de routes (pressing, plateforme, rôles) ; navigation filtrée par rôle ; déconnexion.
+- Pressing : bannières de licence (J-7, J-3, J-0, grâce, lecture seule), page « Ma licence » avec « Renouveler via WhatsApp », utilisateurs, journal d'audit, menus Paramètres et Plus.
+- Superadmin : toutes les pages de docs/06 (tableau de bord, pressings, fiche, licences, plans, paiements, relevé et exports, demandes, utilisateurs, audit, paramètres).
+- Composants partagés : notifications, confirmation avec motif, lien d'invitation (copie, WhatsApp), puces de statut, pagination, en-tête de page ; formats FCFA, dates et téléphones (docs/08).
+
+### Tests (tous verts)
+
+| Dépôt | Unitaires | End-to-end |
+|---|---|---|
+| `lavio` | 14 (shared : licences, bannières, WhatsApp, erreurs) + 21 (web : intercepteurs, coquille, bannière, formats, accueil) | Playwright : 10 de démarrage (ordinateur et mobile) + **parcours superadmin complet** contre l'API (création du pressing → licence → paiement → invitation → connexion de la responsable → lecture seule à l'expiration) |
+| `lavio-api` | 14 (shared) + 47 (isolation, statut de licence, relevé 50/50, fuseau horaire, configuration…) | 63 : authentification et sessions, **isolation entre pressings**, droits par rôle, licence (GRACE, EXPIRED, SUSPENDED, REVOKED, sans licence, limite d'utilisateurs), cron, parcours superadmin, relevé et exports, Exploitant en lecture seule, routes publiques, limitation de débit |
+
+Lint, typage et format propres ; builds réussis (web : 102 Ko transférés au chargement).
+
+### Critères de fin de la phase 1
+
+| Critère | État |
+|---|---|
+| Un superadmin crée un pressing, une licence, enregistre un paiement | Fait (e2e API et Playwright) |
+| Il invite la responsable par lien WhatsApp ; la responsable se connecte | Fait |
+| Une licence expirée passe le pressing en lecture seule | Fait (avant même le passage du cron) |
+| Tests d'isolation entre pressings verts | Fait (utilisateurs, audit, licence, routes croisées pressing/plateforme) |
+
+### Hypothèses appliquées (configurables)
+
+- Session de 30 jours (`REFRESH_TOKEN_TTL_DAYS`).
+- Limites de débit : connexion 30 / 15 min par IP, formulaire de contact 5 / h par IP, exports 30 / h par utilisateur.
+- Mot de passe oublié : nouveau lien envoyé par la responsable ou le superadmin (pas d'e-mail en V1).
+- Messages WhatsApp types (invitation, renouvellement, utilisateurs supplémentaires) : textes par défaut modifiables dans les paramètres du superadmin.
+
+### Points à confirmer
+
+- Durée de session de 30 jours et valeurs des limites de débit.
+- Procédure « mot de passe oublié » par lien WhatsApp.
+
+### Reporté (prévu dans une phase suivante)
+
+- Notifications « licence qui expire sous 7 jours » (phase 3, centre de notifications).
+- `GET/PATCH /settings` du pressing (paramètres, logo) : avec le catalogue et les tournées (phases 2 et 5).
+
+### Prochaine étape
+
+Phase 2 : clients, catalogue, dépôt et ticket.
