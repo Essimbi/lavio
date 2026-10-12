@@ -1,0 +1,393 @@
+<header class="mb-5 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-[28px]">Nouveau dépôt</h1>
+    <p class="text-sm text-ink-900/75">
+      <span class="lv-kbd">Alt</span> + <span class="lv-kbd">N</span> ajoute un article ·
+      <span class="lv-kbd">Ctrl</span> + <span class="lv-kbd">Entrée</span> enregistre et imprime
+    </p>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="flex flex-col gap-5">
+    <!-- Client -->
+    <section class="lv-card" aria-labelledby="client-titre">
+      <h2 id="client-titre" class="mb-3 text-lg">Client</h2>
+      @if (customer(); as c) {
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-lg font-semibold">{{ c.name }}</p>
+            <p class="text-sm">{{ c.phone | phone }}</p>
+            <p class="mt-1 flex flex-wrap gap-2 text-sm">
+              @if (c.preferences.noCover) {
+                <span class="lv-chip bg-mint-100 text-teal-900">Sans housse</span>
+              }
+              @if (c.preferences.returnHangers) {
+                <span class="lv-chip bg-mint-100 text-teal-900">Reprend ses cintres</span>
+              }
+              @if (c.creditAllowed) {
+                <span class="lv-chip bg-aqua-400 text-ink-900">Crédit autorisé</span>
+              }
+            </p>
+          </div>
+          <button type="button" class="lv-link-button" (click)="changeCustomer()">
+            Changer de client
+          </button>
+        </div>
+      } @else if (creating()) {
+        <form
+          class="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+          (ngSubmit)="createCustomer()"
+        >
+          <div>
+            <label class="lv-label" for="nc-name">Nom du client</label>
+            <input
+              id="nc-name"
+              class="lv-input"
+              autocomplete="off"
+              [ngModel]="newCustomer().name"
+              (ngModelChange)="newCustomer.set({ name: $event, phone: newCustomer().phone })"
+              name="name"
+            />
+          </div>
+          <div>
+            <label class="lv-label" for="nc-phone">Téléphone</label>
+            <input
+              id="nc-phone"
+              class="lv-input"
+              inputmode="tel"
+              [ngModel]="newCustomer().phone"
+              (ngModelChange)="newCustomer.set({ name: newCustomer().name, phone: $event })"
+              name="phone"
+            />
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" class="lv-primary">Créer le client</button>
+            <button type="button" class="lv-link-button" (click)="creating.set(false)">
+              Annuler
+            </button>
+          </div>
+        </form>
+      } @else {
+        <label class="lv-label" for="client-search">Téléphone, nom ou numéro de ticket</label>
+        <div class="relative">
+          <input
+            #customerSearch
+            id="client-search"
+            class="lv-input"
+            type="search"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="client-results"
+            [attr.aria-expanded]="matches().length > 0"
+            [attr.aria-activedescendant]="matches().length ? 'client-' + highlighted() : null"
+            [ngModel]="query()"
+            (ngModelChange)="query.set($event); highlighted.set(0)"
+            (keydown)="onQueryKey($event)"
+          />
+          @if (matches().length) {
+            <ul id="client-results" class="results" role="listbox" aria-label="Clients trouvés">
+              @for (c of matches(); track c.id; let i = $index) {
+                <li
+                  [id]="'client-' + i"
+                  role="option"
+                  [attr.aria-selected]="i === highlighted()"
+                  [class.is-active]="i === highlighted()"
+                  (mousedown)="$event.preventDefault(); pick(c)"
+                >
+                  <span class="font-semibold">{{ c.name }}</span>
+                  <span class="text-sm">{{ c.phone | phone }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+        <p class="mt-2 text-sm">
+          @if (query().trim().length >= 2 && results.hasValue() && matches().length === 0) {
+            Aucun client trouvé.
+          }
+          <button type="button" class="lv-link-button" (click)="startCreate()">
+            Nouveau client
+          </button>
+        </p>
+      }
+    </section>
+
+    <!-- Articles -->
+    <section class="lv-card" aria-labelledby="articles-titre">
+      <h2 id="articles-titre" class="mb-3 text-lg">Articles</h2>
+      @if (grid.hasValue()) {
+        @let g = grid.value();
+        <ol class="flex flex-col gap-3" role="list">
+          @for (line of lines(); track line.key; let i = $index) {
+            <li class="line">
+              <div class="line-row">
+                <div>
+                  <label class="lv-label" [for]="'article-' + line.key">Article {{ i + 1 }}</label>
+                  <select
+                    #article
+                    class="lv-select"
+                    [id]="'article-' + line.key"
+                    [ngModel]="line.itemTypeId"
+                    (ngModelChange)="update(line.key, { itemTypeId: $event })"
+                  >
+                    <option value="">Choisir…</option>
+                    @for (t of g.itemTypes; track t.id) {
+                      <option [value]="t.id">{{ t.name }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="lv-label" [for]="'service-' + line.key">Service</label>
+                  <select
+                    class="lv-select"
+                    [id]="'service-' + line.key"
+                    [ngModel]="line.serviceId"
+                    (ngModelChange)="update(line.key, { serviceId: $event })"
+                  >
+                    <option value="">Choisir…</option>
+                    @for (s of g.services; track s.id) {
+                      <option [value]="s.id">{{ s.name }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="qty">
+                  <label class="lv-label" [for]="'qty-' + line.key">Qté</label>
+                  <input
+                    class="lv-input"
+                    type="number"
+                    min="1"
+                    max="999"
+                    inputmode="numeric"
+                    [id]="'qty-' + line.key"
+                    [ngModel]="line.quantity"
+                    (ngModelChange)="update(line.key, { quantity: $event })"
+                  />
+                </div>
+                <div>
+                  <label class="lv-label" [for]="'color-' + line.key">Couleur</label>
+                  <input
+                    class="lv-input"
+                    autocomplete="off"
+                    [id]="'color-' + line.key"
+                    [ngModel]="line.color"
+                    (ngModelChange)="update(line.key, { color: $event })"
+                    (keydown.enter)="$event.preventDefault(); addLine()"
+                  />
+                </div>
+              </div>
+              <div class="line-foot">
+                <div class="price tabular" aria-live="polite">
+                  @if (line.itemTypeId && line.serviceId) {
+                    @if (unitPrice(line); as price) {
+                      <span class="block text-sm"
+                        >{{ price | xaf }} × {{ line.quantity || 1 }}</span
+                      >
+                      <strong>{{ price * (line.quantity || 1) | xaf }}</strong>
+                    } @else {
+                      <strong class="text-coral-600">Tarif manquant</strong>
+                    }
+                  }
+                </div>
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="lv-link-button"
+                    [attr.aria-expanded]="line.open"
+                    (click)="update(line.key, { open: !line.open })"
+                  >
+                    Détails
+                  </button>
+                  <button
+                    type="button"
+                    class="lv-link-button"
+                    (click)="removeLine(line.key)"
+                    [attr.aria-label]="'Retirer l’article ' + (i + 1)"
+                  >
+                    Retirer
+                  </button>
+                </div>
+              </div>
+              @if (line.open) {
+                <div class="details">
+                  <div class="grid gap-3 sm:grid-cols-3">
+                    <div>
+                      <label class="lv-label" [for]="'brand-' + line.key">Marque</label>
+                      <input
+                        class="lv-input"
+                        [id]="'brand-' + line.key"
+                        [ngModel]="line.brand"
+                        (ngModelChange)="update(line.key, { brand: $event })"
+                      />
+                    </div>
+                    <div>
+                      <label class="lv-label" [for]="'weight-' + line.key"
+                        >Poids (kg, facultatif)</label
+                      >
+                      <input
+                        class="lv-input"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        [id]="'weight-' + line.key"
+                        [ngModel]="line.weightKg"
+                        (ngModelChange)="update(line.key, { weightKg: $event })"
+                      />
+                    </div>
+                    <div>
+                      <label class="lv-label" [for]="'notes-' + line.key"
+                        >État à la réception</label
+                      >
+                      <input
+                        class="lv-input"
+                        [id]="'notes-' + line.key"
+                        [ngModel]="line.conditionNotes"
+                        (ngModelChange)="update(line.key, { conditionNotes: $event })"
+                      />
+                    </div>
+                  </div>
+                  <fieldset class="mt-3">
+                    <legend class="lv-label">Check-list de réception</legend>
+                    <div class="flex flex-wrap gap-x-5 gap-y-1">
+                      @for (c of checklist; track c.key) {
+                        <label class="check"
+                          ><input
+                            type="checkbox"
+                            [checked]="!!line.checklist[c.key]"
+                            (change)="toggleCheck(line, c.key, $any($event.target).checked)"
+                          />
+                          {{ c.label }}</label
+                        >
+                      }
+                    </div>
+                  </fieldset>
+                  <fieldset class="mt-3">
+                    <legend class="lv-label">Symboles d’entretien (étiquette du vêtement)</legend>
+                    @for (group of careGroups; track group) {
+                      <div class="care-group">
+                        <span class="text-sm font-semibold first-letter:uppercase">{{
+                          group
+                        }}</span>
+                        <div class="flex flex-wrap gap-x-4">
+                          @for (s of careSymbols; track s.code) {
+                            @if (s.group === group) {
+                              <label class="check">
+                                <input
+                                  type="checkbox"
+                                  [checked]="line.careSymbols.includes(s.code)"
+                                  (change)="toggleSymbol(line, s.code, $any($event.target).checked)"
+                                />
+                                {{ s.label }}
+                              </label>
+                            }
+                          }
+                        </div>
+                      </div>
+                    }
+                  </fieldset>
+                </div>
+              }
+            </li>
+          }
+        </ol>
+        <button type="button" class="lv-secondary mt-4" (click)="addLine()">
+          + Ajouter un article
+        </button>
+        @if (g.itemTypes.length === 0) {
+          <p class="mt-3 text-sm">
+            Le catalogue est vide : la responsable doit ajouter les articles et les tarifs.
+          </p>
+        }
+      } @else {
+        <p aria-busy="true">Chargement du catalogue…</p>
+      }
+    </section>
+  </div>
+
+  <!-- Récapitulatif -->
+  <aside class="summary lv-card" aria-labelledby="total-titre">
+    <h2 id="total-titre" class="mb-3 text-lg">Total</h2>
+    @let q = quote().quote;
+    <dl class="totals tabular">
+      <dt>Sous-total</dt>
+      <dd>{{ q?.subtotalXaf ?? 0 | xaf }}</dd>
+      @if (express()) {
+        <dt>Majoration express</dt>
+        <dd>{{ q?.expressSurchargeXaf ?? 0 | xaf }}</dd>
+      }
+      @if (discount() > 0) {
+        <dt>Remise</dt>
+        <dd>− {{ q?.discountXaf ?? 0 | xaf }}</dd>
+      }
+    </dl>
+    <p class="grand-total tabular">{{ q?.totalXaf ?? 0 | xaf }}</p>
+
+    <label class="check mt-3"
+      ><input type="checkbox" [ngModel]="express()" (ngModelChange)="express.set($event)" /> Express
+      @if (grid.hasValue() && grid.value().settings.expressSurchargePercent > 0) {
+        (+{{ grid.value().settings.expressSurchargePercent }} %)
+      }
+    </label>
+
+    <label class="lv-label mt-3" for="discount">Remise (FCFA)</label>
+    <input
+      id="discount"
+      class="lv-input tabular"
+      type="number"
+      min="0"
+      step="50"
+      inputmode="numeric"
+      [ngModel]="discount()"
+      (ngModelChange)="discount.set($event ?? 0)"
+      [attr.aria-invalid]="!!quote().error"
+    />
+    @if (quote().error) {
+      <p class="mt-1 text-sm font-semibold text-coral-600" role="alert">{{ quote().error }}</p>
+    } @else if (needsApproval()) {
+      <p class="mt-1 rounded-field bg-amber-500 p-2 text-sm text-ink-900" role="status">
+        Cette remise dépasse
+        {{ grid.hasValue() ? grid.value().settings.discountApprovalPercent : '' }} % : la
+        responsable devra la valider avant l’impression du ticket.
+      </p>
+    }
+
+    <label class="lv-label mt-3" for="due">Date de retrait</label>
+    <input
+      id="due"
+      class="lv-input"
+      type="date"
+      [ngModel]="dueDate()"
+      (ngModelChange)="dueDate.set($event)"
+    />
+    @if (dueDate()) {
+      <p class="mt-1 text-sm">Le {{ dueDate() | frDate }}</p>
+    }
+
+    <label class="lv-label mt-3" for="notes">Notes</label>
+    <textarea
+      id="notes"
+      class="lv-input"
+      rows="2"
+      [ngModel]="notes()"
+      (ngModelChange)="notes.set($event)"
+    ></textarea>
+
+    @if (missingPrice()) {
+      <p class="mt-3 text-sm font-semibold text-coral-600" role="alert">
+        Un article n’a pas de tarif pour ce service.
+      </p>
+    }
+    @if (error()) {
+      <p class="lv-alert mt-3" role="alert">{{ error() }}</p>
+    }
+    <button
+      type="button"
+      class="lv-primary mt-4 w-full"
+      [disabled]="!canSubmit()"
+      (click)="submit()"
+    >
+      {{ submitting() ? 'Enregistrement…' : 'Enregistrer et imprimer' }}
+    </button>
+  </aside>
+</div>

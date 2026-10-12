@@ -1,13 +1,19 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "cli": { "packageManager": "pnpm", "analytics": false },
+  "cli": {
+    "packageManager": "pnpm",
+    "analytics": false
+  },
   "newProjectRoot": "projects",
   "projects": {
     "web": {
       "projectType": "application",
       "schematics": {
-        "@schematics/angular:component": { "changeDetection": "OnPush", "style": "css" }
+        "@schematics/angular:component": {
+          "changeDetection": "OnPush",
+          "style": "css"
+        }
       },
       "root": "",
       "sourceRoot": "src",
@@ -20,16 +26,36 @@
             "server": "src/main.server.ts",
             "outputMode": "static",
             "tsConfig": "tsconfig.app.json",
-            "assets": [{ "glob": "**/*", "input": "public" }],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
             "styles": ["src/styles/material.scss", "src/styles.css"],
             "serviceWorker": "ngsw-config.json",
-            "i18nMissingTranslation": "error"
+            "i18nMissingTranslation": "error",
+            "allowedCommonJsDependencies": [
+              "qrcode",
+              "is-buffer",
+              "@vercel/oidc",
+              "async-retry",
+              "throttleit"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
-                { "type": "initial", "maximumWarning": "400kB", "maximumError": "550kB" },
-                { "type": "anyComponentStyle", "maximumWarning": "6kB", "maximumError": "10kB" }
+                {
+                  "type": "initial",
+                  "maximumWarning": "400kB",
+                  "maximumError": "550kB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kB",
+                  "maximumError": "10kB"
+                }
               ],
               "outputHashing": "all"
             },
@@ -45,14 +71,21 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": { "buildTarget": "web:build:production" },
-            "development": { "buildTarget": "web:build:development" }
+            "production": {
+              "buildTarget": "web:build:production"
+            },
+            "development": {
+              "buildTarget": "web:build:development"
+            }
           },
           "defaultConfiguration": "development"
         },
         "test": {
           "builder": "@angular/build:unit-test",
-          "options": { "tsConfig": "tsconfig.spec.json", "runner": "vitest" }
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "runner": "vitest"
+          }
         }
       }
     }

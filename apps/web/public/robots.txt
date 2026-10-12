@@ -5,3 +5,4 @@ Disallow: /admin
 Disallow: /login
 Disallow: /api
 Disallow: /invitation
+Disallow: /print

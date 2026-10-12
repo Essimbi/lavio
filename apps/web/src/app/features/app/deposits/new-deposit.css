@@ -1,0 +1,131 @@
+.layout {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+
+  .summary {
+    position: sticky;
+    top: 24px;
+  }
+}
+
+.results {
+  position: absolute;
+  inset: calc(100% + 4px) 0 auto;
+  z-index: 5;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: var(--lv-radius-field);
+  background: var(--lv-white);
+  box-shadow: var(--lv-shadow-card);
+}
+
+.results li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.results li.is-active,
+.results li:hover {
+  background: var(--lv-mint-100);
+}
+
+.line {
+  padding: 12px;
+  border: 1px solid var(--lv-mint-100);
+  border-radius: var(--lv-radius-field);
+}
+
+.line-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+}
+
+@media (min-width: 768px) {
+  .line-row {
+    grid-template-columns: minmax(150px, 1.4fr) minmax(170px, 1.6fr) 76px minmax(110px, 1fr);
+  }
+}
+
+/* Deuxième rangée de la ligne : prix à gauche, actions à droite. */
+.line-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.price {
+  min-height: 32px;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.care-group {
+  display: grid;
+  gap: 2px 16px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+  .care-group {
+    grid-template-columns: 170px 1fr;
+  }
+}
+
+.details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--lv-mint-100);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  font-size: 14px;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--lv-teal-700);
+}
+
+.totals {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.totals dd {
+  margin: 0;
+  text-align: right;
+}
+
+.grand-total {
+  margin: 8px 0 0;
+  font: 600 32px/1.1 var(--lv-font-display);
+  color: var(--lv-teal-900);
+  text-align: right;
+}

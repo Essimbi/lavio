@@ -44,6 +44,20 @@ export const appShellConfig: ShellConfig = {
 
 const settingsEntries: MenuEntry[] = [
   {
+    label: 'Catalogue et tarifs',
+    description: 'Articles, services, grille de prix.',
+    path: '/app/settings/catalog',
+    icon: 'layers',
+    ownerOnly: true,
+  },
+  {
+    label: 'Pressing',
+    description: 'Ticket, TVA, tournées, seuils.',
+    path: '/app/settings/pressing',
+    icon: 'store',
+    ownerOnly: true,
+  },
+  {
     label: 'Ma licence',
     description: 'Plan, dates, renouvellement.',
     path: '/app/license',
@@ -71,7 +85,17 @@ const settingsEntries: MenuEntry[] = [
   },
 ];
 
-const moreEntries: MenuEntry[] = [...settingsEntries];
+const moreEntries: MenuEntry[] = [
+  {
+    label: 'Validations',
+    description: 'Remises et demandes à valider.',
+    path: '/app/approvals',
+    icon: 'shield',
+    ownerOnly: true,
+  },
+  { label: 'Clients', description: 'Fiches et historique.', path: '/app/customers', icon: 'users' },
+  ...settingsEntries,
+];
 
 const placeholder = (path: string, heading: string, icon: NavItem['icon']) => ({
   path,
@@ -94,9 +118,55 @@ export const appRoutes: Routes = [
     data: { config: appShellConfig },
     children: [
       placeholder('', 'Tableau de bord', 'home'),
-      placeholder('deposits/new', 'Nouveau dépôt', 'plus'),
+      {
+        path: 'deposits/new',
+        title: 'Nouveau dépôt — Lavio',
+        canActivate: [tenantRoleGuard('CASHIER')],
+        loadComponent: () => import('./deposits/new-deposit').then((m) => m.NewDeposit),
+      },
+      {
+        path: 'deposits',
+        title: 'Dépôts — Lavio',
+        loadComponent: () => import('./deposits/deposits-page').then((m) => m.DepositsPage),
+      },
+      {
+        path: 'deposits/:id',
+        title: 'Dépôt — Lavio',
+        loadComponent: () => import('./deposits/deposit-detail').then((m) => m.DepositDetail),
+      },
+      {
+        path: 'customers',
+        title: 'Clients — Lavio',
+        loadComponent: () => import('./customers/customers-page').then((m) => m.CustomersPage),
+      },
+      {
+        path: 'customers/:id',
+        title: 'Client — Lavio',
+        loadComponent: () => import('./customers/customer-detail').then((m) => m.CustomerDetail),
+      },
+      {
+        path: 'approvals',
+        title: 'Validations — Lavio',
+        canActivate: [tenantRoleGuard()],
+        loadComponent: () => import('./approvals-page').then((m) => m.ApprovalsPage),
+      },
+      {
+        path: 'settings/catalog',
+        title: 'Catalogue — Lavio',
+        canActivate: [tenantRoleGuard()],
+        loadComponent: () => import('./settings/catalog-page').then((m) => m.CatalogPage),
+      },
+      {
+        path: 'settings/pressing',
+        title: 'Paramètres du pressing — Lavio',
+        canActivate: [tenantRoleGuard()],
+        loadComponent: () =>
+          import('./settings/pressing-settings-page').then((m) => m.PressingSettingsPage),
+      },
       ...items
-        .filter((i) => i.path !== '/app' && i.path !== '/app/settings')
+        .filter(
+          (i) => !['/app', '/app/settings', '/app/deposits', '/app/customers'].includes(i.path),
+        )
         .map((i) => placeholder(i.path.replace('/app/', ''), i.label, i.icon)),
       {
         path: 'license',

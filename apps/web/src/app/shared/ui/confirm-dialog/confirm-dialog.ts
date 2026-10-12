@@ -19,6 +19,8 @@ export interface ConfirmOptions {
   danger?: boolean;
   /** Demande un motif facultatif. */
   askReason?: boolean;
+  /** Motif obligatoire (annulation d'un dépôt). */
+  reasonRequired?: boolean;
 }
 
 @Component({
@@ -28,9 +30,9 @@ export interface ConfirmOptions {
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>
       <p>{{ data.message }}</p>
-      @if (data.askReason) {
+      @if (data.askReason || data.reasonRequired) {
         <mat-form-field class="w-full">
-          <mat-label>Motif (facultatif)</mat-label>
+          <mat-label>{{ data.reasonRequired ? 'Motif' : 'Motif (facultatif)' }}</mat-label>
           <textarea
             matInput
             rows="3"
@@ -47,6 +49,7 @@ export interface ConfirmOptions {
         mat-flat-button
         type="button"
         [class.lv-danger]="data.danger"
+        [disabled]="data.reasonRequired && reason().trim().length < 3"
         (click)="ref.close({ confirmed: true, reason: reason().trim() || undefined })"
       >
         {{ data.confirmLabel }}

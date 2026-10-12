@@ -256,3 +256,93 @@
     transform: translateY(-1px);
   }
 }
+
+@layer components {
+  /* Champs denses natifs pour les saisies rapides au clavier (écran de dépôt, grilles). */
+  .lv-input,
+  .lv-select {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid color-mix(in srgb, var(--lv-teal-900) 28%, white);
+    border-radius: var(--lv-radius-field);
+    background: var(--lv-white);
+    color: var(--lv-ink-900);
+    font: inherit;
+    transition:
+      border-color var(--lv-duration) var(--lv-ease),
+      box-shadow var(--lv-duration) var(--lv-ease);
+  }
+
+  .lv-input:focus,
+  .lv-select:focus {
+    border-color: var(--lv-teal-700);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lv-aqua-400) 45%, transparent);
+    outline: none;
+  }
+
+  .lv-input[aria-invalid='true'] {
+    border-color: var(--lv-coral-600);
+  }
+
+  .lv-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lv-teal-900);
+  }
+
+  .lv-kbd {
+    display: inline-block;
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--lv-ink-900) 25%, transparent);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: var(--lv-font-body);
+  }
+}
+
+@layer components {
+  .lv-primary,
+  .lv-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: var(--lv-radius-pill);
+    font: 600 15px/1 var(--lv-font-body);
+    cursor: pointer;
+    transition:
+      transform var(--lv-duration) var(--lv-ease),
+      background-color var(--lv-duration) var(--lv-ease);
+  }
+
+  .lv-primary {
+    border: 0;
+    background: var(--lv-teal-900);
+    color: var(--lv-white);
+  }
+
+  .lv-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .lv-primary:disabled {
+    background: color-mix(in srgb, var(--lv-teal-900) 35%, white);
+    color: var(--lv-ink-900);
+    cursor: not-allowed;
+  }
+
+  .lv-secondary {
+    border: 2px solid var(--lv-teal-900);
+    background: var(--lv-white);
+    color: var(--lv-teal-900);
+  }
+
+  .lv-secondary:hover {
+    background: var(--lv-mint-100);
+  }
+}

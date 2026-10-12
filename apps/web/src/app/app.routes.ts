@@ -23,6 +23,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/app/app.routes').then((m) => m.appRoutes),
   },
   {
+    path: 'print',
+    loadChildren: () => import('./features/print/print.routes').then((m) => m.printRoutes),
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./features/admin/admin.routes').then((m) => m.adminRoutes),
   },
