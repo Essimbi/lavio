@@ -7,7 +7,7 @@ Ce dossier contient **tout ce qu'il faut pour développer le MVP (V1)**. Lis les
 | # | Document | Contenu |
 |---|---|---|
 | 01 | `01-contexte-et-perimetre.md` | Vision, décisions actées, périmètre V1 module par module, hors périmètre (V2) |
-| 02 | `02-architecture.md` | Stack, monorepo, multi-tenant, authentification, conventions |
+| 02 | `02-architecture.md` | Stack, dépôts, multi-tenant, authentification, conventions |
 | 03 | `03-modele-de-donnees.md` | Tables, énumérations, contraintes, index |
 | 04 | `04-api.md` | Endpoints REST par module, format des erreurs |
 | 05 | `05-regles-de-gestion.md` | Règles métier à appliquer côté serveur |

@@ -69,6 +69,13 @@ Lint propre, format vérifié, build des trois paquets réussi (coquille initial
 
 - Aucune pour l'instant.
 
+### Séparation en deux dépôts (12/10/2026, à la demande de l'utilisateur)
+
+- `Essimbi/lavio` : web, `packages/shared` (référence), `docs/` ; `apps/api`, Docker et scripts de base retirés ; CI du web.
+- `Essimbi/lavio-api` (dossier local `../lavio-api`) : API à la racine, historique conservé, copie de `packages/shared`, configuration et CI propres, PostgreSQL sous Docker.
+- Vérifié après séparation : API (lint, typage, format, 4 + 28 tests unitaires, 11 e2e, build, démarrage et `/v1/health`) ; web (lint, tests, build, Playwright).
+- Docs 00, 02 et 11 mises à jour. `12-plan-de-realisation.md` (phase 0, « Monorepo pnpm ») décrit le plan initial et n'a pas été modifié.
+
 ### Prochaine étape
 
 Tâche 12 (premier déploiement de test) dès que GitHub, Vercel et Neon sont prêts, puis **phase 1** : authentification, multi-tenant (extension d'isolation et tests), licences et superadmin.

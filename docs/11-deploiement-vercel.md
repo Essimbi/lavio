@@ -2,12 +2,12 @@
 
 ## Projets
 
-| Projet Vercel | Dossier racine | Contenu |
-|---|---|---|
-| `lavio-api` | `apps/api` | API NestJS (fonction serverless) |
-| `lavio-web` | `apps/web` | Angular : landing (`/`), connexion (`/login`), application (`/app/*`), superadmin (`/admin/*`) |
+| Projet Vercel | Dépôt Git | Dossier racine | Contenu |
+|---|---|---|---|
+| `lavio-api` | `Essimbi/lavio-api` | `.` (racine du dépôt) | API NestJS (fonction serverless) |
+| `lavio-web` | `Essimbi/lavio` | `apps/web` | Angular : landing (`/`), connexion (`/login`), application (`/app/*`), superadmin (`/admin/*`) |
 
-Les deux projets lisent le même dépôt (monorepo pnpm). Activer « Include source files outside of the Root Directory » pour accéder à `packages/shared`. Domaine unique `https://<domaine>` : le projet web sert tout et proxifie `/api/*` vers `lavio-api`.
+Chaque projet lit son propre dépôt. Pour `lavio-web`, activer « Include source files outside of the Root Directory » pour accéder à `packages/shared`. Domaine unique `https://<domaine>` : le projet web sert tout et proxifie `/api/*` vers `lavio-api`.
 
 **Avant de coder le déploiement, lire la documentation Vercel à jour** sur NestJS (déploiement sans configuration ou point d'entrée serverless), sur les monorepos pnpm et sur les fonctions (durée maximale, région, taille de corps). Si la méthode recommandée diffère de ce document, suivre la documentation et le noter dans `docs/DECISIONS.md`.
 
@@ -23,17 +23,17 @@ Les deux projets lisent le même dépôt (monorepo pnpm). Activer « Include sou
 ## Commandes de build
 
 ```
-# lavio-api
+# lavio-api (dépôt Essimbi/lavio-api)
 installCommand: pnpm install --frozen-lockfile
-buildCommand:   pnpm --filter @lavio/shared build && pnpm --filter api exec prisma generate && pnpm --filter api build
+buildCommand:   pnpm --filter @lavio/shared build && pnpm exec prisma generate && pnpm exec nest build
 
-# lavio-web
+# lavio-web (dépôt Essimbi/lavio)
 installCommand: pnpm install --frozen-lockfile
 buildCommand:   pnpm --filter @lavio/shared build && pnpm --filter web build
 outputDirectory: apps/web/dist/web/browser   # à vérifier selon la version d'Angular
 ```
 
-Migrations : en production, exécuter `prisma migrate deploy` dans une étape de déploiement contrôlée (script `pnpm --filter api db:deploy`), jamais `db push`. Les migrations sont versionnées dans le dépôt.
+Migrations : en production, exécuter `prisma migrate deploy` dans une étape de déploiement contrôlée (script `pnpm db:deploy` du dépôt `lavio-api`), jamais `db push`. Les migrations sont versionnées dans le dépôt.
 
 ## Variables d'environnement
 
@@ -84,7 +84,7 @@ Vercel appelle la route en **`GET`** avec `Authorization: Bearer $CRON_SECRET` ;
 
 ## Base de données
 
-PostgreSQL de la Marketplace Vercel (Neon). Une branche de base par aperçu (preview) si l'intégration le permet ; sinon une base de développement partagée. Script de seed idempotent (`pnpm --filter api db:seed`) : plan, superadmin, listes par défaut, pressing de démonstration (jamais en production).
+PostgreSQL de la Marketplace Vercel (Neon). Une branche de base par aperçu (preview) si l'intégration le permet ; sinon une base de développement partagée. Script de seed idempotent (`pnpm db:seed` du dépôt `lavio-api`) : plan, superadmin, listes par défaut, pressing de démonstration (jamais en production).
 
 ## Environnements
 

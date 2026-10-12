@@ -11,24 +11,33 @@
 | Mobile | **PWA** : `@angular/service-worker`, manifest, notifications push Web Push (VAPID) |
 | Fichiers | Vercel Blob (photos, justificatifs) |
 | Déploiement | **Vercel** : un projet pour l'API, un projet pour le web (landing, application, superadmin) |
-| Gestionnaire de paquets | pnpm (workspaces) |
+| Gestionnaire de paquets | pnpm (workspaces), un dépôt Git par application |
 
 Utilise les versions stables les plus récentes au démarrage du projet et **vérifie la documentation à jour** de Vercel (NestJS sur Vercel), d'Angular (PWA, prérendu) et de Prisma (adaptateur serverless). Consigne tout écart dans `docs/DECISIONS.md`.
 
-## Monorepo
+## Dépôts
+
+Deux dépôts Git distincts (décision du 12/10/2026, voir `DECISIONS.md`), chacun relié à son projet Vercel :
 
 ```
-lavio/
+Essimbi/lavio                  # front (projet Vercel lavio-web)
   apps/
-    api/            # NestJS
     web/            # Angular : landing, application pressing, superadmin
   packages/
-    shared/         # enums, types d'API, constantes partagées (TypeScript pur)
-  docs/             # cette documentation
+    shared/         # enums, types d'API, constantes partagées (TypeScript pur) — version de référence
+  docs/             # cette documentation (unique, pour les deux dépôts)
   CLAUDE.md
+
+Essimbi/lavio-api              # back (projet Vercel lavio-api)
+  src/              # NestJS
+  prisma/           # schéma, migrations, seed
+  test/             # tests end-to-end
+  packages/
+    shared/         # copie identique de packages/shared de lavio (pnpm shared:sync)
+  CLAUDE.md         # renvoie vers docs/ du dépôt lavio
 ```
 
-`packages/shared` contient les énumérations (statuts, rôles, modes de paiement), les types des réponses d'API et les codes d'erreur, utilisés par les deux applications.
+`packages/shared` contient les énumérations (statuts, rôles, modes de paiement), les types des réponses d'API et les codes d'erreur, utilisés par les deux applications. **La version de référence est dans `lavio`** ; toute modification s'y fait d'abord, puis est recopiée à l'identique dans `lavio-api` (`pnpm shared:sync`), dans le même incrément de travail. Les deux copies ne doivent jamais diverger.
 
 ## Flux des requêtes
 
@@ -69,9 +78,9 @@ Le projet web proxifie `/api/*` vers le projet API avec une règle `rewrites` de
 
 ## Structure des modules
 
-**API (`apps/api/src`)** : `auth`, `users`, `tenants`, `plans`, `licenses`, `subscription-payments`, `leads`, `customers`, `catalog`, `deposits`, `tracking`, `incidents`, `returns`, `payments`, `cash`, `expenses`, `treasury`, `stock`, `suppliers`, `purchasing`, `tours`, `reports`, `approvals`, `notifications`, `push`, `settings`, `audit`, `storage`, `health`, `cron`, `common` (gardes, filtres, intercepteurs, utilitaires).
+**API (`lavio-api/src`)** : `auth`, `users`, `tenants`, `plans`, `licenses`, `subscription-payments`, `leads`, `customers`, `catalog`, `deposits`, `tracking`, `incidents`, `returns`, `payments`, `cash`, `expenses`, `treasury`, `stock`, `suppliers`, `purchasing`, `tours`, `reports`, `approvals`, `notifications`, `push`, `settings`, `audit`, `storage`, `health`, `cron`, `common` (gardes, filtres, intercepteurs, utilitaires).
 
-**Web (`apps/web/src/app`)** : `core` (auth, intercepteurs HTTP, bannière de licence, file d'envoi), `shared` (composants UI), `features/landing`, `features/auth`, `features/app/*` (dashboard, customers, deposits, tracking, returns, payments, cash, stock, purchasing, expenses, accounting, tours, settings), `features/admin/*`.
+**Web (`lavio/apps/web/src/app`)** : `core` (auth, intercepteurs HTTP, bannière de licence, file d'envoi), `shared` (composants UI), `features/landing`, `features/auth`, `features/app/*` (dashboard, customers, deposits, tracking, returns, payments, cash, stock, purchasing, expenses, accounting, tours, settings), `features/admin/*`.
 
 ## Qualité du code
 

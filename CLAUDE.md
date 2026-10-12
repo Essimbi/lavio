@@ -8,7 +8,12 @@ Lis `docs/00-README.md`, puis les documents `01` à `14` dans l'ordre. La docume
 
 ## Stack (non négociable)
 
-NestJS (API REST `/v1`), Angular (standalone, signals, OnPush), PostgreSQL avec Prisma, PWA, déploiement sur Vercel (projets `lavio-api` et `lavio-web`), monorepo pnpm : `apps/api`, `apps/web`, `packages/shared`.
+NestJS (API REST `/v1`), Angular (standalone, signals, OnPush), PostgreSQL avec Prisma, PWA, déploiement sur Vercel (projets `lavio-api` et `lavio-web`), **deux dépôts Git** :
+
+- `Essimbi/lavio` (ce dépôt) : `apps/web`, `packages/shared` (version de référence), `docs/` ;
+- `Essimbi/lavio-api` (localement `../lavio-api`) : API NestJS, Prisma, copie de `packages/shared`.
+
+Toute modification de `packages/shared` se fait ici, puis est recopiée dans `lavio-api` avec `pnpm shared:sync` (depuis `lavio-api`), dans le même incrément de travail.
 
 ## Règles de travail
 
@@ -33,24 +38,16 @@ NestJS (API REST `/v1`), Angular (standalone, signals, OnPush), PostgreSQL avec 
 
 ## Commandes
 
-Prérequis : Node `^22.22.3` ou `>=24.15` (`.nvmrc`), pnpm 10 via corepack, Docker.
+Prérequis : Node `^22.22.3` ou `>=24.15` (`.nvmrc`), pnpm 10 via corepack. L'API, la base locale (Docker) et leurs commandes sont dans le dépôt `lavio-api` (voir son `CLAUDE.md`).
 
 ```
 pnpm install
-cp apps/api/.env.example apps/api/.env   # puis renseigner les valeurs locales
-pnpm db:up                               # PostgreSQL local (port 54329, bases lavio et lavio_test)
-pnpm --filter api db:migrate             # migrations en développement
-pnpm --filter api db:seed                # seed idempotent
-pnpm dev                                 # API sur :3000, web sur :4200 (proxy /api -> :3000)
-pnpm test                                # tests unitaires (shared, api, web)
-pnpm --filter api test:e2e               # tests e2e de l'API (base lavio_test)
-pnpm --filter web test:e2e               # Playwright (après pnpm build)
+pnpm dev                                 # web sur :4200 (proxy /api -> API locale sur :3000)
+pnpm test                                # tests unitaires (shared, web)
+pnpm --filter web test:e2e               # Playwright (après pnpm build ; PLAYWRIGHT_CHANNEL=chrome en local)
 pnpm lint
 pnpm build
-pnpm --filter api db:deploy              # migrations en production (prisma migrate deploy)
 ```
-
-Swagger en local : http://localhost:3000/v1/docs. Santé : http://localhost:3000/v1/health.
 
 ## Définition de « terminé » pour une phase
 
