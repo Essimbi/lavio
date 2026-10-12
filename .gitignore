@@ -6,7 +6,6 @@ dist/
 .angular/
 coverage/
 *.tsbuildinfo
-apps/api/src/generated/
 
 # Environnement (aucun secret dans le dépôt)
 .env

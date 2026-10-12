@@ -7,15 +7,13 @@
     "node": "^22.22.3 || >=24.15.0"
   },
   "scripts": {
-    "dev": "pnpm --filter @lavio/shared build && pnpm --parallel --filter api --filter web --filter @lavio/shared run dev",
+    "dev": "pnpm --filter @lavio/shared build && pnpm --parallel --filter web --filter @lavio/shared run dev",
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "test:e2e": "pnpm -r run test:e2e",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:up": "sh scripts/compose.sh up -d --wait",
-    "db:down": "sh scripts/compose.sh down",
     "prepare": "husky"
   },
   "devDependencies": {

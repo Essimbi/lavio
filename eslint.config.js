@@ -12,7 +12,6 @@ export default tseslint.config(
       '**/coverage/**',
       '**/.angular/**',
       '**/node_modules/**',
-      'apps/api/src/generated/**',
       '**/playwright-report/**',
       '**/test-results/**',
     ],
@@ -35,19 +34,6 @@ export default tseslint.config(
       'no-console': ['error', { allow: ['warn', 'error'] }],
       '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
     },
-  },
-  // API NestJS
-  {
-    files: ['apps/api/**/*.ts'],
-    languageOptions: { globals: { ...globals.node } },
-    rules: {
-      // Les DTO et services Nest utilisent l'injection par types : imports nécessaires à l'exécution.
-      '@typescript-eslint/consistent-type-imports': 'off',
-    },
-  },
-  {
-    files: ['apps/api/prisma/seed.ts'],
-    rules: { 'no-console': 'off' },
   },
   {
     files: ['**/*.spec.ts', '**/*.e2e-spec.ts', '**/test/**/*.ts', '**/e2e/**/*.ts'],

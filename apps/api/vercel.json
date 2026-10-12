@@ -1,6 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @lavio/shared build && pnpm --filter api exec prisma generate && pnpm --filter api build",
-  "crons": [{ "path": "/v1/internal/cron/daily", "schedule": "0 5 * * *" }]
-}
