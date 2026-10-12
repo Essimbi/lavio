@@ -1,0 +1,64 @@
+/** Codes d'erreur de l'API (docs/04-api.md). */
+export const ErrorCode = Object.freeze({
+  UNAUTHENTICATED: 'UNAUTHENTICATED',
+  FORBIDDEN: 'FORBIDDEN',
+  LICENSE_INACTIVE: 'LICENSE_INACTIVE',
+  LICENSE_READ_ONLY: 'LICENSE_READ_ONLY',
+  USER_LIMIT_REACHED: 'USER_LIMIT_REACHED',
+  VALIDATION_FAILED: 'VALIDATION_FAILED',
+  NOT_FOUND: 'NOT_FOUND',
+  CONFLICT: 'CONFLICT',
+  DUPLICATE_REFERENCE: 'DUPLICATE_REFERENCE',
+  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
+  CASH_SESSION_REQUIRED: 'CASH_SESSION_REQUIRED',
+  CASH_SESSION_ALREADY_OPEN: 'CASH_SESSION_ALREADY_OPEN',
+  APPROVAL_REQUIRED: 'APPROVAL_REQUIRED',
+  ITEM_NOT_READY: 'ITEM_NOT_READY',
+  RATE_LIMITED: 'RATE_LIMITED',
+  PAYLOAD_TOO_LARGE: 'PAYLOAD_TOO_LARGE',
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+} as const);
+export type ErrorCode = keyof typeof ErrorCode;
+
+/** Statut HTTP par défaut de chaque code. */
+export const ERROR_HTTP_STATUS: Readonly<Record<ErrorCode, number>> = Object.freeze({
+  UNAUTHENTICATED: 401,
+  FORBIDDEN: 403,
+  LICENSE_INACTIVE: 402,
+  LICENSE_READ_ONLY: 403,
+  USER_LIMIT_REACHED: 403,
+  VALIDATION_FAILED: 400,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  DUPLICATE_REFERENCE: 409,
+  INSUFFICIENT_STOCK: 409,
+  CASH_SESSION_REQUIRED: 409,
+  CASH_SESSION_ALREADY_OPEN: 409,
+  APPROVAL_REQUIRED: 409,
+  ITEM_NOT_READY: 409,
+  RATE_LIMITED: 429,
+  PAYLOAD_TOO_LARGE: 413,
+  INTERNAL_ERROR: 500,
+});
+
+/** Messages par défaut, en français, sans jargon technique (docs/08). */
+export const ERROR_DEFAULT_MESSAGES: Readonly<Record<ErrorCode, string>> = Object.freeze({
+  UNAUTHENTICATED: 'Veuillez vous connecter.',
+  FORBIDDEN: "Vous n'avez pas les droits pour cette action.",
+  LICENSE_INACTIVE: "Votre licence n'est pas active. Contactez le service client.",
+  LICENSE_READ_ONLY:
+    'Votre licence est en lecture seule : la consultation et les exports restent possibles.',
+  USER_LIMIT_REACHED: "Le nombre maximal d'utilisateurs de votre licence est atteint.",
+  VALIDATION_FAILED: 'Certaines informations sont manquantes ou incorrectes.',
+  NOT_FOUND: "L'élément demandé est introuvable.",
+  CONFLICT: 'Cette action entre en conflit avec des données existantes.',
+  DUPLICATE_REFERENCE: 'Cette référence Mobile Money a déjà été enregistrée.',
+  INSUFFICIENT_STOCK: 'Le stock est insuffisant.',
+  CASH_SESSION_REQUIRED: 'Ouvrez la caisse avant un encaissement en espèces.',
+  CASH_SESSION_ALREADY_OPEN: 'Une session de caisse est déjà ouverte.',
+  APPROVAL_REQUIRED: 'Cette action doit être validée par la responsable.',
+  ITEM_NOT_READY: "L'article n'est pas prêt.",
+  RATE_LIMITED: 'Trop de tentatives. Réessayez dans quelques instants.',
+  PAYLOAD_TOO_LARGE: 'Le contenu envoyé est trop volumineux.',
+  INTERNAL_ERROR: 'Une erreur est survenue. Réessayez dans quelques instants.',
+});
