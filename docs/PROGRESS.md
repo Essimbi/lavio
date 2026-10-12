@@ -143,3 +143,56 @@ Lint, typage et format propres ; builds réussis (web : 102 Ko transférés au c
 ### Prochaine étape
 
 Phase 2 : clients, catalogue, dépôt et ticket.
+
+## Phase 2 — Clients, catalogue, dépôt, ticket (13/10/2026)
+
+### Fait
+
+**API (`lavio-api`)** — migration `phase2_deposits`
+- Clients : fiche (particulier ou entreprise, préférences « sans housse » et « reprise des cintres », remarques, crédit autorisé et plafond), recherche par nom, téléphone ou numéro de ticket, historique des dépôts, prix spéciaux des clients à compte.
+- Catalogue : articles et services (archivage, jamais de suppression), grille tarifaire datée (un nouveau prix clôt l'ancien, jamais de mise à jour en place, un seul tarif ouvert par couple), grille courante et devis.
+- Paramètres du pressing (OWNER) : identité, logo, TVA, préfixe et pied de ticket, jours de tournée, seuils.
+- Dépôts : création idempotente, numéro séquentiel sans trou ni doublon, prix figés, majoration express, remise avec validation au-delà du seuil (PENDING_APPROVAL, refus → DRAFT corrigeable), date de retrait par défaut, check-list de réception, symboles ISO 3758, poids facultatif, photos (Vercel Blob), historique des statuts ; recherche et liste filtrable (statut, client, échéance, retards) ; annulation avec motif ; données du ticket et des étiquettes ; règle d'acompte.
+- Validations (OWNER) : liste, approbation, refus, avec effet sur le dépôt dans la même transaction.
+- Listes par défaut à la création d'un pressing ; données de démonstration fictives.
+
+**Web (`lavio`)**
+- **Nouveau dépôt** sur un seul écran, pensé pour le clavier : recherche du client (téléphone, nom ou numéro) avec création rapide, lignes d'articles (service choisi automatiquement s'il a un tarif), détails facultatifs, total en direct, avertissement de validation, `Alt + N`, `Ctrl + Entrée`, impression automatique du ticket.
+- Ticket 80 mm (numéro en grand et en toutes lettres, QR code 28 mm, montants, date de retrait, mentions) et étiquettes (50 × 30 mm ou planche A4).
+- Dépôts (liste, ouverture directe par numéro), fiche du dépôt (validation, correction de remise, annulation, photos), clients (liste, fiche, historique, prix spéciaux), validations, catalogue et grille tarifaire avec historique, paramètres du pressing.
+
+### Tests (tous verts)
+
+| Dépôt | Unitaires | End-to-end |
+|---|---|---|
+| `lavio` | 43 (shared : prix, acompte, TVA, date de retrait, numéros, nombre en toutes lettres…) + 21 (web) | Playwright : **parcours 1** (dépôt de 3 articles et ticket : 11 actions, quelques secondes), **remise bloquée puis validée par la responsable**, superadmin, démarrage |
+| `lavio-api` | 43 + 50 (dont stockage Blob, isolation) | 89, dont 26 nouveaux : catalogue daté, recherche client, prix spéciaux, prix figés, **numérotation concurrente**, **idempotence**, remise (validation, refus, correction), acompte, ticket et étiquettes, annulation, droits par rôle, **isolation** (lecture, écriture, clés étrangères d'un autre pressing, validations, numéros) |
+
+### Critères de fin de la phase 2
+
+| Critère | État |
+|---|---|
+| Un caissier enregistre un dépôt et imprime le ticket en moins de 90 s (client existant) | Fait (parcours Playwright : 11 actions) |
+| Les prix sont figés | Fait (test : un changement de grille ne modifie pas un dépôt existant) |
+| Une remise au-dessus du seuil bloque l'impression jusqu'à validation | Fait (API et Playwright) |
+
+### Hypothèses appliquées (configurables)
+
+- Majoration express arrondie au franc le plus proche ; seuil de remise comparé au sous-total hors majoration, strictement.
+- Une étiquette par pièce (quantité) ; planche A4 de 24 en option.
+- Nouveaux pressings : articles et services par défaut, sans aucun tarif.
+- Règle d'acompte appliquée côté serveur, désactivée par défaut ; saisie de l'acompte en phase 3.
+
+### Points à confirmer
+
+- **Ordre des phases (doc 12)** : l'acompte est listé en phase 2 alors que les paiements et la caisse sont en phase 3 (voir DECISIONS).
+- Arrondi de la majoration express et assiette du seuil de remise.
+- Listes par défaut des articles et services.
+
+### Idées notées (hors périmètre, non codées)
+
+- Aucune.
+
+### Prochaine étape
+
+Phase 3 : suivi des articles, restitution, paiements, caisse, validations et centre de notifications.

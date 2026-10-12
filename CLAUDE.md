@@ -49,7 +49,7 @@ pnpm lint
 pnpm build
 ```
 
-Parcours Playwright complet (superadmin) : démarrer l'API de `lavio-api` sur la base de test (`NODE_ENV=test`), créer le superadmin de test (`pnpm e2e:admin`), puis `API_ORIGIN=http://localhost:3000 E2E_ADMIN_EMAIL=… E2E_ADMIN_PASSWORD=… pnpm --filter web test:e2e`. Sans `API_ORIGIN`, ce parcours est sauté.
+Parcours Playwright complets (superadmin, dépôt) : démarrer l'API de `lavio-api` sur la base de test (`NODE_ENV=test`), créer les données de test (`pnpm e2e:admin` et `pnpm e2e:fixtures`), puis `API_ORIGIN=http://localhost:3000 E2E_ADMIN_EMAIL=… E2E_ADMIN_PASSWORD=… E2E_PASSWORD=… pnpm --filter web test:e2e`. Sans `API_ORIGIN`, ces parcours sont sautés.
 
 ## Définition de « terminé » pour une phase
 
