@@ -6,3 +6,7 @@ export * from './auth.js';
 export * from './admin.js';
 export * from './licenses.js';
 export * from './whatsapp.js';
+export * from './catalog.js';
+export * from './pricing.js';
+export * from './deposits.js';
+export * from './phase2.js';
