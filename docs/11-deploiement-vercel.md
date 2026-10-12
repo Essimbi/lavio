@@ -77,10 +77,10 @@ Les pages prérendues (landing) existent en HTML statique ; les routes de l'appl
 ## Cron (`vercel.json` du projet API)
 
 ```json
-{ "crons": [{ "path": "/internal/cron/daily", "schedule": "0 5 * * *" }] }
+{ "crons": [{ "path": "/v1/internal/cron/daily", "schedule": "0 5 * * *" }] }
 ```
 
-Vercel appelle la route avec `Authorization: Bearer $CRON_SECRET` ; l'API vérifie ce jeton. Une exécution quotidienne suffit en V1 (compatible avec les offres de base).
+Vercel appelle la route en **`GET`** avec `Authorization: Bearer $CRON_SECRET` ; l'API vérifie ce jeton (et refuse l'appel si la variable n'est pas définie). Le chemin inclut le préfixe `/v1`, car le cron appelle directement le projet API, sans passer par la réécriture `/api/*` du projet web. Une exécution quotidienne suffit en V1 (compatible avec les offres de base).
 
 ## Base de données
 

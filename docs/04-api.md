@@ -84,7 +84,7 @@ Préfixe `/v1`. Authentification `Authorization: Bearer <accessToken>` (sauf rou
 
 ## Cron (protégé par `CRON_SECRET`)
 
-`POST /internal/cron/daily` : passage des licences en `GRACE`, `EXPIRED` ou `SUSPENDED` selon les dates ; alerte de licence qui expire sous 7 jours ; notifications de dépôts en retard et de stock bas ; génération des dépenses récurrentes dues.
+`GET /v1/internal/cron/daily` (Vercel appelle les crons en `GET` avec l'en-tête `Authorization: Bearer <CRON_SECRET>` ; la route refuse tout appel si `CRON_SECRET` n'est pas défini ou ne correspond pas ; elle est exclue de `LicenseGuard`) : passage des licences en `GRACE`, `EXPIRED` ou `SUSPENDED` selon les dates ; alerte de licence qui expire sous 7 jours ; notifications de dépôts en retard et de stock bas ; génération des dépenses récurrentes dues.
 
 ## Codes d'erreur principaux
 

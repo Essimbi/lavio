@@ -10,7 +10,7 @@ PostgreSQL via Prisma. Colonnes en `snake_case` (`@map`), modèles en `PascalCas
 | `LicenseStatus` | `TRIAL`, `ACTIVE`, `GRACE`, `SUSPENDED`, `EXPIRED`, `REVOKED` |
 | `PlatformRole` | `SUPER_ADMIN`, `PARTNER_VIEWER` |
 | `TenantRole` | `OWNER`, `CASHIER`, `OPERATOR`, `STOCK_KEEPER`, `ACCOUNTANT`, `QUALITY`, `DRIVER` |
-| `DepositStatus` | `PENDING_APPROVAL`, `OPEN`, `READY`, `PARTIALLY_RETURNED`, `COMPLETED`, `CANCELLED` |
+| `DepositStatus` | `DRAFT`, `PENDING_APPROVAL`, `OPEN`, `READY`, `PARTIALLY_RETURNED`, `COMPLETED`, `CANCELLED` |
 | `ItemStatus` | `RECEIVED`, `IN_PROGRESS`, `IRONING`, `QUALITY_CHECK`, `READY`, `RETURNED` |
 | `PaymentMethod` | `CASH`, `ORANGE_MONEY`, `MTN_MOMO`, `BANK_TRANSFER`, `CHEQUE` |
 | `PaymentKind` | `ADVANCE`, `BALANCE`, `CREDIT_SETTLEMENT`, `REFUND` |
@@ -21,7 +21,7 @@ PostgreSQL via Prisma. Colonnes en `snake_case` (`@map`), modèles en `PascalCas
 | `TourStatus` | `TO_COLLECT`, `COLLECTED`, `TO_DELIVER`, `DELIVERED`, `CANCELLED` |
 | `IncidentType` | `DAMAGE`, `STAIN_REMAINS`, `LOST`, `FOUND`, `REWORK` |
 | `IncidentResolution` | `NONE`, `REWORK_FREE`, `COMMERCIAL_GESTURE`, `COMPENSATION` |
-| `ApprovalType` | `DISCOUNT`, `STOCK_ADJUSTMENT`, `INVENTORY`, `CASH_CLOSE`, `EXPENSE` |
+| `ApprovalType` | `DISCOUNT`, `STOCK_ADJUSTMENT`, `INVENTORY`, `CASH_CLOSE`, `EXPENSE`, `CREDIT` |
 | `ApprovalStatus` | `PENDING`, `APPROVED`, `REJECTED` |
 | `LeadStatus` | `NEW`, `CONTACTED`, `CONVERTED`, `REJECTED` |
 
@@ -29,7 +29,7 @@ PostgreSQL via Prisma. Colonnes en `snake_case` (`@map`), modèles en `PascalCas
 
 | Table | Champs principaux |
 |---|---|
-| `tenants` | `name`, `slug` (unique), `status`, `phone`, `address`, `city`, `niu`, `rccm`, `vat_enabled`, `vat_rate`, `ticket_prefix`, `ticket_footer`, `logo_url`, `tour_days int[]` (0 = dimanche), `settings jsonb` (seuils : `discountApprovalPercent`, `advanceRequiredAbove`, `lateAfterDays`, `largeExpenseAbove`, `unpaidAlertAbove`) |
+| `tenants` | `name`, `slug` (unique), `status`, `phone`, `address`, `city`, `niu`, `rccm`, `vat_enabled`, `vat_rate`, `ticket_prefix`, `ticket_footer`, `logo_url`, `tour_days int[]` (0 = dimanche), `settings jsonb` (seuils : `discountApprovalPercent` (10), `advanceRequiredAbove` (`null` = règle désactivée), `advanceMinPercent` (50), `processingDays` (2), `expressSurchargePercent` (0), `lateAfterDays` (30), `largeExpenseAbove`, `unpaidAlertAbove`) |
 | `users` | `tenant_id` nullable (null = utilisateur plateforme), `email` (unique, nullable), `phone` (unique, nullable), `password_hash`, `full_name`, `tenant_roles TenantRole[]`, `platform_role PlatformRole?`, `is_active`, `last_login_at`, `failed_logins`, `locked_until` |
 | `refresh_tokens` | `user_id`, `token_hash`, `expires_at`, `revoked_at`, `user_agent` |
 | `invitations` | `user_id`, `token_hash`, `expires_at`, `used_at` |

@@ -8,7 +8,7 @@ Toutes ces règles sont appliquées **côté serveur** (jamais seulement dans l'
 |---|---|---|---|---|---|---|---|
 | Clients | tout | tout | lecture | — | lecture | lecture | lecture |
 | Dépôts, ticket | tout | créer, modifier, annuler | lecture | — | lecture | lecture | lecture |
-| Statuts des articles | tout | lecture | RECEIVED → IRONING | — | — | QUALITY_CHECK → READY, incidents | — |
+| Statuts des articles | tout | lecture | RECEIVED → QUALITY_CHECK | — | — | QUALITY_CHECK → READY, incidents | — |
 | Restitution, paiements | tout | tout | — | — | lecture | — | encaisser en tournée |
 | Caisse | tout | ouvrir, clôturer (validation requise) | — | — | lecture | — | — |
 | Stock, achats | tout | lecture | sorties de consommation | tout | lecture | — | — |
@@ -22,11 +22,11 @@ Un utilisateur cumule les permissions de tous ses rôles.
 
 1. Un dépôt contient au moins un article. Le numéro de ticket est séquentiel par pressing, jamais réutilisé, généré dans la transaction de création.
 2. Les prix sont **figés** à la création du dépôt (prix unitaire copié sur chaque ligne). Les prix du catalogue sont des montants TTC ; si la TVA est activée, le montant de TVA est extrait pour les factures : `tva = total - total / (1 + taux)`.
-3. Prix d'une ligne : prix spécial du client s'il existe, sinon prix du catalogue valide à la date du dépôt. Majoration express : pourcentage paramétrable appliqué au sous-total.
-4. Remise : si `remise / sous-total` dépasse `discountApprovalPercent` (défaut 10 %) et que l'utilisateur n'est pas `OWNER`, le dépôt passe en `PENDING_APPROVAL` et crée une validation `DISCOUNT`. Le ticket n'est imprimable qu'après approbation. Si la validation est refusée, le dépôt est annulé ou corrigé.
-5. Acompte : si le total dépasse `advanceRequiredAbove`, un acompte d'au moins `advanceMinPercent` (défaut 50 %) est exigé avant impression du ticket, sauf client à crédit autorisé.
+3. Prix d'une ligne : prix spécial du client s'il existe, sinon prix du catalogue valide à la date du dépôt. Majoration express : pourcentage paramétrable `expressSurchargePercent` (défaut 0 %) appliqué au sous-total.
+4. Remise : si `remise / sous-total` dépasse `discountApprovalPercent` (défaut 10 %) et que l'utilisateur n'est pas `OWNER`, le dépôt passe en `PENDING_APPROVAL` et crée une validation `DISCOUNT`. Le ticket n'est imprimable qu'après approbation. Si la validation est refusée, le dépôt passe en `DRAFT` (brouillon modifiable) : le caissier corrige la remise (nouvelle évaluation du seuil) ou annule le dépôt. Un dépôt `DRAFT` n'a pas de ticket imprimable.
+5. Acompte : si `advanceRequiredAbove` est défini (défaut `null` : règle désactivée) et que le total le dépasse, un acompte d'au moins `advanceMinPercent` (défaut 50 %) est exigé avant impression du ticket, sauf client à crédit autorisé.
 6. Date de retrait par défaut : prochain jour de tournée après `processingDays` (défaut 2) ; modifiable.
-7. Statut du dépôt : `OPEN` → `READY` quand tous les articles sont `READY` → `PARTIALLY_RETURNED` ou `COMPLETED`. Un dépôt `COMPLETED` n'a plus d'article non restitué.
+7. Statut du dépôt : `DRAFT` ou `PENDING_APPROVAL` → `OPEN` → `READY` quand tous les articles sont `READY` → `PARTIALLY_RETURNED` ou `COMPLETED`. Un dépôt `COMPLETED` n'a plus d'article non restitué.
 8. Annulation : possible seulement si aucun article n'a dépassé `RECEIVED`, avec motif ; les paiements déjà reçus donnent lieu à des remboursements enregistrés (`REFUND`).
 9. Retard : `due_date` dépassée et dépôt non terminé. Alerte « non retiré » : article `READY` depuis plus de `lateAfterDays` jours (défaut 30).
 
@@ -44,7 +44,7 @@ Un utilisateur cumule les permissions de tous ses rôles.
 2. Le montant ne peut pas dépasser le solde restant du dépôt. Les paiements partiels sont autorisés.
 3. Mobile Money (`ORANGE_MONEY`, `MTN_MOMO`) : `operator_ref` obligatoire. Si la même référence existe déjà pour ce mode de paiement dans le pressing, l'API répond `DUPLICATE_REFERENCE` ; le client peut renvoyer avec `confirmDuplicate=true`, ce qui est tracé (`duplicate_confirmed`).
 4. Un paiement en espèces exige une session de caisse ouverte (`CASH_SESSION_REQUIRED`). Les paiements Mobile Money et bancaires peuvent être saisis sans session ; ils ne comptent pas dans le comptage d'espèces.
-5. Vente à crédit : possible seulement si `customers.credit_allowed` et si le total des soldes impayés du client reste sous `credit_limit_xaf`. Sinon une validation est demandée. Le solde impayé devient une créance.
+5. Vente à crédit : possible seulement si `customers.credit_allowed` et si le total des soldes impayés du client reste sous `credit_limit_xaf`. Sinon une validation `CREDIT` est demandée à la responsable (sauf si l'utilisateur est `OWNER`). Le solde impayé devient une créance.
 6. Les paiements Mobile Money peuvent être marqués « rapprochés » (rapprochement manuel avec le relevé de l'opérateur).
 7. Idempotence : une même `Idempotency-Key` ne crée jamais deux paiements.
 
@@ -69,7 +69,7 @@ Un utilisateur cumule les permissions de tous ses rôles.
 
 1. **Encaissements** = paiements (hors annulés), nets des remboursements, par date de paiement.
 2. **Chiffre d'affaires** = total des dépôts non annulés, par date de dépôt. Le tableau de bord affiche les deux (chiffre d'affaires et encaissements).
-3. **Dépenses** : une dépense est rattachée à un compte de trésorerie. Le paiement d'une facture fournisseur crée une dépense de catégorie « Achats matières » (pas de double comptage avec les entrées de stock).
+3. **Dépenses** : une dépense est rattachée à un compte de trésorerie. Une dépense dont le montant dépasse `largeExpenseAbove` (si défini), saisie par un utilisateur qui n'est pas `OWNER`, crée une validation `EXPENSE` et n'est comptabilisée qu'après approbation. Le paiement d'une facture fournisseur crée une dépense de catégorie « Achats matières » (pas de double comptage avec les entrées de stock).
 4. **Résultat simplifié** = encaissements − dépenses sur la période.
 5. **Créances clients** = soldes impayés des dépôts livrés ou à crédit. **Dettes fournisseurs** = factures non payées.
 6. Les dépenses récurrentes génèrent une dépense en brouillon à l'échéance ; l'utilisateur la confirme.

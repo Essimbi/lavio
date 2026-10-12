@@ -42,7 +42,10 @@ Le projet web proxifie `/api/*` vers le projet API avec une règle `rewrites` de
 
 - **Base partagée, schéma partagé** : toutes les tables du pressing ont une colonne `tenant_id`.
 - Le `tenant_id` vient **uniquement du jeton d'authentification**, jamais du corps de la requête.
-- Une extension du client Prisma, alimentée par un contexte de requête (`AsyncLocalStorage`), **ajoute automatiquement** le filtre `tenant_id` à toutes les lectures et écritures des modèles du pressing. Les modèles plateforme (plans, licences, tenants, leads) ne sont accessibles que par les routes `/v1/admin/*`.
+- Une extension du client Prisma, alimentée par un contexte de requête (`AsyncLocalStorage`), **ajoute automatiquement** le filtre `tenant_id` à toutes les lectures et écritures des modèles du pressing. Les modèles plateforme (plans, licences, tenants, leads, paramètres plateforme) ne sont gérés que par les routes `/v1/admin/*`, **à l'exception** d'accès explicites passant par des services dédiés et limités au pressing du jeton :
+  - `GET /auth/me` et `GET /license/status` : lecture du pressing et de sa licence courante ;
+  - `GET/PATCH /settings`, `POST /settings/logo` : lecture et modification par l'`OWNER` des champs de paramétrage de **son** pressing stockés dans `tenants` (TVA, préfixe et pied de ticket, logo, jours de tournée, `settings`) — jamais le statut, le slug ni la licence ;
+  - `GET /public/config` (lecture de `whatsappNumber` et du message par défaut dans `platform_settings`) et `POST /public/leads` (création d'un `lead`).
 - Défense en profondeur : activer la sécurité par ligne PostgreSQL (RLS) sur les tables sensibles si le coût est raisonnable ; sinon documenter la décision.
 - **Test obligatoire** : un utilisateur du pressing A ne peut lire, modifier ni deviner aucune donnée du pressing B (tests end-to-end sur chaque module).
 
