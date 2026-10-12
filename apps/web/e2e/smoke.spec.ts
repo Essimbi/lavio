@@ -22,21 +22,20 @@ test.describe('Démarrage', () => {
     });
   });
 
-  test("la coquille de l'application s'affiche avec sa navigation", async ({ page, isMobile }) => {
+  test("l'application et le superadmin exigent une connexion", async ({ page }) => {
     await page.goto('/app');
-    await expect(page.getByRole('heading', { level: 1, name: 'Tableau de bord' })).toBeVisible();
-    const nav = page
-      .getByRole('navigation', { name: 'Navigation principale' })
-      .filter({ visible: true });
-    await expect(nav).toHaveCount(1);
-    if (isMobile) {
-      await expect(nav.getByRole('link', { name: 'Accueil' })).toHaveAttribute(
-        'aria-current',
-        'page',
-      );
-    } else {
-      await expect(page.getByRole('link', { name: 'Nouveau dépôt' })).toBeVisible();
-    }
+    await expect(page).toHaveURL(/\/login\?retour=%2Fapp/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Connexion' })).toBeVisible();
+    await expect(page.getByLabel('E-mail ou téléphone')).toBeVisible();
+
+    await page.goto('/admin/licenses');
+    await expect(page).toHaveURL(/\/admin\/login/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Superadmin' })).toBeVisible();
+  });
+
+  test('un lien d’invitation incomplet est signalé', async ({ page }) => {
+    await page.goto('/invitation');
+    await expect(page.getByRole('alert')).toContainText('lien est incomplet');
   });
 
   test('une adresse inconnue affiche la page introuvable', async ({ page }) => {

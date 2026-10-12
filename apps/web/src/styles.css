@@ -93,3 +93,166 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ------------------------------------------------------------------ Composants communs */
+@layer components {
+  .lv-card {
+    background: var(--lv-white);
+    border-radius: var(--lv-radius-card);
+    box-shadow: var(--lv-shadow-card);
+    padding: 20px;
+  }
+
+  .lv-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: var(--lv-radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .lv-table-wrap {
+    overflow-x: auto;
+    background: var(--lv-white);
+    border-radius: var(--lv-radius-card);
+    box-shadow: var(--lv-shadow-card);
+  }
+
+  .lv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  .lv-table th {
+    position: sticky;
+    top: 0;
+    background: var(--lv-mint-100);
+    color: var(--lv-teal-900);
+    font-weight: 600;
+    font-size: 13px;
+    text-align: left;
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  .lv-table td {
+    padding: 10px 12px;
+    border-top: 1px solid var(--lv-mint-100);
+    vertical-align: middle;
+  }
+
+  .lv-table tbody tr:hover {
+    background: color-mix(in srgb, var(--lv-foam-50) 70%, transparent);
+  }
+
+  .lv-table tfoot td,
+  .lv-table tfoot th {
+    background: var(--lv-mint-100);
+    color: var(--lv-teal-900);
+    font-weight: 700;
+  }
+
+  .lv-table .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .lv-link-button {
+    background: none;
+    border: 0;
+    padding: 6px 4px;
+    min-height: 32px;
+    color: var(--lv-teal-700);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .lv-link-button:disabled {
+    color: color-mix(in srgb, var(--lv-ink-900) 45%, transparent);
+    text-decoration: none;
+    cursor: default;
+  }
+
+  .lv-readonly-field {
+    width: 100%;
+    margin-top: 4px;
+    padding: 10px 12px;
+    border: 1px solid var(--lv-mint-100);
+    border-radius: var(--lv-radius-field);
+    background: var(--lv-foam-50);
+    font: inherit;
+    font-size: 14px;
+  }
+
+  .lv-form-grid {
+    display: grid;
+    gap: 4px 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .lv-alert {
+    padding: 10px 14px;
+    border-radius: var(--lv-radius-field);
+    background: color-mix(in srgb, var(--lv-coral-600) 12%, white);
+    color: var(--lv-coral-600);
+    font-weight: 600;
+  }
+
+  .lv-dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+    margin: 0;
+  }
+
+  .lv-dl dt {
+    color: color-mix(in srgb, var(--lv-ink-900) 75%, transparent);
+  }
+
+  .lv-dl dd {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  /* Bouton Material destructif (texte blanc sur corail : toujours en gras). */
+  .mat-mdc-unelevated-button.lv-danger:not(:disabled) {
+    --mat-button-filled-container-color: var(--lv-coral-600);
+    --mat-button-filled-label-text-color: var(--lv-white);
+    font-weight: 700;
+  }
+
+  .lv-toast-error {
+    --mat-snack-bar-container-color: var(--lv-coral-600);
+    --mat-snack-bar-supporting-text-color: var(--lv-white);
+    --mat-snack-bar-button-color: var(--lv-white);
+    font-weight: 700;
+  }
+}
+
+@layer components {
+  /* Bouton WhatsApp (docs/07, docs/08) : zone tactile ≥ 44 px, texte blanc sur teal profond. */
+  .lv-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: var(--lv-radius-field);
+    background: var(--lv-teal-900);
+    color: var(--lv-white);
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform var(--lv-duration) var(--lv-ease);
+  }
+
+  .lv-whatsapp:hover {
+    transform: translateY(-1px);
+  }
+}

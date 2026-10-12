@@ -4,3 +4,4 @@ Disallow: /app
 Disallow: /admin
 Disallow: /login
 Disallow: /api
+Disallow: /invitation

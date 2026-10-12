@@ -10,7 +10,13 @@ export const routes: Routes = [
   {
     path: 'login',
     title: 'Connexion — Lavio',
+    data: { area: 'app' },
     loadComponent: () => import('./features/auth/login').then((m) => m.Login),
+  },
+  {
+    path: 'invitation',
+    title: 'Choisir mon mot de passe — Lavio',
+    loadComponent: () => import('./features/auth/invitation').then((m) => m.Invitation),
   },
   {
     path: 'app',

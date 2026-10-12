@@ -4,7 +4,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <lv-logo variant="inverse" [width]="112" />
-      <span class="area">{{ config().area }}</span>
+      <span class="area">{{ subtitle() }}</span>
     </div>
 
     @if (config().primaryAction; as action) {
@@ -16,7 +16,7 @@
 
     <nav aria-label="Navigation principale">
       <ul role="list">
-        @for (item of config().items; track item.path) {
+        @for (item of items(); track item.path) {
           <li>
             <a
               class="nav-link"
@@ -32,20 +32,33 @@
         }
       </ul>
     </nav>
+
+    @if (auth.user(); as user) {
+      <div class="account">
+        <span class="account-name">{{ user.fullName }}</span>
+        <button type="button" class="nav-link logout" (click)="logout()">
+          <lv-icon name="logout" [size]="20" />
+          <span>Se déconnecter</span>
+        </button>
+      </div>
+    }
   </aside>
 
   <header class="topbar">
     <lv-logo [width]="96" />
-    <span class="area">{{ config().area }}</span>
+    <span class="area">{{ subtitle() }}</span>
   </header>
 
   <main id="contenu" class="content" tabindex="-1">
+    @if (config().licenseBanner) {
+      <lv-license-banner />
+    }
     <router-outlet />
   </main>
 
   <nav class="bottom-nav" aria-label="Navigation principale">
     <ul role="list">
-      @for (item of config().mobileItems; track item.path) {
+      @for (item of mobileItems(); track item.path) {
         <li>
           <a
             class="bottom-link"

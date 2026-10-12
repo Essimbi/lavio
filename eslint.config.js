@@ -30,7 +30,10 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
       'no-console': ['error', { allow: ['warn', 'error'] }],
       '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
     },
@@ -59,6 +62,8 @@ export default tseslint.config(
         { type: 'element', prefix: 'lv', style: 'kebab-case' },
       ],
       '@angular-eslint/prefer-on-push-component-change-detection': 'error',
+      // Les validateurs Angular (`Validators.required`) sont des fonctions statiques sans `this`.
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
   {
