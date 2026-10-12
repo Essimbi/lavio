@@ -1,0 +1,47 @@
+// Thème Angular Material 3 aux couleurs de Lavio (docs/08) :
+// primaire teal profond, tertiaire aqua, surfaces écume. Les valeurs viennent des jetons --lv-*.
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$green-palette,
+        theme-type: light,
+      ),
+      typography: (
+        plain-family: var(--lv-font-body),
+        brand-family: var(--lv-font-display),
+      ),
+      density: 0,
+    )
+  );
+
+  @include mat.theme-overrides(
+    (
+      primary: var(--lv-teal-900),
+      on-primary: var(--lv-white),
+      primary-container: var(--lv-mint-100),
+      on-primary-container: var(--lv-teal-900),
+      secondary: var(--lv-teal-700),
+      on-secondary: var(--lv-white),
+      tertiary: var(--lv-aqua-400),
+      on-tertiary: var(--lv-ink-900),
+      error: var(--lv-coral-600),
+      on-error: var(--lv-white),
+      surface: var(--lv-foam-50),
+      on-surface: var(--lv-ink-900),
+      background: var(--lv-foam-50),
+      on-background: var(--lv-ink-900),
+      surface-container-lowest: var(--lv-white),
+      surface-container-low: var(--lv-white),
+      surface-container: var(--lv-white),
+      corner-small: var(--lv-radius-field),
+      corner-medium: var(--lv-radius-card),
+      corner-large: var(--lv-radius-block),
+    )
+  );
+}

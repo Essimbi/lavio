@@ -1,0 +1,95 @@
+/* Polices auto-hébergées (latin uniquement), font-display: swap. */
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
+@import '@fontsource/dm-sans/latin-400.css';
+@import '@fontsource/dm-sans/latin-500.css';
+@import '@fontsource/dm-sans/latin-700.css';
+
+@import './styles/tokens.css';
+@import 'tailwindcss';
+@source './app';
+
+/* Tailwind ne définit pas ses propres couleurs : ses jetons pointent vers --lv-* (docs/08). */
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: var(--lv-white);
+  --color-teal-900: var(--lv-teal-900);
+  --color-teal-700: var(--lv-teal-700);
+  --color-aqua-400: var(--lv-aqua-400);
+  --color-mint-100: var(--lv-mint-100);
+  --color-foam-50: var(--lv-foam-50);
+  --color-ink-900: var(--lv-ink-900);
+  --color-coral-600: var(--lv-coral-600);
+  --color-amber-500: var(--lv-amber-500);
+
+  --font-display: var(--lv-font-display);
+  --font-sans: var(--lv-font-body);
+
+  --radius-field: var(--lv-radius-field);
+  --radius-card: var(--lv-radius-card);
+  --radius-block: var(--lv-radius-block);
+  --shadow-card: var(--lv-shadow-card);
+
+  --breakpoint-sm: 640px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1440px;
+}
+
+@layer base {
+  html {
+    background: var(--lv-foam-50);
+    color: var(--lv-ink-900);
+    font-family: var(--lv-font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--lv-font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--lv-teal-900);
+  }
+
+  /* Focus visible : anneau aqua de 2 px avec décalage (docs/08). */
+  :focus-visible {
+    outline: 2px solid var(--lv-aqua-400);
+    outline-offset: 2px;
+  }
+
+  a {
+    color: var(--lv-teal-700);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

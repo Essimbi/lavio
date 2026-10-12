@@ -1,0 +1,31 @@
+/*
+ * Jetons de la charte Lavio (docs/08-design-system.md). Source unique des couleurs :
+ * Tailwind et Angular Material pointent vers ces variables.
+ */
+:root {
+  /* Couleurs */
+  --lv-teal-900: #0b4f4a;
+  --lv-teal-700: #1b7a72;
+  --lv-aqua-400: #5cc8b4;
+  --lv-mint-100: #ddf3ee;
+  --lv-foam-50: #f4faf8;
+  --lv-ink-900: #14211f;
+  --lv-white: #ffffff;
+  --lv-coral-600: #c8402c;
+  --lv-amber-500: #f2a33a;
+
+  /* Typographie */
+  --lv-font-display: 'Poppins', 'Trebuchet MS', sans-serif;
+  --lv-font-body: 'DM Sans', 'Segoe UI', sans-serif;
+
+  /* Formes et ombres */
+  --lv-radius-field: 8px;
+  --lv-radius-card: 14px;
+  --lv-radius-block: 20px;
+  --lv-radius-pill: 999px;
+  --lv-shadow-card: 0 6px 20px rgba(11, 79, 74, 0.1);
+
+  /* Mouvement */
+  --lv-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --lv-duration: 180ms;
+}

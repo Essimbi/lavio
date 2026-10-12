@@ -1,0 +1,64 @@
+<a class="skip-link sr-only-focusable" href="#contenu">Aller au contenu</a>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <lv-logo variant="inverse" [width]="112" />
+      <span class="area">{{ config().area }}</span>
+    </div>
+
+    @if (config().primaryAction; as action) {
+      <a class="primary-action" [routerLink]="action.path">
+        <lv-icon [name]="action.icon" [size]="20" />
+        {{ action.label }}
+      </a>
+    }
+
+    <nav aria-label="Navigation principale">
+      <ul role="list">
+        @for (item of config().items; track item.path) {
+          <li>
+            <a
+              class="nav-link"
+              [routerLink]="item.path"
+              routerLinkActive="is-active"
+              [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+              ariaCurrentWhenActive="page"
+            >
+              <lv-icon [name]="item.icon" [size]="20" />
+              <span>{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+  </aside>
+
+  <header class="topbar">
+    <lv-logo [width]="96" />
+    <span class="area">{{ config().area }}</span>
+  </header>
+
+  <main id="contenu" class="content" tabindex="-1">
+    <router-outlet />
+  </main>
+
+  <nav class="bottom-nav" aria-label="Navigation principale">
+    <ul role="list">
+      @for (item of config().mobileItems; track item.path) {
+        <li>
+          <a
+            class="bottom-link"
+            [routerLink]="item.path"
+            routerLinkActive="is-active"
+            [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+            ariaCurrentWhenActive="page"
+          >
+            <lv-icon [name]="item.icon" [size]="22" />
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+</div>

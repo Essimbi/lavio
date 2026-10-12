@@ -1,0 +1,89 @@
+<div class="page">
+  <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+    <lv-logo [width]="120" />
+    <a
+      routerLink="/login"
+      class="inline-flex min-h-11 items-center rounded-field border-2 border-teal-900 px-4 font-semibold text-teal-900 no-underline transition-colors hover:bg-teal-900 hover:text-white"
+    >
+      Se connecter
+    </a>
+  </header>
+
+  <main
+    class="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:pt-14"
+  >
+    <section class="flex flex-col gap-6">
+      <h1 class="text-[40px] font-semibold leading-[1.1] sm:text-[52px]">
+        Votre pressing,<br />sous contrôle.
+      </h1>
+      <p class="max-w-xl text-lg text-ink-900/85">
+        Dépôts, suivi des vêtements, caisse, stock et comptabilité de gestion dans un seul outil,
+        avec une vue à 360° sur votre téléphone.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a
+          routerLink="/login"
+          class="inline-flex min-h-12 items-center rounded-field bg-teal-900 px-6 font-semibold text-white no-underline shadow-card transition-transform hover:-translate-y-0.5"
+        >
+          Se connecter
+        </a>
+      </div>
+      <p class="text-[13px] font-medium text-teal-700">
+        Site en préparation : la présentation complète arrive bientôt.
+      </p>
+    </section>
+
+    <section class="flex justify-center lg:justify-end" aria-label="Exemple de ticket de dépôt">
+      <div class="printer">
+        <div class="printer-slot" aria-hidden="true"></div>
+        <figure class="ticket">
+          <p class="ticket-shop">Pressing de démonstration</p>
+          <p class="ticket-label">Ticket de dépôt</p>
+          <p class="ticket-number tabular" aria-label="Numéro 000124">N° 000124</p>
+          <dl class="ticket-lines">
+            <div>
+              <dt>1 chemise</dt>
+              <dd>Lavage, repassage</dd>
+            </div>
+            <div>
+              <dt>1 costume</dt>
+              <dd>Nettoyage à sec</dd>
+            </div>
+            <div>
+              <dt>1 robe</dt>
+              <dd>Nettoyage à sec</dd>
+            </div>
+          </dl>
+          <div class="ticket-footer">
+            <svg class="ticket-qr" viewBox="0 0 21 21" aria-hidden="true" focusable="false">
+              <path
+                d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM8 4h2v2H8zM11 5h2v2h-2zM9 8h3v1H9zM8 10h2v2H8zM12 9h2v3h-2zM15 8h2v2h-2zM18 9h3v2h-3zM9 13h2v2H9zM13 13h3v2h-3zM17 12h2v3h-2zM9 17h3v2H9zM13 16h2v2h-2zM16 17h2v4h-2zM19 16h2v2h-2zM10 19h2v2h-2zM19 19h2v2h-2zM0 8h2v2H0zM3 9h3v2H3z"
+              />
+            </svg>
+            <p>Retrait prévu<br /><strong>vendredi</strong></p>
+          </div>
+          <figcaption class="ticket-caption">Présentez ce ticket au retrait</figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+
+  <section class="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6" aria-labelledby="parcours">
+    <h2 id="parcours" class="mb-4 text-xl">Chaque vêtement suivi, du dépôt au retrait</h2>
+    <ol class="journey" role="list">
+      @for (step of steps; track step.label) {
+        <li class="journey-step">
+          <span class="chip {{ step.tone }}">{{ step.label }}</span>
+        </li>
+      }
+    </ol>
+  </section>
+
+  <footer class="border-t border-mint-100">
+    <div
+      class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-sm sm:px-6"
+    >
+      <span>Lavio, le pressing sous contrôle · {{ year }}</span>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,154 @@
+:host {
+  display: block;
+}
+
+.page {
+  min-height: 100dvh;
+  background:
+    radial-gradient(60rem 30rem at 90% -10%, var(--lv-mint-100), transparent 70%), var(--lv-foam-50);
+}
+
+/* Signature : le ticket thermique sort de l'imprimante au chargement. */
+.printer {
+  position: relative;
+  width: min(300px, 100%);
+  padding-top: 14px;
+}
+
+.printer-slot {
+  position: absolute;
+  inset: 0 -12px auto;
+  z-index: 2;
+  height: 18px;
+  border-radius: var(--lv-radius-pill);
+  background: var(--lv-teal-900);
+  box-shadow: 0 4px 0 var(--lv-teal-700) inset;
+}
+
+.ticket {
+  position: relative;
+  margin: 0;
+  padding: 28px 22px 34px;
+  background: var(--lv-white);
+  box-shadow: var(--lv-shadow-card);
+  color: var(--lv-ink-900);
+  font-family: var(--lv-font-body);
+  /* Bord déchiré en dents de scie, comme un ticket de caisse. */
+  mask:
+    conic-gradient(from -45deg at bottom, transparent 90deg, #000 0) bottom / 14px 7px repeat-x,
+    linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat;
+  animation: print 1.4s var(--lv-ease) 0.2s both;
+}
+
+@keyframes print {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-24px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
+  }
+}
+
+.ticket-shop {
+  margin: 0;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ticket-label {
+  margin: 2px 0 0;
+  font-size: 13px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.ticket-number {
+  margin: 14px 0;
+  padding: 10px 0;
+  border-block: 2px dashed var(--lv-ink-900);
+  font: 700 34px/1 var(--lv-font-display);
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+.ticket-lines {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.ticket-lines div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ticket-lines dt {
+  font-weight: 700;
+}
+
+.ticket-lines dd {
+  margin: 0;
+  text-align: right;
+}
+
+.ticket-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  font-size: 14px;
+}
+
+.ticket-footer p {
+  margin: 0;
+}
+
+.ticket-qr {
+  width: 76px;
+  height: 76px;
+  fill: var(--lv-ink-900);
+}
+
+.ticket-caption {
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.journey {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey-step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.journey-step:not(:last-child)::after {
+  content: '';
+  width: 16px;
+  height: 2px;
+  background: var(--lv-teal-700);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: var(--lv-radius-pill);
+  font-size: 14px;
+  font-weight: 700;
+}

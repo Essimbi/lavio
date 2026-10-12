@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.csr.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": ["/favicon-32.png", "/index.csr.html", "/manifest.webmanifest", "/*.css", "/*.js"]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": ["/media/**", "/icons/**", "/brand/**", "/*.(svg|png|webp|woff2)"]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "dashboard",
+      "urls": ["/api/v1/reports/dashboard"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "3s",
+        "maxAge": "5m",
+        "maxSize": 5
+      }
+    }
+  ],
+  "navigationUrls": ["/**", "!/api/**", "!/**/*.*", "!/**/*__*", "!/**/*__*/**"]
+}
