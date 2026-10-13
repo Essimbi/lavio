@@ -11,6 +11,9 @@
         <nav class="anchors" aria-label="Autres sections">
           <a href="#tarifs">Tarifs</a>
           <a href="#questions">Questions</a>
+          @if (demo()) {
+            <a href="#demo">Démo</a>
+          }
         </nav>
         <a routerLink="/login" class="btn btn-ghost">Se connecter</a>
       </div>
@@ -36,7 +39,11 @@
             } @else {
               <a class="btn btn-accent btn-lg" href="#contact">Parler au service client</a>
             }
-            <a class="btn btn-ghost btn-lg" href="#fonctionnalites">Voir les fonctionnalités</a>
+            @if (demo()) {
+              <a class="btn btn-ghost btn-lg" href="#demo">Essayer la démo</a>
+            } @else {
+              <a class="btn btn-ghost btn-lg" href="#fonctionnalites">Voir les fonctionnalités</a>
+            }
           </div>
         </div>
 
@@ -392,14 +399,123 @@
       </div>
     </section>
 
+    <!-- Démonstration publique : identifiants fictifs publiés par l'API -->
+    @if (demo(); as d) {
+      <section id="demo" class="wrap section" aria-labelledby="demo-title">
+        <div class="demo">
+          <div class="demo-copy">
+            <p class="eyebrow eyebrow-dark">Démonstration en accès libre</p>
+            <h2 id="demo-title">
+              Essayez Lavio <span class="accent-light">maintenant</span>, sans rendez-vous
+            </h2>
+            <p class="demo-text">
+              Un pressing fictif, avec ses clients, ses dépôts, sa caisse et son stock.
+              Connectez-vous comme la responsable ou comme le caissier et faites le tour de l’outil.
+            </p>
+            <p class="demo-note">
+              Données fictives, partagées entre les visiteurs : n’y saisissez aucune information
+              réelle.
+            </p>
+          </div>
+          <ul class="demo-accounts" role="list">
+            @for (a of d.accounts; track a.email; let i = $index) {
+              <li class="demo-account">
+                <p class="demo-role">
+                  <span class="demo-avatar" aria-hidden="true">{{ a.label.charAt(0) }}</span>
+                  {{ a.label }}
+                </p>
+                <dl>
+                  <div>
+                    <dt>Identifiant</dt>
+                    <dd>
+                      <code
+                        ><span class="nw">{{ a.email.split('@')[0] }}</span
+                        ><wbr /><span class="nw">@{{ a.email.split('@')[1] }}</span></code
+                      >
+                      <button
+                        type="button"
+                        class="copy"
+                        (click)="copy(a.email, 'email-' + i)"
+                        [attr.aria-label]="'Copier l’identifiant ' + a.label"
+                      >
+                        {{ copied() === 'email-' + i ? 'Copié' : 'Copier' }}
+                      </button>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Mot de passe</dt>
+                    <dd>
+                      <code>{{ a.password }}</code>
+                      <button
+                        type="button"
+                        class="copy"
+                        (click)="copy(a.password, 'password-' + i)"
+                        [attr.aria-label]="'Copier le mot de passe ' + a.label"
+                      >
+                        {{ copied() === 'password-' + i ? 'Copié' : 'Copier' }}
+                      </button>
+                    </dd>
+                  </div>
+                </dl>
+                <a class="btn btn-accent demo-go" routerLink="/login" [queryParams]="{ demo: i }"
+                  >Entrer comme {{ a.label.toLowerCase() }}</a
+                >
+              </li>
+            }
+          </ul>
+          <p class="sr-only" aria-live="polite">
+            {{ copied() ? 'Copié dans le presse-papiers.' : '' }}
+          </p>
+        </div>
+      </section>
+    }
+
     <!-- Tarifs -->
-    <section id="tarifs" class="band" aria-labelledby="tarifs-title">
-      <div class="wrap">
-        <h2 id="tarifs-title" class="section-title">Tarifs</h2>
+    <section id="tarifs" class="band pricing" aria-labelledby="tarifs-title">
+      <div class="wrap pricing-grid">
+        <div class="pricing-copy">
+          <h2 id="tarifs-title" class="section-title">
+            Un abonnement, <span class="accent">tout compris</span>
+          </h2>
+          <p class="pricing-lead">
+            Pas de module en option : chaque pressing a toutes les fonctionnalités, et nous
+            l’accompagnons du premier jour au quotidien.
+          </p>
+          <ul class="perks" role="list">
+            @for (perk of perks; track perk.title) {
+              <li>
+                <span class="perk-icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path [attr.d]="perk.icon" />
+                  </svg>
+                </span>
+                <div>
+                  <h3>{{ perk.title }}</h3>
+                  <p>{{ perk.text }}</p>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+
         <div class="plans">
           @for (p of plans(); track p.code) {
-            <article class="card plan">
-              <h3>{{ p.name }}</h3>
+            <article class="plan">
+              <div class="plan-head">
+                <h3>{{ p.name }}</h3>
+                @if (p.trialDays > 0) {
+                  <span class="plan-badge">Essai gratuit · {{ p.trialDays }} jours</span>
+                }
+              </div>
               <p class="plan-price">
                 {{ price(p.priceMonthlyXaf) }}
                 @if (p.priceMonthlyXaf !== null) {
@@ -407,7 +523,7 @@
                 }
               </p>
               @if (p.priceYearlyXaf !== null) {
-                <p>ou {{ price(p.priceYearlyXaf) }} par an</p>
+                <p class="plan-year">ou {{ price(p.priceYearlyXaf) }} par an</p>
               }
               <ul class="checks" role="list">
                 <li>{{ p.includedUsers }} utilisateurs inclus</li>
@@ -415,28 +531,47 @@
                   <li>Utilisateur supplémentaire : {{ price(p.extraUserPriceXaf) }} / mois</li>
                 }
                 <li>Toutes les fonctionnalités, mises à jour comprises</li>
+                <li>Application sur PC et téléphone</li>
               </ul>
-              @if (p.trialDays > 0) {
-                <p class="trial">Essai gratuit de {{ p.trialDays }} jours</p>
-              }
-              @if (planLink(p); as link) {
-                <a class="btn btn-wa" [href]="link" target="_blank" rel="noopener"
-                  >Demander ce plan sur WhatsApp</a
-                >
-              }
+              <div class="plan-actions">
+                @if (planLink(p); as link) {
+                  <a class="btn btn-primary btn-lg" [href]="link" target="_blank" rel="noopener"
+                    >Demander ce plan sur WhatsApp</a
+                  >
+                } @else {
+                  <a class="btn btn-primary btn-lg" href="#contact">Être recontacté</a>
+                }
+                @if (demo()) {
+                  <a class="btn btn-ghost btn-lg" href="#demo">Essayer la démo</a>
+                }
+              </div>
             </article>
           } @empty {
-            <article class="card plan">
-              <h3>Abonnement Lavio</h3>
+            <article class="plan">
+              <div class="plan-head">
+                <h3>Abonnement Lavio</h3>
+              </div>
               <p class="plan-price">Tarif sur demande</p>
-              <p>Contactez-nous : nous vous présentons l’offre adaptée à votre pressing.</p>
-              <a
-                class="btn btn-wa"
-                [href]="whatsapp() ?? '#contact'"
-                [attr.target]="whatsapp() ? '_blank' : null"
-                rel="noopener"
-                >Nous contacter</a
-              >
+              <p class="plan-year">
+                Nous vous présentons l’offre adaptée à la taille de votre pressing.
+              </p>
+              <ul class="checks" role="list">
+                <li>Toutes les fonctionnalités, mises à jour comprises</li>
+                <li>Application sur PC et téléphone</li>
+                <li>Mise en place et formation de votre équipe</li>
+              </ul>
+              <div class="plan-actions">
+                @if (whatsapp(); as wa) {
+                  <a class="btn btn-primary btn-lg" [href]="wa" target="_blank" rel="noopener"
+                    >Nous contacter</a
+                  >
+                } @else {
+                  <a class="btn btn-primary btn-lg" href="#contact">Nous contacter</a>
+                }
+                @if (demo()) {
+                  <a class="btn btn-ghost btn-lg" href="#demo">Essayer la démo</a>
+                }
+              </div>
             </article>
           }
         </div>
@@ -444,12 +579,34 @@
     </section>
 
     <!-- Questions -->
-    <section id="questions" class="wrap section" aria-labelledby="questions-title">
-      <h2 id="questions-title" class="section-title">Questions fréquentes</h2>
+    <section id="questions" class="wrap section faq-grid" aria-labelledby="questions-title">
+      <div class="faq-aside">
+        <h2 id="questions-title" class="section-title">
+          Questions <span class="accent">fréquentes</span>
+        </h2>
+        <p>Ce que les responsables de pressing nous demandent le plus souvent.</p>
+        <div class="faq-help">
+          <p class="faq-help-title">Une autre question ?</p>
+          <p>Notre service client vous répond directement.</p>
+          @if (whatsapp(); as wa) {
+            <a class="btn btn-accent" [href]="wa" target="_blank" rel="noopener"
+              >Écrire sur WhatsApp</a
+            >
+          } @else {
+            <a class="btn btn-accent" href="#contact">Être recontacté</a>
+          }
+        </div>
+      </div>
       <div class="faq">
-        @for (item of faq; track item.q) {
-          <details class="card">
-            <summary>{{ item.q }}</summary>
+        @for (item of faq; track item.q; let i = $index) {
+          <details class="faq-item" name="faq">
+            <summary>
+              <span class="faq-n" aria-hidden="true">{{
+                (i + 1).toString().padStart(2, '0')
+              }}</span>
+              <span class="faq-q">{{ item.q }}</span>
+              <span class="faq-toggle" aria-hidden="true"></span>
+            </summary>
             <p>{{ item.a }}</p>
           </details>
         }
@@ -457,18 +614,34 @@
     </section>
 
     <!-- Formulaire -->
-    <section id="contact" class="band" aria-labelledby="contact-title">
-      <div class="wrap split">
-        <div>
-          <h2 id="contact-title" class="section-title">Être recontacté</h2>
-          <p>Laissez-nous vos coordonnées : nous vous rappelons pour une démonstration.</p>
+    <section id="contact" class="wrap section" aria-labelledby="contact-title">
+      <div class="contact">
+        <div class="contact-copy">
+          <h2 id="contact-title">Être <span class="accent-light">recontacté</span></h2>
+          <p>
+            Laissez-nous vos coordonnées : nous vous appelons pour comprendre votre pressing et vous
+            présenter Lavio sur vos propres cas.
+          </p>
+          <ol class="contact-steps" role="list">
+            <li><span aria-hidden="true">1</span>Vous remplissez le formulaire</li>
+            <li><span aria-hidden="true">2</span>Nous vous appelons</li>
+            <li><span aria-hidden="true">3</span>Nous créons votre espace et formons l’équipe</li>
+          </ol>
+          @if (whatsapp(); as wa) {
+            <p class="contact-alt">
+              Plus rapide ?
+              <a [href]="wa" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>
+            </p>
+          }
         </div>
         @if (sent()) {
-          <div class="card" role="status">
+          <div class="contact-card contact-done" role="status">
+            <span class="done-icon" aria-hidden="true"></span>
             <h3>Merci ! Nous vous recontactons très vite.</h3>
+            <p>Votre demande est bien enregistrée.</p>
           </div>
         } @else {
-          <form class="card grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <form class="contact-card grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label class="lv-label" for="lead-name">Votre nom</label>
@@ -574,21 +747,11 @@
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap flex flex-wrap items-center justify-between gap-4 py-8">
-      <div class="flex items-center gap-3">
-        <lv-logo variant="inverse" [width]="96" />
-        <span>Lavio, le pressing sous contrôle · {{ year }}</span>
-      </div>
-      <nav class="flex flex-wrap gap-4" aria-label="Informations légales">
-        <a routerLink="/mentions-legales">Mentions légales</a>
-        <a routerLink="/confidentialite">Confidentialité</a>
-        @if (config()?.whatsappNumber; as n) {
-          <a [href]="whatsapp()" target="_blank" rel="noopener">WhatsApp : +{{ n }}</a>
-        }
-      </nav>
-    </div>
-  </footer>
+  <lv-site-footer
+    [whatsappUrl]="whatsapp()"
+    [whatsappNumber]="config()?.whatsappNumber ?? null"
+    [demo]="!!demo()"
+  />
 
   @if (whatsapp(); as wa) {
     <a

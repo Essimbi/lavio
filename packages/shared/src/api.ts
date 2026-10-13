@@ -35,6 +35,19 @@ export interface PublicConfig {
   whatsappDefaultMessage: string;
   /** Plans actifs affichés sur la landing ; prix `null` = « Tarif sur demande ». */
   plans: PublicPlan[];
+  /** Démonstration publique (comptes fictifs) ; `null` si elle est fermée. */
+  demo: PublicDemo | null;
+}
+
+export interface PublicDemo {
+  accounts: PublicDemoAccount[];
+}
+
+export interface PublicDemoAccount {
+  /** Rôle présenté (« Responsable », « Caisse »). */
+  label: string;
+  email: string;
+  password: string;
 }
 
 export interface PublicPlan {

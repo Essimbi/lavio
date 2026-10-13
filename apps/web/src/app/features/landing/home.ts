@@ -13,6 +13,7 @@ import { PublicApi } from '../../core/api/public-api';
 import { ApiError } from '../../core/http/api';
 import { formatXaf } from '../../shared/format/format';
 import { Logo } from '../../shared/ui/logo/logo';
+import { SiteFooter } from '../../shared/ui/site-footer/site-footer';
 
 interface Step {
   label: string;
@@ -36,7 +37,7 @@ const PHONE = /^\+?[\d\s.-]{8,20}$/;
  */
 @Component({
   selector: 'lv-home',
-  imports: [RouterLink, Logo, ReactiveFormsModule],
+  imports: [RouterLink, Logo, ReactiveFormsModule, SiteFooter],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -152,7 +153,25 @@ export class Home {
     },
   ];
 
-  protected readonly year = new Date().getFullYear();
+  /** Ce que comprend l'abonnement (docs/01, docs/07). */
+  protected readonly perks = [
+    {
+      title: 'Mise en place guidée',
+      text: 'Nous créons votre espace, votre catalogue et vos tarifs, puis formons votre équipe.',
+      icon: 'M4 9 5 4h14l1 5M4 9v11h16V9M4 9h16M9 20v-6h6v6',
+    },
+    {
+      title: 'Assistance sur WhatsApp',
+      text: 'Une question au comptoir ? Notre service client vous répond directement.',
+      icon: 'M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 21h4',
+    },
+    {
+      title: 'Vos données vous appartiennent',
+      text: 'Espace isolé, échanges chiffrés, export de vos données à tout moment.',
+      icon: 'M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z',
+    },
+  ];
+
   protected readonly config = signal<PublicConfig | null>(null);
 
   /** Lien WhatsApp, ou repli vers le formulaire tant que la configuration n'est pas chargée. */
@@ -161,6 +180,22 @@ export class Home {
     return c?.whatsappNumber ? whatsappUrl(c.whatsappNumber, c.whatsappDefaultMessage) : null;
   });
   protected readonly plans = computed(() => this.config()?.plans ?? []);
+  /** Démonstration publique (identifiants fictifs publiés par l'API), ou `null`. */
+  protected readonly demo = computed(() => this.config()?.demo ?? null);
+  /** Dernière valeur copiée (« email-0 », « password-1 »…), pour l'accusé « Copié ». */
+  protected readonly copied = signal<string | null>(null);
+  private copiedTimer: ReturnType<typeof setTimeout> | undefined;
+
+  protected async copy(value: string, key: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(value);
+      this.copied.set(key);
+      clearTimeout(this.copiedTimer);
+      this.copiedTimer = setTimeout(() => this.copied.set(null), 2000);
+    } catch {
+      this.copied.set(null);
+    }
+  }
 
   protected planLink(plan: PublicPlan): string | null {
     const c = this.config();

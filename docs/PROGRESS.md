@@ -491,3 +491,14 @@ Phase 6 : landing, recette, durcissement, déploiement.
 ### Prochaine étape
 
 Déploiement de production (docs/11, `docs/EXPLOITATION.md`), après votre accord.
+
+## Après la phase 6 — Landing et démonstration (13/10/2026)
+
+- Refonte du design de la landing (hero, bande oblique, chiffres, fonctionnalités, bandeau d'appel à l'action), puis des sections Tarifs, Questions fréquentes et Être recontacté, d'un pied de page partagé et des pages légales (sommaire, sections en cartes ; texte juridique inchangé).
+- Démonstration publique : section « Essayez Lavio maintenant » et bouton dans le hero, identifiants lus depuis l'API (`DEMO_PUBLIC_LOGIN`), connexion pré-remplie ; comptes de démonstration protégés côté serveur (test e2e `demo.e2e-spec.ts`).
+- Correctif : la CSP bloquait les scripts en ligne d'Angular (feuille globale inactive dans la coque du service worker) ; production sans CSS critique incrusté ni hydratation incrémentale.
+
+### Idées notées (non codées)
+
+- Réinitialisation automatique des données du pressing de démonstration (par exemple chaque nuit), les visiteurs partageant les mêmes comptes.
+

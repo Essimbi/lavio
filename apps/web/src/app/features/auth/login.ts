@@ -1,10 +1,18 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
-import type { LoginArea } from '@lavio/shared';
+import type { LoginArea, PublicDemoAccount } from '@lavio/shared';
+import { PublicApi } from '../../core/api/public-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { homeFor } from '../../core/auth/guards';
 import { errorMessage } from '../../shared/ui/toast/toast.service';
@@ -49,6 +57,19 @@ import { PasswordField } from './password-field';
           {{ pending() ? 'Connexion…' : 'Se connecter' }}
         </button>
       </form>
+      @if (area() === 'app' && demoAccounts().length) {
+        <section class="demo-box mt-6" aria-labelledby="demo-box-title">
+          <h2 id="demo-box-title">Démonstration</h2>
+          <p>Pressing fictif en accès libre. Choisissez un compte :</p>
+          <div class="demo-box-actions">
+            @for (a of demoAccounts(); track a.email) {
+              <button type="button" mat-stroked-button (click)="useDemo(a)">
+                {{ a.label }}
+              </button>
+            }
+          </div>
+        </section>
+      }
       @if (area() === 'app') {
         <p class="mt-6 text-sm">
           Mot de passe oublié ? Demandez un nouveau lien à votre responsable.
@@ -57,6 +78,26 @@ import { PasswordField } from './password-field';
       }
     </lv-auth-layout>
   `,
+  styles: `
+    .demo-box {
+      padding: 16px;
+      border-radius: var(--lv-radius-card);
+      background: var(--lv-mint-100);
+    }
+    .demo-box h2 {
+      margin: 0 0 4px;
+      font-size: 16px;
+    }
+    .demo-box p {
+      margin: 0 0 12px;
+      font-size: 14px;
+    }
+    .demo-box-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
@@ -64,6 +105,8 @@ export class Login {
   readonly area = input<LoginArea>('app');
   /** Page demandée avant la connexion (paramètre `?retour=`). */
   readonly retour = input<string>();
+  /** Compte de démonstration à pré-remplir (paramètre `?demo=`, index dans la configuration publique). */
+  readonly demo = input<string>();
 
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -74,6 +117,29 @@ export class Login {
     identifier: ['', Validators.required],
     password: ['', Validators.required],
   });
+  /** Comptes de démonstration publiés par l'API (vide si la démonstration est fermée). */
+  protected readonly demoAccounts = signal<PublicDemoAccount[]>([]);
+
+  constructor() {
+    const api = inject(PublicApi);
+    afterNextRender(() => {
+      if (this.area() !== 'app') return;
+      api.config().then(
+        (c) => {
+          const accounts = c.demo?.accounts ?? [];
+          this.demoAccounts.set(accounts);
+          const chosen = accounts.at(Number(this.demo() ?? NaN));
+          if (chosen) this.useDemo(chosen);
+        },
+        () => this.demoAccounts.set([]),
+      );
+    });
+  }
+
+  protected useDemo(account: PublicDemoAccount): void {
+    this.form.setValue({ identifier: account.email, password: account.password });
+    this.error.set(null);
+  }
 
   protected async submit(): Promise<void> {
     if (this.form.invalid) {

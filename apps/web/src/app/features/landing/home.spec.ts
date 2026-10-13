@@ -24,11 +24,13 @@ describe('Home (landing)', () => {
     http: HttpTestingController,
     fixture: { whenStable: () => Promise<unknown> },
     plans: unknown[] = [],
+    demo: unknown = null,
   ) => {
     http.expectOne('/api/v1/public/config').flush({
       whatsappNumber: '237600000099',
       whatsappDefaultMessage: 'Bonjour, je souhaite en savoir plus sur Lavio pour mon pressing.',
       plans,
+      demo,
     });
     await new Promise((r) => setTimeout(r));
     await fixture.whenStable();
@@ -92,12 +94,38 @@ describe('Home (landing)', () => {
     ]);
     const plans = [...el.querySelectorAll('.plan')].map((p) => p.textContent);
     expect(plans[0]).toMatch(/15\s000\sFCFA/);
-    expect(plans[0]).toContain('Essai gratuit de 14 jours');
+    expect(plans[0]).toContain('Essai gratuit · 14 jours');
     expect(plans[1]).toContain('Tarif sur demande');
     expect(plans[1]).not.toContain('Essai gratuit');
     expect(el.querySelector<HTMLAnchorElement>('.plan a[href^="https://wa.me"]')?.href).toContain(
       encodeURIComponent('Plan Standard.'),
     );
+  });
+
+  it('présente la démonstration seulement si l’API publie des identifiants', async () => {
+    const closed = await render();
+    await flushConfig(closed.http, closed.fixture);
+    expect(closed.el.querySelector('#demo')).toBeNull();
+    expect(closed.el.querySelector('a[href="#demo"]')).toBeNull();
+    TestBed.resetTestingModule();
+
+    const { el, http, fixture } = await render();
+    await flushConfig(http, fixture, [], {
+      accounts: [
+        {
+          label: 'Responsable',
+          email: 'demo-responsable@lavio.local',
+          password: 'mot-de-passe-demo',
+        },
+        { label: 'Caisse', email: 'demo-caisse@lavio.local', password: 'mot-de-passe-demo' },
+      ],
+    });
+    const accounts = [...el.querySelectorAll('#demo .demo-account')];
+    expect(accounts).toHaveLength(2);
+    expect(accounts.at(0)?.textContent).toContain('demo-responsable@lavio.local');
+    expect(accounts.at(0)?.textContent).toContain('mot-de-passe-demo');
+    expect(accounts.at(1)?.querySelector('a')?.getAttribute('href')).toBe('/login?demo=1');
+    expect(el.querySelector('.hero a[href="#demo"]')?.textContent).toContain('Essayer la démo');
   });
 
   it('valide le formulaire, exige le consentement et envoie la demande', async () => {
