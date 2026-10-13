@@ -3,7 +3,10 @@ import { inject, Injectable } from '@angular/core';
 import type {
   ApprovalDto,
   ApprovalStatus,
+  CashJournal,
+  CashSessionDto,
   CatalogEntryDto,
+  CreatePaymentRequest,
   CreateDepositRequest,
   CustomerDto,
   CustomerPreferences,
@@ -11,11 +14,23 @@ import type {
   DepositDto,
   DepositListItem,
   DepositStatus,
+  IncidentDto,
+  IncidentResolution,
+  IncidentType,
+  ItemStatusChange,
   LabelData,
+  NotificationDto,
+  NotificationSummary,
   Paginated,
+  PaymentDto,
+  PaymentMethod,
   PressingSettingsDto,
   PriceDto,
   PriceGrid,
+  ReceiptData,
+  ReceivableDto,
+  ReturnResult,
+  ReworkCauseDto,
   SpecialPriceDto,
   TicketData,
   UploadToken,
@@ -43,7 +58,17 @@ export interface CustomerInput {
 
 export type CatalogKind = 'item-types' | 'services';
 
-/** Appels de l'application du pressing (phase 2 : clients, catalogue, dépôts, validations). */
+export interface PaymentFilters {
+  method?: PaymentMethod | '';
+  mobileMoney?: boolean;
+  reconciled?: boolean;
+  depositId?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+}
+
+/** Appels de l'application du pressing (clients, catalogue, dépôts, suivi, paiements, caisse). */
 @Injectable({ providedIn: 'root' })
 export class PressingApi {
   private readonly http = inject(HttpClient);
@@ -59,6 +84,11 @@ export class PressingApi {
   }
   private put<T>(path: string, body: unknown) {
     return firstValueFrom(this.http.put<T>(`${API_BASE}${path}`, body));
+  }
+  private blob(path: string, q: Query = {}) {
+    return firstValueFrom(
+      this.http.get(`${API_BASE}${path}`, { params: params(q), responseType: 'blob' }),
+    );
   }
 
   // Clients
@@ -113,14 +143,70 @@ export class PressingApi {
     );
   updateDeposit = (id: string, body: { dueDate?: string; notes?: string; discountXaf?: number }) =>
     this.patch<DepositDto>(`/deposits/${id}`, body);
-  cancelDeposit = (id: string, reason: string) =>
-    this.post<DepositDto>(`/deposits/${id}/cancel`, { reason });
+  cancelDeposit = (
+    id: string,
+    body: { reason: string; refundMethod?: PaymentMethod; refundRef?: string },
+  ) => this.post<DepositDto>(`/deposits/${id}/cancel`, body);
   ticket = (id: string) => this.get<TicketData>(`/deposits/${id}/ticket`);
   labels = (id: string) => this.get<LabelData[]>(`/deposits/${id}/labels`);
   photoUploadToken = (depositId: string, itemId: string) =>
     this.post<UploadToken>(`/deposits/${depositId}/items/${itemId}/photos/upload-token`);
   attachPhoto = (depositId: string, itemId: string, url: string) =>
     this.post<DepositDto>(`/deposits/${depositId}/items/${itemId}/photos`, { url });
+
+  // Suivi des articles et restitution
+  changeItemsStatus = (depositId: string, itemIds: string[], change: ItemStatusChange) =>
+    this.post<DepositDto>(`/deposits/${depositId}/items/status`, { itemIds, ...change });
+  returnItems = (depositId: string, itemIds: string[]) =>
+    this.post<ReturnResult>(`/deposits/${depositId}/returns`, { itemIds });
+  incidents = (q: { depositId?: string; open?: boolean } = {}) =>
+    this.get<IncidentDto[]>('/incidents', q);
+  createIncident = (body: {
+    depositItemId: string;
+    type: IncidentType;
+    causeId?: string;
+    description?: string;
+  }) => this.post<IncidentDto>('/incidents', body);
+  updateIncident = (id: string, body: { resolution?: IncidentResolution; description?: string }) =>
+    this.patch<IncidentDto>(`/incidents/${id}`, body);
+  reworkCauses = () => this.get<ReworkCauseDto[]>('/rework-causes');
+  createReworkCause = (body: { code: string; label: string }) =>
+    this.post<ReworkCauseDto>('/rework-causes', body);
+  updateReworkCause = (id: string, body: { label?: string; isActive?: boolean }) =>
+    this.patch<ReworkCauseDto>(`/rework-causes/${id}`, body);
+
+  // Paiements et créances
+  createPayment = (body: CreatePaymentRequest, idempotencyKey: string) =>
+    this.post<PaymentDto>(
+      '/payments',
+      body,
+      new HttpHeaders({ 'Idempotency-Key': idempotencyKey }),
+    );
+  payments = (q: PaymentFilters) => this.get<Paginated<PaymentDto>>('/payments', { ...q });
+  reversePayment = (id: string, reason: string) =>
+    this.post<PaymentDto>(`/payments/${id}/reverse`, { reason });
+  reconcilePayment = (id: string, reconciled: boolean) =>
+    this.post<PaymentDto>(`/payments/${id}/reconcile`, { reconciled });
+  exportMobileMoney = (q: PaymentFilters) => this.blob('/payments/mobile-money/export', { ...q });
+  receivables = () => this.get<ReceivableDto[]>('/receivables');
+  receipt = (depositId: string) => this.get<ReceiptData>(`/deposits/${depositId}/receipt`);
+  invoicePdf = (depositId: string) => this.blob(`/deposits/${depositId}/invoice.pdf`);
+
+  // Caisse
+  currentCash = () => this.get<CashSessionDto | null>('/cash-sessions/current');
+  cashSessions = (page = 1) => this.get<Paginated<CashSessionDto>>('/cash-sessions', { page });
+  openCash = (openingFloatXaf: number) =>
+    this.post<CashSessionDto>('/cash-sessions/open', { openingFloatXaf });
+  closeCash = (id: string, countedCash: number, note?: string) =>
+    this.post<CashSessionDto>(`/cash-sessions/${id}/close`, { countedCash, note });
+  cashJournal = (id: string) => this.get<CashJournal>(`/cash-sessions/${id}/journal`);
+
+  // Notifications
+  notifications = (q: { unread?: boolean; page?: number } = {}) =>
+    this.get<Paginated<NotificationDto>>('/notifications', q);
+  notificationSummary = () => this.get<NotificationSummary>('/notifications/summary');
+  readNotification = (id: string) => this.post<null>(`/notifications/${id}/read`);
+  readAllNotifications = () => this.post<null>('/notifications/read-all');
 
   // Validations
   approvals = (status?: ApprovalStatus) => this.get<ApprovalDto[]>('/approvals', { status });

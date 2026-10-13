@@ -1,0 +1,232 @@
+<lv-page-header
+  heading="Caisse"
+  subtitle="Ouverture, encaissements en espèces et clôture du jour."
+/>
+
+<div class="grid gap-6 xl:grid-cols-[2fr_3fr]">
+  <section class="flex flex-col gap-6" aria-label="Session de caisse">
+    @if (current.hasValue()) {
+      @let s = current.value();
+      @if (!s) {
+        <article class="lv-card">
+          <h2 class="mb-2 text-xl">Caisse fermée</h2>
+          <p class="mb-4">
+            Ouvrez la caisse avec le fond de caisse compté pour encaisser en espèces.
+          </p>
+          @if (isCashier()) {
+            <form class="flex flex-wrap items-end gap-3" (ngSubmit)="open()">
+              <div class="grow">
+                <label class="lv-label" for="cash-float">Fond de caisse (FCFA)</label>
+                <input
+                  id="cash-float"
+                  class="lv-input tabular"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  name="float"
+                  required
+                  [ngModel]="openingFloat()"
+                  (ngModelChange)="openingFloat.set($event)"
+                />
+              </div>
+              <button type="submit" class="lv-primary" [disabled]="busy()">Ouvrir la caisse</button>
+            </form>
+          }
+        </article>
+      } @else {
+        <article
+          class="lv-card"
+          [class.border-l-4]="true"
+          [class.border-amber-500]="s.status === 'CLOSING_PENDING'"
+          [class.border-teal-700]="s.status === 'OPEN'"
+        >
+          <div class="mb-3 flex items-start justify-between gap-2">
+            <h2 class="text-xl">Session {{ statusLabels[s.status].toLowerCase() }}</h2>
+            <span class="lv-chip bg-mint-100 text-teal-900">{{ statusLabels[s.status] }}</span>
+          </div>
+          <dl class="lv-dl tabular">
+            <dt>Ouverte le</dt>
+            <dd>{{ s.openedAt | frDateTime }}</dd>
+            <dt>Par</dt>
+            <dd>{{ s.openedByName ?? '—' }}</dd>
+            <dt>Fond de caisse</dt>
+            <dd>{{ s.openingFloatXaf | xaf }}</dd>
+            <dt>Espèces attendues</dt>
+            <dd class="text-lg font-semibold">{{ s.expectedCashXaf | xaf }}</dd>
+            @if (s.status === 'CLOSING_PENDING') {
+              <dt>Compté</dt>
+              <dd>{{ s.countedCashXaf ?? 0 | xaf }}</dd>
+              <dt>Écart</dt>
+              <dd class="font-semibold" [class.text-coral-600]="s.varianceXaf">
+                {{ signed(s.varianceXaf ?? 0) }}
+              </dd>
+            }
+          </dl>
+          @if (s.status === 'CLOSING_PENDING') {
+            <p class="lv-alert mt-4" role="status">
+              Clôture en attente de validation par la responsable. Aucune nouvelle session avant sa
+              décision.
+            </p>
+          } @else if (isCashier()) {
+            <form class="mt-5 grid gap-3 border-t border-mint-100 pt-4" (ngSubmit)="close(s)">
+              <h3 class="text-lg">Clôturer</h3>
+              <div>
+                <label class="lv-label" for="cash-counted">Espèces comptées (FCFA)</label>
+                <input
+                  id="cash-counted"
+                  class="lv-input tabular"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  name="counted"
+                  required
+                  [ngModel]="counted()"
+                  (ngModelChange)="counted.set($event)"
+                />
+              </div>
+              @if (variance() !== null) {
+                <p
+                  class="tabular font-semibold"
+                  [class.text-coral-600]="variance() !== 0"
+                  [class.text-teal-700]="variance() === 0"
+                  aria-live="polite"
+                >
+                  Écart : {{ signed(variance() ?? 0) }}
+                </p>
+              }
+              <div>
+                <label class="lv-label" for="cash-note"
+                  >Note{{
+                    noteRequired() ? ' (obligatoire en cas d’écart)' : ' (facultatif)'
+                  }}</label
+                >
+                <textarea
+                  id="cash-note"
+                  class="lv-input"
+                  rows="2"
+                  maxlength="1000"
+                  name="note"
+                  [required]="noteRequired()"
+                  [ngModel]="note()"
+                  (ngModelChange)="note.set($event)"
+                ></textarea>
+              </div>
+              <button type="submit" class="lv-primary" [disabled]="!canClose() || busy()">
+                {{ isOwner() ? 'Clôturer la caisse' : 'Demander la clôture' }}
+              </button>
+            </form>
+          }
+        </article>
+      }
+    } @else if (current.error()) {
+      <p class="lv-alert" role="alert">Impossible de charger la caisse.</p>
+    } @else {
+      <p aria-busy="true">Chargement…</p>
+    }
+
+    <section aria-labelledby="cash-history">
+      <h2 id="cash-history" class="mb-3 text-xl">Historique</h2>
+      <ul class="grid gap-2" role="list">
+        @for (h of history.hasValue() ? history.value().data : []; track h.id) {
+          <li>
+            <button
+              type="button"
+              class="lv-card flex w-full items-center justify-between gap-3 text-left"
+              [attr.aria-pressed]="journalId() === h.id"
+              [class.ring-2]="journalId() === h.id"
+              [class.ring-teal-700]="journalId() === h.id"
+              (click)="selectedId.set(h.id)"
+            >
+              <span>
+                <span class="block font-semibold">{{ h.openedAt | frDateTime }}</span>
+                <span class="block text-sm"
+                  >{{ statusLabels[h.status] }} · {{ h.openedByName ?? '—' }}</span
+                >
+              </span>
+              @if (h.varianceXaf !== null) {
+                <span class="tabular text-sm font-semibold" [class.text-coral-600]="h.varianceXaf"
+                  >Écart {{ signed(h.varianceXaf) }}</span
+                >
+              }
+            </button>
+          </li>
+        } @empty {
+          <li class="lv-card">{{ history.isLoading() ? 'Chargement…' : 'Aucune session.' }}</li>
+        }
+      </ul>
+      <lv-pager
+        [meta]="history.hasValue() ? history.value().meta : null"
+        (page)="page.set($event)"
+      />
+    </section>
+  </section>
+
+  <section aria-labelledby="cash-journal">
+    <h2 id="cash-journal" class="mb-3 text-xl">Journal de caisse</h2>
+    @if (journal.hasValue()) {
+      @let j = journal.value();
+      <div class="mb-4 grid gap-3 sm:grid-cols-3">
+        <div class="lv-card">
+          <p class="text-sm">Entrées espèces</p>
+          <p class="tabular text-xl font-semibold">{{ j.cashInXaf | xaf }}</p>
+        </div>
+        <div class="lv-card">
+          <p class="text-sm">Sorties espèces</p>
+          <p class="tabular text-xl font-semibold">{{ j.cashOutXaf | xaf }}</p>
+        </div>
+        <div class="lv-card">
+          <p class="text-sm">Attendu</p>
+          <p class="tabular text-xl font-semibold">{{ j.session.expectedCashXaf | xaf }}</p>
+        </div>
+      </div>
+      @if (otherMethods().length) {
+        <p class="mb-3 text-sm">
+          Hors espèces (non comptés) :
+          @for (o of otherMethods(); track o.label; let last = $last) {
+            {{ o.label }} {{ o.amount | xaf }}{{ last ? '' : ' · ' }}
+          }
+        </p>
+      }
+      @if (j.session.note) {
+        <p class="lv-card mb-3 text-sm"><strong>Note :</strong> {{ j.session.note }}</p>
+      }
+      <div class="lv-table-wrap">
+        <table class="lv-table">
+          <caption class="sr-only">
+            Mouvements d’espèces de la session
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Heure</th>
+              <th scope="col">Mouvement</th>
+              <th scope="col">Ticket</th>
+              <th scope="col">Par</th>
+              <th scope="col" class="num">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of j.movements; track $index) {
+              <tr>
+                <td>{{ m.at | frDateTime }}</td>
+                <td>{{ m.label }}</td>
+                <td class="tabular">{{ m.ticketNumber ?? '—' }}</td>
+                <td>{{ m.userName ?? '—' }}</td>
+                <td class="num" [class.text-coral-600]="m.signedAmountXaf < 0">
+                  {{ signed(m.signedAmountXaf) }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">Aucun mouvement.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else if (journal.isLoading()) {
+      <p aria-busy="true">Chargement…</p>
+    } @else {
+      <p class="lv-card">Aucune session sélectionnée.</p>
+    }
+  </section>
+</div>

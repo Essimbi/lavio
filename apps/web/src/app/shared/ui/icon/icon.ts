@@ -25,6 +25,8 @@ const PATHS = {
   inbox: 'M3 13h5l1 3h6l1-3h5M5 5h14l2 8v6H3v-6z',
   shield: 'M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z',
   logout: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10',
+  bell: 'M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 21h4',
+  check: 'M5 12l5 5L20 7',
 } as const;
 
 export type IconName = keyof typeof PATHS;

@@ -12,6 +12,8 @@ export interface NavItem {
   tenantRoles?: TenantRole[];
   /** Visible seulement pour ces rôles plateforme. */
   platformRoles?: PlatformRole[];
+  /** Pastille de compteur : notifications non lues, validations en attente, ou les deux. */
+  badge?: 'notifications' | 'approvals' | 'all';
 }
 
 export interface ShellConfig {
@@ -27,4 +29,6 @@ export interface ShellConfig {
   loginPath: string;
   /** Bannières de licence (application du pressing). */
   licenseBanner?: boolean;
+  /** Compteurs du centre de notifications (application du pressing). */
+  notifications?: boolean;
 }

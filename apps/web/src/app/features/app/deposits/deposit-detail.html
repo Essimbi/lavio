@@ -9,6 +9,13 @@
       <a class="lv-primary" [routerLink]="['/print/ticket', d.id]">Imprimer le ticket</a>
       <a class="lv-secondary" [routerLink]="['/print/labels', d.id]">Étiquettes</a>
     }
+    @if (!['DRAFT', 'PENDING_APPROVAL', 'CANCELLED'].includes(d.status)) {
+      <a class="lv-secondary" routerLink="/app/tracking" [queryParams]="{ deposit: d.id }">Suivi</a>
+      @if (canSeePayments()) {
+        <a class="lv-secondary" [routerLink]="['/print/receipt', d.id]">Reçu</a>
+        <button type="button" class="lv-secondary" (click)="invoice()">Facture PDF</button>
+      }
+    }
   </lv-page-header>
 
   <div class="mb-4 flex flex-wrap items-center gap-2">
@@ -116,6 +123,68 @@
           </li>
         }
       </ul>
+
+      @if (isCashier() && readyItems().length) {
+        <section class="lv-card mt-6 border-l-4 border-aqua-400" aria-labelledby="return-title">
+          <h2 id="return-title" class="mb-1 text-xl">Restitution</h2>
+          <p class="mb-3 text-sm">
+            Cochez les articles remis au client. Reste à payer :
+            <strong class="tabular">{{ d.balanceXaf | xaf }}</strong>
+            @if (d.balanceXaf > 0) {
+              — encaissez d’abord, sinon la vente à crédit sera soumise à la responsable.
+            }
+          </p>
+          <div class="mb-4 flex flex-wrap gap-2">
+            @for (i of readyItems(); track i.id) {
+              <label class="lv-choice">
+                <input
+                  type="checkbox"
+                  [ngModel]="toReturn().has(i.id)"
+                  (ngModelChange)="toggleReturn(i.id, $event)"
+                />
+                <span class="tabular">{{ i.labelCode }}</span> · {{ i.itemTypeName }}
+                @if (i.storageLocation) {
+                  <span class="text-sm font-normal">({{ i.storageLocation }})</span>
+                }
+              </label>
+            }
+          </div>
+          <button
+            type="button"
+            class="lv-primary"
+            [disabled]="!toReturn().size || returning()"
+            (click)="returnItems()"
+          >
+            Restituer {{ toReturn().size }} article(s)
+          </button>
+        </section>
+      }
+
+      @if (canSeeIncidents() && incidents.hasValue() && incidents.value().length) {
+        <section class="mt-6" aria-labelledby="incidents-title">
+          <h2 id="incidents-title" class="mb-3 text-xl">Incidents</h2>
+          <ul class="grid gap-2" role="list">
+            @for (n of incidents.value(); track n.id) {
+              <li class="lv-card">
+                <p class="font-semibold">
+                  <span class="tabular text-teal-700">{{ n.labelCode }}</span> ·
+                  {{ incidentLabels[n.type] }}
+                  @if (n.causeLabel) {
+                    — {{ n.causeLabel }}
+                  }
+                </p>
+                @if (n.description) {
+                  <p class="text-sm">{{ n.description }}</p>
+                }
+                <p class="text-sm">
+                  {{ n.createdAt | frDateTime }} · {{ n.createdByName ?? '—' }} ·
+                  {{ resolutionLabels[n.resolution] }}
+                </p>
+              </li>
+            }
+          </ul>
+        </section>
+      }
     </section>
 
     <aside class="flex flex-col gap-6">
@@ -152,11 +221,91 @@
         @if (d.notes) {
           <p class="mt-3 text-sm">{{ d.notes }}</p>
         }
+        @if (isCashier() && payable()) {
+          <button type="button" class="lv-primary mt-4 w-full" (click)="pay()">Encaisser</button>
+        }
       </section>
+      @if (canSeePayments()) {
+        <section class="lv-card" aria-labelledby="payments-title">
+          <h2 id="payments-title" class="mb-3 text-xl">Paiements</h2>
+          <ul class="grid gap-3" role="list">
+            @for (p of payments.hasValue() ? payments.value().data : []; track p.id) {
+              <li class="border-b border-mint-100 pb-3 last:border-0 last:pb-0">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <p class="font-semibold" [class.line-through]="p.reversed">
+                      {{ methodLabels[p.method] }} · {{ kindLabels[p.kind] }}
+                    </p>
+                    <p class="text-sm">{{ p.receivedAt | frDateTime }}</p>
+                    @if (p.operatorRef) {
+                      <p class="text-sm">Réf. {{ p.operatorRef }}</p>
+                    }
+                    @if (p.reversalOf) {
+                      <p class="text-sm">Écriture inverse</p>
+                    }
+                    @if (p.reversed) {
+                      <p class="text-sm text-coral-600">Annulé : {{ p.reversalReason }}</p>
+                    }
+                  </div>
+                  <p class="tabular font-semibold">
+                    {{ p.signedAmountXaf < 0 ? '−' : '' }} {{ p.amountXaf | xaf }}
+                  </p>
+                </div>
+                @if (isCashier() && !p.reversed && !p.reversalOf && p.kind !== 'REFUND') {
+                  <button
+                    type="button"
+                    class="lv-link-button mt-1 text-coral-600"
+                    (click)="reverse(p)"
+                  >
+                    Annuler ce paiement
+                  </button>
+                }
+              </li>
+            } @empty {
+              <li class="text-sm">
+                {{ payments.isLoading() ? 'Chargement…' : 'Aucun paiement.' }}
+              </li>
+            }
+          </ul>
+        </section>
+      }
       @if (isCashier() && cancellable()) {
-        <button type="button" class="lv-link-button self-start text-coral-600" (click)="cancel()">
-          Annuler le dépôt
-        </button>
+        <section class="grid gap-3">
+          @if (hasPayments()) {
+            <div>
+              <label class="lv-label" for="refund-method">Remboursement en cas d’annulation</label>
+              <select
+                id="refund-method"
+                class="lv-select"
+                [ngModel]="refundMethod()"
+                (ngModelChange)="refundMethod.set($event)"
+              >
+                @for (m of methods; track m) {
+                  <option [value]="m">{{ methodLabels[m] }}</option>
+                }
+              </select>
+            </div>
+            @if (isMobileMoney(refundMethod())) {
+              <div>
+                <label class="lv-label" for="refund-ref">Référence du remboursement</label>
+                <input
+                  id="refund-ref"
+                  class="lv-input"
+                  maxlength="60"
+                  [ngModel]="refundRef()"
+                  (ngModelChange)="refundRef.set($event)"
+                />
+              </div>
+            }
+          }
+          <button
+            type="button"
+            class="lv-link-button justify-self-start text-coral-600"
+            (click)="cancel()"
+          >
+            Annuler le dépôt
+          </button>
+        </section>
       }
     </aside>
   </div>

@@ -1,0 +1,216 @@
+<lv-page-header
+  heading="Paiements"
+  subtitle="Encaissements, rapprochement Mobile Money et créances."
+/>
+
+<div class="mb-5 flex gap-2" role="tablist" aria-label="Vues des paiements">
+  <button
+    type="button"
+    role="tab"
+    class="lv-choice"
+    [attr.aria-selected]="view() === 'payments'"
+    [class.bg-mint-100]="view() === 'payments'"
+    (click)="show('payments')"
+  >
+    Paiements
+  </button>
+  <button
+    type="button"
+    role="tab"
+    class="lv-choice"
+    [attr.aria-selected]="view() === 'receivables'"
+    [class.bg-mint-100]="view() === 'receivables'"
+    (click)="show('receivables')"
+  >
+    Créances
+  </button>
+</div>
+
+@if (view() === 'payments') {
+  <form class="mb-4 flex flex-wrap items-end gap-3" (ngSubmit)="exportCsv()">
+    <div>
+      <label class="lv-label" for="pay-method">Mode</label>
+      <select
+        id="pay-method"
+        class="lv-select"
+        name="method"
+        [disabled]="mobileMoney()"
+        [ngModel]="method()"
+        (ngModelChange)="method.set($event); page.set(1)"
+      >
+        <option value="">Tous</option>
+        @for (m of methods; track m) {
+          <option [value]="m">{{ methodLabels[m] }}</option>
+        }
+      </select>
+    </div>
+    <label class="flex min-h-11 items-center gap-2">
+      <input
+        type="checkbox"
+        name="mobileMoney"
+        [ngModel]="mobileMoney()"
+        (ngModelChange)="mobileMoney.set($event); page.set(1)"
+      />
+      Mobile Money seulement
+    </label>
+    <div>
+      <label class="lv-label" for="pay-reconciled">Rapprochement</label>
+      <select
+        id="pay-reconciled"
+        class="lv-select"
+        name="reconciled"
+        [ngModel]="reconciled()"
+        (ngModelChange)="reconciled.set($event); page.set(1)"
+      >
+        <option value="">Tous</option>
+        <option value="no">À rapprocher</option>
+        <option value="yes">Rapprochés</option>
+      </select>
+    </div>
+    <div>
+      <label class="lv-label" for="pay-from">Du</label>
+      <input
+        id="pay-from"
+        class="lv-input"
+        type="date"
+        name="from"
+        [ngModel]="from()"
+        (ngModelChange)="from.set($event); page.set(1)"
+      />
+    </div>
+    <div>
+      <label class="lv-label" for="pay-to">Au</label>
+      <input
+        id="pay-to"
+        class="lv-input"
+        type="date"
+        name="to"
+        [ngModel]="to()"
+        (ngModelChange)="to.set($event); page.set(1)"
+      />
+    </div>
+    <button type="submit" class="lv-secondary" [disabled]="exporting()">
+      {{ exporting() ? 'Export…' : 'Exporter Mobile Money (CSV)' }}
+    </button>
+  </form>
+
+  <div class="lv-table-wrap">
+    <table class="lv-table">
+      <caption class="sr-only">
+        Paiements
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Ticket</th>
+          <th scope="col">Client</th>
+          <th scope="col">Mode</th>
+          <th scope="col">Nature</th>
+          <th scope="col">Référence</th>
+          <th scope="col" class="num">Montant</th>
+          <th scope="col">Rapproché</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of list.hasValue() ? list.value().data : []; track p.id) {
+          <tr>
+            <td>{{ p.receivedAt | frDateTime }}</td>
+            <td>
+              @if (p.depositId) {
+                <a class="tabular font-semibold" [routerLink]="['/app/deposits', p.depositId]">{{
+                  p.ticketNumber
+                }}</a>
+              }
+            </td>
+            <td>{{ p.customerName }}</td>
+            <td>{{ methodLabels[p.method] }}</td>
+            <td>
+              {{ kindLabels[p.kind] }}
+              @if (p.reversed) {
+                <span class="block text-sm text-coral-600">Annulé</span>
+              }
+              @if (p.reversalOf) {
+                <span class="block text-sm">Écriture inverse</span>
+              }
+              @if (p.duplicateConfirmed) {
+                <span class="block text-sm">Doublon confirmé</span>
+              }
+            </td>
+            <td class="tabular">{{ p.operatorRef ?? '—' }}</td>
+            <td class="num" [class.text-coral-600]="p.signedAmountXaf < 0">
+              {{ p.signedAmountXaf < 0 ? '−' : '' }} {{ p.amountXaf | xaf }}
+            </td>
+            <td>
+              @if (isMobileMoney(p.method)) {
+                <label class="flex min-h-11 items-center gap-2">
+                  <input
+                    type="checkbox"
+                    [checked]="!!p.reconciledAt"
+                    (change)="reconcile(p, $any($event.target).checked)"
+                  />
+                  <span class="sr-only">Rapprocher le paiement {{ p.operatorRef }}</span>
+                  {{ p.reconciledAt ? (p.reconciledAt | frDate) : '' }}
+                </label>
+              } @else {
+                —
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8">{{ list.isLoading() ? 'Chargement…' : 'Aucun paiement.' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <lv-pager [meta]="list.hasValue() ? list.value().meta : null" (page)="page.set($event)" />
+} @else {
+  <p class="mb-4 text-lg">
+    Total des créances : <strong class="tabular">{{ receivablesTotal() | xaf }}</strong>
+  </p>
+  <ul class="grid gap-4 lg:grid-cols-2" role="list">
+    @for (r of receivables.hasValue() ? receivables.value() : []; track r.customerId) {
+      <li class="lv-card">
+        <div class="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <p class="text-lg font-semibold">
+              <a [routerLink]="['/app/customers', r.customerId]">{{ r.customerName }}</a>
+            </p>
+            <p class="text-sm">{{ r.customerPhone | phone }}</p>
+            @if (r.creditLimitXaf !== null) {
+              <p class="text-sm">Plafond : {{ r.creditLimitXaf | xaf }}</p>
+            }
+          </div>
+          <p class="tabular text-xl font-semibold">{{ r.totalXaf | xaf }}</p>
+        </div>
+        <ul class="grid gap-2" role="list">
+          @for (d of r.deposits; track d.id) {
+            <li
+              class="flex flex-wrap items-center justify-between gap-2 border-t border-mint-100 pt-2"
+            >
+              <span>
+                <a class="tabular font-semibold" [routerLink]="['/app/deposits', d.id]"
+                  >N° {{ d.ticketNumber }}</a
+                >
+                · {{ d.receivedAt | frDate }}
+              </span>
+              <span class="flex items-center gap-3">
+                <span class="tabular">{{ d.balanceXaf | xaf }}</span>
+                @if (isCashier()) {
+                  <button type="button" class="lv-link-button" (click)="settle(r, d)">
+                    Encaisser
+                  </button>
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      </li>
+    } @empty {
+      <li class="lv-card">
+        {{ receivables.isLoading() ? 'Chargement…' : 'Aucune créance en cours.' }}
+      </li>
+    }
+  </ul>
+}

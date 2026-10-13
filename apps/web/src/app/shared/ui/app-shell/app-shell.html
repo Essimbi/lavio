@@ -27,6 +27,11 @@
             >
               <lv-icon [name]="item.icon" [size]="20" />
               <span>{{ item.label }}</span>
+              @if (badge(item); as count) {
+                <span class="lv-badge ml-auto" [attr.aria-label]="count + ' en attente'">{{
+                  count > 99 ? '99+' : count
+                }}</span>
+              }
             </a>
           </li>
         }
@@ -47,6 +52,14 @@
   <header class="topbar">
     <lv-logo [width]="96" />
     <span class="area">{{ subtitle() }}</span>
+    @if (config().notifications) {
+      <a class="topbar-bell" routerLink="/app/notifications" aria-label="Notifications">
+        <lv-icon name="bell" [size]="22" />
+        @if (unread(); as count) {
+          <span class="lv-badge absolute -top-1 -right-1">{{ count > 99 ? '99+' : count }}</span>
+        }
+      </a>
+    }
   </header>
 
   <main id="contenu" class="content" tabindex="-1">
@@ -67,7 +80,16 @@
             [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
             ariaCurrentWhenActive="page"
           >
-            <lv-icon [name]="item.icon" [size]="22" />
+            <span class="relative inline-flex">
+              <lv-icon [name]="item.icon" [size]="22" />
+              @if (badge(item); as count) {
+                <span
+                  class="lv-badge absolute -top-2 -right-3"
+                  [attr.aria-label]="count + ' en attente'"
+                  >{{ count > 99 ? '99+' : count }}</span
+                >
+              }
+            </span>
             <span>{{ item.label }}</span>
           </a>
         </li>

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import type { MeResponse } from '@lavio/shared';
@@ -38,7 +38,11 @@ const me = (roles: MeResponse['user']['tenantRoles']): MeResponse => ({
 });
 
 describe('AppShell', () => {
-  async function render(url: string, roles: MeResponse['user']['tenantRoles'] = ['OWNER']) {
+  async function render(
+    url: string,
+    roles: MeResponse['user']['tenantRoles'] = ['OWNER'],
+    shell: ShellConfig = config,
+  ) {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -56,10 +60,10 @@ describe('AppShell', () => {
     });
     TestBed.inject(AuthService).me.set(me(roles));
     const fixture = TestBed.createComponent(AppShell);
-    fixture.componentRef.setInput('config', config);
+    fixture.componentRef.setInput('config', shell);
     await TestBed.inject(Router).navigateByUrl(url);
     await fixture.whenStable();
-    return fixture.nativeElement as HTMLElement;
+    return Object.assign(fixture.nativeElement as HTMLElement, { fixture });
   }
 
   const labels = (el: HTMLElement) =>
@@ -83,5 +87,47 @@ describe('AppShell', () => {
     const el = await render('/app/deposits');
     const current = [...el.querySelectorAll('.sidebar [aria-current="page"]')];
     expect(current.map((a) => a.textContent.trim())).toEqual(['Dépôts']);
+  });
+
+  it('affiche les pastilles de validations et de notifications', async () => {
+    const shell: ShellConfig = {
+      ...config,
+      notifications: true,
+      items: [
+        { label: 'Validations', path: '/app/approvals', icon: 'shield', badge: 'approvals' },
+        {
+          label: 'Notifications',
+          path: '/app/notifications',
+          icon: 'bell',
+          badge: 'notifications',
+        },
+      ],
+      mobileItems: [{ label: 'Plus', path: '/app/more', icon: 'more', badge: 'all' }],
+    };
+    const el = await render('/app', ['OWNER'], shell);
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/v1/notifications/summary')
+      .flush({ unread: 3, pendingApprovals: 2 });
+    await new Promise((r) => setTimeout(r));
+    await el.fixture.whenStable();
+    const badges = [...el.querySelectorAll('.lv-badge')].map((b) => b.textContent.trim());
+    // Barre latérale (2, 3), cloche de la barre du haut (3), « Plus » mobile (5).
+    expect(badges.sort()).toEqual(['2', '3', '3', '5']);
+  });
+
+  it('n’affiche pas de validations en attente à un caissier', async () => {
+    const shell: ShellConfig = {
+      ...config,
+      notifications: true,
+      items: [{ label: 'Validations', path: '/app/approvals', icon: 'shield', badge: 'approvals' }],
+      mobileItems: [],
+    };
+    const el = await render('/app', ['CASHIER'], shell);
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/v1/notifications/summary')
+      .flush({ unread: 0, pendingApprovals: 4 });
+    await new Promise((r) => setTimeout(r));
+    await el.fixture.whenStable();
+    expect(el.querySelectorAll('.lv-badge')).toHaveLength(0);
   });
 });

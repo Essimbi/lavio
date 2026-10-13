@@ -1,7 +1,7 @@
 import type { Routes } from '@angular/router';
 import { tenantGuard } from '../../core/auth/guards';
 
-/** Impressions (hors coquille de l'application) : ticket 80 mm et étiquettes. */
+/** Impressions (hors coquille de l'application) : ticket et reçu 80 mm, étiquettes. */
 export const printRoutes: Routes = [
   {
     path: 'ticket/:id',
@@ -14,5 +14,11 @@ export const printRoutes: Routes = [
     title: 'Étiquettes — Lavio',
     canActivate: [tenantGuard],
     loadComponent: () => import('./print-labels').then((m) => m.PrintLabels),
+  },
+  {
+    path: 'receipt/:id',
+    title: 'Reçu — Lavio',
+    canActivate: [tenantGuard],
+    loadComponent: () => import('./print-receipt').then((m) => m.PrintReceipt),
   },
 ];

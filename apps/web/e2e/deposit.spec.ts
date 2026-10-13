@@ -115,7 +115,12 @@ test('une remise au-delà du seuil bloque le ticket jusqu’à la validation de 
   const owner = await ownerContext.newPage();
   await signIn(owner, 'e2e-responsable@test.local');
   await owner.goto('/app/approvals');
-  await owner.getByRole('button', { name: 'Valider' }).first().click();
+  await owner
+    .getByRole('listitem')
+    .filter({ hasText: 'Remise exceptionnelle' })
+    .first()
+    .getByRole('button', { name: 'Valider' })
+    .click();
   await expect(owner.getByText('Demande validée.')).toBeVisible();
   await ownerContext.close();
 

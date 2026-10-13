@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  type OnInit,
+} from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { NotificationCenter } from '../../../core/notifications/notification-center';
 import { Icon } from '../icon/icon';
 import { LicenseBanner } from '../license-banner/license-banner';
 import { Logo } from '../logo/logo';
@@ -17,10 +26,27 @@ import type { NavItem, ShellConfig } from './nav';
   styleUrl: './app-shell.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppShell {
+export class AppShell implements OnInit {
   readonly config = input.required<ShellConfig>();
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly center = inject(NotificationCenter);
+  private readonly destroyRef = inject(DestroyRef);
+
+  ngOnInit(): void {
+    if (this.config().notifications) this.destroyRef.onDestroy(this.center.start());
+  }
+
+  protected readonly unread = this.center.unread;
+
+  /** Valeur de la pastille d'une entrée (0 : pas de pastille). */
+  protected badge(item: NavItem): number {
+    if (!this.config().notifications || !item.badge) return 0;
+    const approvals = this.auth.hasTenantRole() ? this.center.pendingApprovals() : 0;
+    if (item.badge === 'approvals') return approvals;
+    if (item.badge === 'notifications') return this.center.unread();
+    return approvals + this.center.unread();
+  }
 
   private visible(item: NavItem): boolean {
     if (item.tenantRoles && !this.auth.hasTenantRole(...item.tenantRoles)) return false;

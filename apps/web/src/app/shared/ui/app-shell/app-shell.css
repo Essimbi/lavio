@@ -39,6 +39,22 @@
   border-bottom: 1px solid var(--lv-mint-100);
 }
 
+.topbar-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--lv-radius-pill);
+  color: var(--lv-teal-900);
+  transition: background-color var(--lv-duration) var(--lv-ease);
+}
+
+.topbar-bell:hover {
+  background: var(--lv-mint-100);
+}
+
 .area {
   font: 500 13px/1 var(--lv-font-display);
   letter-spacing: 0.02em;

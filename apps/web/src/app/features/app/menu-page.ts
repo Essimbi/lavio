@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import type { TenantRole } from '@lavio/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { Icon, type IconName } from '../../shared/ui/icon/icon';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
@@ -10,6 +11,8 @@ export interface MenuEntry {
   path: string;
   icon: IconName;
   ownerOnly?: boolean;
+  /** Visible pour ces rôles du pressing (la responsable voit tout). */
+  tenantRoles?: TenantRole[];
   superAdminOnly?: boolean;
 }
 
@@ -68,6 +71,7 @@ export class MenuPage {
     this.entries().filter(
       (e) =>
         (!e.ownerOnly || this.auth.hasTenantRole()) &&
+        (!e.tenantRoles || this.auth.hasTenantRole(...e.tenantRoles)) &&
         (!e.superAdminOnly || this.auth.hasPlatformRole('SUPER_ADMIN')),
     ),
   );
