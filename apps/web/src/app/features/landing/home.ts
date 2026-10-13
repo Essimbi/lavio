@@ -153,6 +153,63 @@ export class Home {
     },
   ];
 
+  /** Captures réelles de l'application (pressing de démonstration, données fictives). */
+  protected readonly shots = [
+    {
+      id: 'dashboard',
+      label: 'Tableau de bord',
+      alt: 'Tableau de bord de Lavio : chiffre d’affaires du mois, encaissements, dépôts en cours, en retard et stock bas.',
+      caption: 'Chiffre d’affaires, encaissements, retards et alertes en un coup d’œil.',
+    },
+    {
+      id: 'deposits',
+      label: 'Dépôts',
+      alt: 'Liste des dépôts de Lavio avec numéro de ticket, client, dates, statut, total et reste à payer.',
+      caption:
+        'Chaque dépôt retrouvé par son numéro de ticket, avec son statut et son reste à payer.',
+    },
+    {
+      id: 'cash',
+      label: 'Caisse',
+      alt: 'Écran de caisse de Lavio : session ouverte, espèces attendues et journal des encaissements.',
+      caption: 'Ouverture, journal des encaissements et clôture avec écart expliqué.',
+    },
+    {
+      id: 'stock',
+      label: 'Stock',
+      alt: 'Écran de stock de Lavio : produits, quantités, seuils, coût moyen et alerte de stock bas.',
+      caption: 'Quantités, coût moyen et alertes avant la rupture.',
+    },
+    {
+      id: 'accounting',
+      label: 'Comptabilité',
+      alt: 'Trésorerie de Lavio : soldes de la caisse, de la banque, de MTN MoMo et d’Orange Money.',
+      caption: 'Trésorerie par compte : caisse, banque, MTN MoMo et Orange Money.',
+    },
+  ];
+  /** Onglet d'aperçu affiché. */
+  protected readonly shot = signal(0);
+
+  /** Flèches, Début et Fin entre les onglets (motif « tabs » de l'ARIA APG). */
+  protected tabKey(event: KeyboardEvent, index: number): void {
+    const last = this.shots.length - 1;
+    const next =
+      event.key === 'ArrowRight'
+        ? (index + 1) % (last + 1)
+        : event.key === 'ArrowLeft'
+          ? (index - 1 + last + 1) % (last + 1)
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? last
+              : null;
+    if (next === null) return;
+    event.preventDefault();
+    this.shot.set(next);
+    const tabs = (event.currentTarget as HTMLElement).parentElement?.querySelectorAll('button');
+    tabs?.item(next).focus();
+  }
+
   /** Ce que comprend l'abonnement (docs/01, docs/07). */
   protected readonly perks = [
     {

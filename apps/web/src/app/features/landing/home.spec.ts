@@ -128,6 +128,35 @@ describe('Home (landing)', () => {
     expect(el.querySelector('.hero a[href="#demo"]')?.textContent).toContain('Essayer la démo');
   });
 
+  it('montre les captures de l’application dans des onglets accessibles', async () => {
+    const { el, fixture } = await render();
+    const tabs = [...el.querySelectorAll<HTMLButtonElement>('#apercu [role="tab"]')];
+    expect(tabs.map((t) => t.textContent.trim())).toEqual([
+      'Tableau de bord',
+      'Dépôts',
+      'Caisse',
+      'Stock',
+      'Comptabilité',
+    ]);
+    const visible = () =>
+      [...el.querySelectorAll<HTMLElement>('#apercu [role="tabpanel"]')].filter((p) => !p.hidden);
+    expect(visible()).toHaveLength(1);
+    expect(visible()[0]?.querySelector('img')?.getAttribute('src')).toBe(
+      '/media/app/dashboard.webp',
+    );
+    expect(visible()[0]?.querySelector('img')?.getAttribute('loading')).toBe('lazy');
+
+    tabs.at(2)?.click();
+    await fixture.whenStable();
+    expect(visible()[0]?.querySelector('img')?.getAttribute('src')).toBe('/media/app/cash.webp');
+    expect(tabs.at(2)?.getAttribute('aria-selected')).toBe('true');
+
+    tabs.at(2)?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    await fixture.whenStable();
+    expect(visible()[0]?.querySelector('img')?.getAttribute('src')).toBe('/media/app/stock.webp');
+    expect(tabs.at(3)?.getAttribute('tabindex')).toBe('0');
+  });
+
   it('valide le formulaire, exige le consentement et envoie la demande', async () => {
     const { el, http, fixture } = await render();
     await flushConfig(http, fixture);

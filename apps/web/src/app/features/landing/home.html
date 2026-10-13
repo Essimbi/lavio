@@ -256,6 +256,74 @@
       </div>
     </section>
 
+    <!-- Aperçu : vraies captures de l'application (pressing de démonstration) -->
+    <section id="apercu" class="showcase" aria-labelledby="apercu-title">
+      <div class="wrap">
+        <div class="showcase-head">
+          <h2 id="apercu-title" class="section-title">
+            L’application, <span class="accent">telle quelle</span>
+          </h2>
+          <p>
+            Captures du pressing de démonstration : ce que vous et votre équipe verrez chaque jour.
+          </p>
+        </div>
+        <div class="shot-tabs" role="tablist" aria-label="Écrans de l’application">
+          @for (s of shots; track s.id; let i = $index) {
+            <button
+              type="button"
+              role="tab"
+              class="shot-tab"
+              [id]="'shot-tab-' + s.id"
+              [attr.aria-selected]="shot() === i"
+              [attr.aria-controls]="'shot-panel-' + s.id"
+              [attr.tabindex]="shot() === i ? 0 : -1"
+              (click)="shot.set(i)"
+              (keydown)="tabKey($event, i)"
+            >
+              {{ s.label }}
+            </button>
+          }
+        </div>
+        <div class="shot-stage">
+          @for (s of shots; track s.id; let i = $index) {
+            <figure
+              role="tabpanel"
+              class="shot-panel"
+              [id]="'shot-panel-' + s.id"
+              [attr.aria-labelledby]="'shot-tab-' + s.id"
+              [hidden]="shot() !== i"
+            >
+              <div class="browser">
+                <div class="browser-bar" aria-hidden="true">
+                  <span></span><span></span><span></span>
+                  <p>lavio · {{ s.label }}</p>
+                </div>
+                <img
+                  [src]="'/media/app/' + s.id + '.webp'"
+                  [alt]="s.alt"
+                  width="1280"
+                  height="800"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>{{ s.caption }}</figcaption>
+            </figure>
+          }
+          <div class="shot-phone">
+            <img
+              src="/media/app/mobile-dashboard.webp"
+              alt="Tableau de bord de Lavio sur téléphone : chiffre d’affaires du mois et encaissements."
+              width="585"
+              height="1266"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Du dépôt au retrait -->
     <section class="band" aria-labelledby="parcours">
       <div class="wrap split">
