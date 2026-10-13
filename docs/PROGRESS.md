@@ -196,3 +196,61 @@ Phase 2 : clients, catalogue, dépôt et ticket.
 ### Prochaine étape
 
 Phase 3 : suivi des articles, restitution, paiements, caisse, validations et centre de notifications.
+
+## Phase 3 — Suivi, restitution, paiements, caisse (13/10/2026)
+
+### Fait
+
+**API (`lavio-api`)**
+- **Suivi** : transitions d'articles vérifiées par rôle (`checkItemTransition` dans `packages/shared`) : opérateur jusqu'à « Contrôle qualité », contrôle qualité vers « Prêt » et reprises, responsable partout. « Prêt » seulement depuis le contrôle qualité, avec la check-list complète (4 points). Un retour en arrière est une reprise : cause ou motif obligatoire, incident REWORK créé. Changement unitaire ou groupé, emplacement de rangement, historique en ajout seul, statut du dépôt recalculé.
+- **Incidents** (dommage, tache persistante, perdu, retrouvé, reprise) et causes de reprise codifiées : liste par défaut à la création du pressing, modifiable par la responsable.
+- **Restitution** totale ou partielle, seulement pour des articles prêts. La restitution est directe si le dépôt est soldé, si le client à crédit reste sous son plafond, ou si c'est la responsable qui restitue. Sinon, une validation CREDIT est créée (réponse 202) et la restitution s'exécute à l'approbation. Alerte « impayé important » au-delà du seuil configuré.
+- **Paiements** : espèces, Orange Money, MTN MoMo, virement, chèque. Idempotents (`Idempotency-Key`), montant limité au reste à payer (au montant payé pour un remboursement), référence obligatoire pour Mobile Money. Un doublon de référence est refusé (`DUPLICATE_REFERENCE`), puis accepté sur confirmation explicite, tracée dans l'audit. Annulation par écriture inverse, rapprochement Mobile Money, export CSV, créances par client, reçu, facture PDF (TVA incluse si le pressing est assujetti). Une annulation de dépôt déjà payé enregistre un remboursement.
+- **Caisse** : une seule session ouverte par pressing (index partiel unique), espèces exigées sur une session ouverte, attendu = fond + espèces reçues − espèces rendues, écart avec note obligatoire. La responsable clôture directement ; un autre utilisateur passe la session en « clôture à valider » (validation CASH_CLOSE ; un refus rouvre la session). Une session clôturée est figée.
+- **Validations** DISCOUNT, CREDIT et CASH_CLOSE ; **centre de notifications** (demande de validation, clôture, écart de caisse, impayé important, dépôt en retard, licence qui expire), sans push. Cron quotidien : alertes de retard et de licence, une fois par jour et par pressing.
+- **Garde-fous SQL** : un paiement n'est jamais supprimé ni modifié (seul le rapprochement peut changer), montant > 0, référence obligatoire pour Mobile Money, restitutions en ajout seul, session de caisse clôturée figée.
+
+**Web (`lavio`)**
+- **Suivi** : recherche par numéro, file des dépôts en traitement (filtre « en retard »), sélection d'un ou de plusieurs articles, boutons de statut activés selon le rôle, emplacement de rangement, dialogue de contrôle qualité, dialogue de reprise avec cause, signalement d'incident.
+- **Fiche du dépôt** : encaissement (dialogue avec doublon Mobile Money à confirmer, clé d'idempotence), liste des paiements avec annulation par écriture inverse, restitution avec message de vente à crédit, incidents, liens vers le suivi, le reçu et la facture PDF, choix du mode de remboursement à l'annulation.
+- **Caisse** : ouverture, attendu, comptage avec écart en direct et note obligatoire, demande de clôture ou clôture directe, historique, journal (entrées, sorties, autres modes).
+- **Paiements** : filtres (mode, Mobile Money, rapprochement, dates), rapprochement en un clic, export CSV, onglet Créances avec encaissement.
+- **Reçu 80 mm** (`/print/receipt/:id`, styles partagés avec le ticket), **Notifications** (page, pastilles dans la barre latérale, cloche sur mobile, « Plus » ; rafraîchies chaque minute quand l'onglet est visible), **Validations** (crédit et clôture de caisse), **Causes de reprise** dans les paramètres. Navigation filtrée par rôle.
+
+### Tests (tous verts)
+
+| Dépôt | Unitaires | End-to-end |
+|---|---|---|
+| `lavio` | 52 (shared, dont transitions et caisse) + 26 (web, dont pastilles de la coquille et dialogue d'encaissement : montant, référence, doublon, idempotence) | Playwright : **cycle complet** (ouverture de caisse → dépôt → statuts par l'opérateur → reprise → contrôle qualité → encaissement → restitution → reçu → clôture demandée puis validée par la responsable), parcours 1, remise, superadmin, démarrage |
+| `lavio-api` | 52 + 50 | 111, dont 22 nouveaux : cycle et droits du suivi, check-list, reprise et incident, statut du dépôt, restitution (non prêt, partielle, crédit validé, plafond), paiements (plafond, référence, doublon confirmé, idempotence, écriture inverse, **suppression et modification refusées en base**, rapprochement, export), annulation avec remboursement, reçu, TVA et PDF, caisse (session unique, attendu, note sur écart, clôture validée ou refusée, session figée en base), notifications, alerte de retard unique par jour, **isolation** de tous les nouveaux modules |
+
+### Critères de fin de la phase 3
+
+| Critère | État |
+|---|---|
+| Cycle complet démontrable : dépôt → statuts → contrôle qualité → restitution → encaissement → clôture de caisse | Fait (parcours Playwright de bout en bout, quatre rôles) |
+| Règles de `05-regles-de-gestion.md` couvertes par des tests | Fait pour le périmètre de la phase (suivi, restitution, paiements, caisse, validations, notifications) |
+
+### Hypothèses appliquées (configurables)
+
+- Seuls les paiements en espèces exigent une caisse ouverte ; Mobile Money, virement et chèque apparaissent au journal pour information, sans entrer dans le comptage.
+- Un doublon de référence Mobile Money est recherché pour le même opérateur, dans le pressing seulement.
+- La responsable peut restituer à crédit sans validation et clôturer la caisse sans validation.
+- Alerte « licence qui expire » à 7 jours ou moins ; « impayé important » au-delà de `unpaidAlertAbove` (désactivée par défaut).
+- Causes de reprise par défaut : tache persistante, repassage à reprendre, odeur, dommage constaté, réclamation du client, autre.
+- Le reçu et la facture affichent la TVA incluse dans le total (prix TTC).
+- Le jeu de test Playwright (`pnpm e2e:fixtures`) referme les sessions de caisse restées ouvertes dans le pressing de test.
+
+### Points à confirmer
+
+- Faut-il un fond de caisse proposé automatiquement à partir de la dernière clôture ?
+- Les remboursements en espèces à l'annulation exigent une caisse ouverte : confirmer que c'est le fonctionnement voulu.
+- Le statut « Retiré » n'est atteint que par la restitution (pas de bouton dans le suivi) : confirmer.
+
+### Idées notées (hors périmètre, non codées)
+
+- Aucune.
+
+### Prochaine étape
+
+Phase 4 : stock, achats, dépenses, rapports.
