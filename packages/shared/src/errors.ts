@@ -23,6 +23,9 @@ export const ErrorCode = Object.freeze({
   PRICE_NOT_FOUND: 'PRICE_NOT_FOUND',
   ADVANCE_REQUIRED: 'ADVANCE_REQUIRED',
   STORAGE_UNAVAILABLE: 'STORAGE_UNAVAILABLE',
+  INVALID_TRANSITION: 'INVALID_TRANSITION',
+  AMOUNT_EXCEEDS_BALANCE: 'AMOUNT_EXCEEDS_BALANCE',
+  CASH_CLOSE_PENDING: 'CASH_CLOSE_PENDING',
   PAYLOAD_TOO_LARGE: 'PAYLOAD_TOO_LARGE',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const);
@@ -53,6 +56,9 @@ export const ERROR_HTTP_STATUS: Readonly<Record<ErrorCode, number>> = Object.fre
   PRICE_NOT_FOUND: 409,
   ADVANCE_REQUIRED: 409,
   STORAGE_UNAVAILABLE: 503,
+  INVALID_TRANSITION: 409,
+  AMOUNT_EXCEEDS_BALANCE: 409,
+  CASH_CLOSE_PENDING: 409,
   PAYLOAD_TOO_LARGE: 413,
   INTERNAL_ERROR: 500,
 });
@@ -84,6 +90,9 @@ export const ERROR_DEFAULT_MESSAGES: Readonly<Record<ErrorCode, string>> = Objec
   PRICE_NOT_FOUND: 'Aucun tarif n’est défini pour cet article et ce service.',
   ADVANCE_REQUIRED: 'Un acompte est nécessaire avant d’imprimer le ticket.',
   STORAGE_UNAVAILABLE: 'L’envoi de photos n’est pas disponible pour le moment.',
+  INVALID_TRANSITION: 'Ce changement de statut n’est pas possible.',
+  AMOUNT_EXCEEDS_BALANCE: 'Le montant dépasse le reste à payer du dépôt.',
+  CASH_CLOSE_PENDING: 'Une clôture de caisse attend la validation de la responsable.',
   PAYLOAD_TOO_LARGE: 'Le contenu envoyé est trop volumineux.',
   INTERNAL_ERROR: 'Une erreur est survenue. Réessayez dans quelques instants.',
 });

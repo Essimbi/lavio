@@ -10,3 +10,5 @@ export * from './catalog.js';
 export * from './pricing.js';
 export * from './deposits.js';
 export * from './phase2.js';
+export * from './tracking.js';
+export * from './phase3.js';
