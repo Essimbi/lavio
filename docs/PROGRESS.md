@@ -254,3 +254,101 @@ Phase 3 : suivi des articles, restitution, paiements, caisse, validations et cen
 ### Prochaine étape
 
 Phase 4 : stock, achats, dépenses, rapports.
+
+## Phase 4 — Stock, achats, dépenses, rapports (13/10/2026)
+
+### Fait
+
+**API (`lavio-api`)**
+- **Stock** :
+  - produits (quantités à 3 décimales, cache `on_hand` mis à jour dans la même transaction que le mouvement) ;
+  - mouvements en ajout seul (déclencheur SQL) ;
+  - coût moyen pondéré à chaque entrée, sorties valorisées au coût moyen ;
+  - sortie rendant le stock négatif refusée (`INSUFFICIENT_STOCK`), sauf dérogation de la responsable avec motif écrit, tracée dans l'audit ;
+  - motif obligatoire pour les sorties et les ajustements ; l'opérateur ne saisit que des sorties de consommation ;
+  - ajustement par un autre utilisateur que la responsable → validation `STOCK_ADJUSTMENT`, aucun effet avant l'approbation ;
+  - alerte `STOCK_LOW` une seule fois par franchissement du seuil, réarmée quand le stock repasse au-dessus.
+- **Inventaire** : stock théorique photographié, saisie des quantités comptées, soumission → validation `INVENTORY` ; les mouvements `INVENTORY` ne sont créés qu'à l'approbation. Un refus renvoie l'inventaire en brouillon.
+- **Achats** : fournisseurs, bons de commande numérotés par pressing (brouillon → envoyée → reçue en partie → reçue, ou clôturée), réceptions partielles créant les entrées de stock au coût reçu, sur-réception refusée.
+- **Trésorerie** :
+  - comptes par défaut (Caisse, Banque, Orange Money, MTN MoMo), chacun relié à ses modes d'encaissement ;
+  - solde calculé : solde d'ouverture + encaissements nets + virements reçus − virements émis − dépenses enregistrées ;
+  - virements en ajout seul.
+- **Dépenses** :
+  - catégories par défaut, dont « Achats matières » réservée aux factures fournisseurs ;
+  - une dépense payée depuis la caisse exige une caisse ouverte et réduit les espèces attendues (règle 2 de la caisse) ; elle apparaît au journal ;
+  - au-delà de `largeExpenseAbove`, validation `EXPENSE` si l'auteur n'est pas la responsable ;
+  - annulation tracée (jamais de suppression, déclencheur SQL), impossible si la caisse de la dépense est clôturée ;
+  - la caisse ne saisit que des dépenses en espèces.
+- **Dépenses récurrentes** : le cron quotidien génère un brouillon par échéance (jamais deux) et rattrape les échéances manquées ; le comptable le confirme.
+- **Factures fournisseurs** : échéances et retards ; le paiement crée une dépense « Achats matières » (pas de double comptage avec les entrées de stock) ; un seul paiement possible ; si ce paiement est annulé, la facture redevient à payer.
+- **Relevés d'eau et d'électricité** : consommation calculée, index cohérent avec les relevés voisins.
+- **Rapports** :
+  - chiffre d'affaires et encaissements, journal de caisse, trésorerie, résultat simplifié, créances et dettes, valorisation du stock ;
+  - formats JSON, CSV et XLSX, produits à partir d'une même structure (identiques à l'écran) ;
+  - exports audités et limités en débit.
+- Validations : `STOCK_ADJUSTMENT`, `INVENTORY` et `EXPENSE` traitées dans la même transaction que la décision.
+- Seed de démonstration : 8 produits de stock fictifs et un fournisseur fictif.
+
+**Web (`lavio`)**
+- **Stock** : liste avec alertes et filtre « sous le seuil » ; fiche produit (quantité, coût moyen, valeur, mouvements, saisie selon le rôle, dérogation pour la responsable) ; inventaires (comptage, écarts en direct, soumission).
+- **Achats** : commandes (liste, création, envoi, réception ligne par ligne, clôture), fournisseurs.
+- **Dépenses** : saisie (la caisse saisit les dépenses en espèces), brouillons à confirmer, annulation avec motif, récurrences, catégories.
+- **Comptabilité** :
+  - trésorerie (soldes, virements, nouveau compte) ;
+  - rapports génériques (période, tableaux, totaux, exports CSV et Excel) ;
+  - factures fournisseurs (saisie, paiement, retards) ;
+  - compteurs.
+- **Validations** : affichage des ajustements, inventaires et dépenses. Navigation filtrée par rôle (matrice de docs/05).
+
+### Tests (tous verts)
+
+| Dépôt | Unitaires | End-to-end |
+|---|---|---|
+| `lavio` | 58 (shared, dont coût moyen pondéré, alerte par franchissement, échéances mensuelles) + 26 (web) | Playwright, 15 parcours : nouveau parcours **stock** (produit, entrée, sortie sous le seuil, valorisation exportée par la comptable) ; **cycle complet** désormais avec encaissement Mobile Money et référence (docs/13, parcours 2) ; parcours 1, remise, superadmin, démarrage |
+| `lavio-api` | 58 + 50 | 131, dont 20 nouveaux. **Stock** : droits, coût moyen, stock négatif et dérogation, motifs, alerte unique par franchissement, ajustement validé ou refusé, mouvements immuables en base, inventaire appliqué seulement à l'approbation, commande et réceptions. **Comptabilité** : comptes et encaissements, dépense de caisse et espèces attendues, dépense importante validée, annulation, virements immuables, récurrence générée une seule fois, facture fournisseur, compteurs. **Rapports** : exports CSV et XLSX identiques à l'écran, résultat, trésorerie et valorisation cohérentes avec les écrans, droits. **Isolation** de tous les nouveaux modules |
+
+### Critères de fin de la phase 4
+
+| Critère | État |
+|---|---|
+| Stock cohérent avec les mouvements | Fait (cache mis à jour dans la transaction du mouvement, mouvements immuables, inventaire par mouvements) |
+| Alertes déclenchées une fois par franchissement | Fait (test API) |
+| Exports identiques aux chiffres affichés | Fait (même structure pour l'écran, le CSV et le XLSX ; tests) |
+
+### Hypothèses appliquées (configurables ou à confirmer)
+
+- Chiffre d'affaires : dépôts validés (hors brouillons, remises en attente et annulés), par date de dépôt.
+- Le dernier coût d'entrée devient le « prix d'achat » du produit ; le coût moyen arrondi au franc.
+- Un stock négatif (dérogation) n'entre pas dans le calcul du coût moyen de l'entrée suivante.
+- Inventaire : écarts calculés à la soumission et appliqués tels quels à l'approbation, même si le stock a bougé entre-temps. Un seul inventaire en cours à la fois.
+- Une dépense de caisse est datée de sa saisie et rattachée à la session ouverte.
+- Une dépense en attente de validation ne compte ni dans la trésorerie ni dans les espèces attendues.
+- Les virements depuis le compte « Caisse » ne modifient pas les espèces attendues de la session : ils se font après la clôture.
+- Jour d'échéance des récurrences limité à 1 à 28.
+- Relevés de compteurs : index croissant, un relevé par compteur et par date.
+- Rapports : période maximale d'un an ; mois en cours par défaut.
+
+### Points à confirmer
+
+- Faut-il un justificatif (photo) obligatoire pour certaines dépenses ? Le champ `receiptUrl` existe mais l'envoi de fichier n'est pas encore branché à l'écran.
+- Les virements depuis la caisse pendant une session ouverte doivent-ils réduire les espèces attendues ?
+- Faut-il proposer automatiquement une commande pour les produits sous le seuil ? Hors périmètre V1 : noté, non codé.
+
+### Écarts avec docs/03 (champs ajoutés, à reporter dans la documentation si vous validez)
+
+- `expenses.status`, `approval_id`, `cancel_reason`, `supplier_invoice_id` ;
+- `inventories.status` avec `PENDING_APPROVAL` ;
+- `stock_items.on_hand` et `low_alert_sent` ;
+- `treasury_accounts.payment_methods` et `is_active` ;
+- `purchase_orders.number` ;
+- `recurring_expenses.label` et `created_by` ;
+- `suppliers.is_active`.
+
+### Idées notées (hors périmètre, non codées)
+
+- Proposition de commande à partir des produits sous le seuil.
+
+### Prochaine étape
+
+Phase 5 : tournées, tableau de bord 360°, mobile de la responsable, notifications push.
