@@ -33,4 +33,16 @@ export interface HealthResponse {
 export interface PublicConfig {
   whatsappNumber: string;
   whatsappDefaultMessage: string;
+  /** Plans actifs affichés sur la landing ; prix `null` = « Tarif sur demande ». */
+  plans: PublicPlan[];
+}
+
+export interface PublicPlan {
+  code: string;
+  name: string;
+  priceMonthlyXaf: number | null;
+  priceYearlyXaf: number | null;
+  includedUsers: number;
+  extraUserPriceXaf: number | null;
+  trialDays: number;
 }

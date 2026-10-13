@@ -26,6 +26,8 @@ export interface CustomerDto {
   notes: string | null;
   creditAllowed: boolean;
   creditLimitXaf: number | null;
+  /** Données personnelles effacées à la demande (docs/10). */
+  anonymizedAt: string | null;
   createdAt: string;
 }
 
