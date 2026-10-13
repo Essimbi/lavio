@@ -352,3 +352,77 @@ Phase 4 : stock, achats, dépenses, rapports.
 ### Prochaine étape
 
 Phase 5 : tournées, tableau de bord 360°, mobile de la responsable, notifications push.
+
+## Phase 5 — Tournées, tableau de bord, mobile, push (13/10/2026)
+
+### Fait
+
+**API (`lavio-api`)**
+- **Tournées** :
+  - demandes de ramassage ou de livraison, adresse du client par défaut ;
+  - une date hors jour de tournée est refusée (`TOUR_DAY_REQUIRED`, avec les prochains jours proposés) ; seule la responsable peut passer outre, et c'est tracé dans l'audit ;
+  - le montant à encaisser suit le reste à payer du dépôt lié ;
+  - liste du jour avec le total à encaisser ;
+  - statuts `TO_COLLECT → COLLECTED` et `TO_DELIVER → DELIVERED`, annulation motivée (contraintes SQL) ;
+  - la caisse gère tout ; le livreur lit et change les statuts.
+- **Tableau de bord 360°** (`GET /reports/dashboard`, responsable et comptable), période aujourd'hui, semaine (depuis le lundi), mois, année ou personnalisée :
+  - activité de la période : dépôts reçus et retirés, chiffre d'affaires, encaissements, dépenses ;
+  - situation actuelle : dépôts en cours, prêts, en retard ; caisse du jour ; créances ; produits sous le seuil ; validations en attente ; tournée du jour.
+- **Notifications push** :
+  - abonnement par appareil (`push_subscriptions`), envoi Web Push signé VAPID (`web-push`) aux appareils des destinataires de chaque notification ;
+  - l'envoi part **après la validation de la transaction**, jamais pour une écriture annulée ;
+  - charge utile au format du service worker Angular, avec ouverture de l'URL ciblée au clic ;
+  - abonnements expirés (404, 410) supprimés ;
+  - sans clés VAPID, le push est désactivé sans erreur (`GET /push/config`) ; script `pnpm vapid:keys`.
+- Changements de statut d'article et restitutions **rejouables sans effet double**, comme l'exige la file d'envoi.
+
+**Web (`lavio`)**
+- **Tableau de bord** (`/app`) pour la responsable et le comptable, sur ordinateur et sur téléphone ; les autres rôles voient leurs raccourcis de travail.
+- **Tournées** : liste du jour, prochains jours de tournée, nouvelle demande (recherche du client, dépôt à livrer, avertissement et dérogation hors jour), statuts, annulation, liste imprimable A4 (`/print/tours/:date`).
+- **PWA** :
+  - bandeau « Une nouvelle version est disponible » avec **Actualiser** ;
+  - invite d'installation après la deuxième visite connectée, fermable 30 jours, avec aide iOS ;
+  - « Activer les alertes » proposé sur téléphone après connexion, avec explication propre à iPhone ;
+  - ouverture de l'URL ciblée au clic sur une notification.
+- **File d'envoi** (IndexedDB) :
+  - dépôts, paiements, statuts d'article et restitutions interrompus par une coupure sont conservés avec leur clé d'idempotence ;
+  - rejeu dans l'ordre au retour du réseau, au démarrage et toutes les 30 s ;
+  - indicateur « En attente d'envoi (n) » ; les envois refusés restent visibles avec « Abandonner » ;
+  - un dépôt envoyé après une coupure est annoncé avec son numéro, pour imprimer le ticket.
+- Écrans d'attente supprimés : tous les modules de la V1 sont livrés.
+
+### Tests (tous verts)
+
+| Dépôt | Unitaires | End-to-end |
+|---|---|---|
+| `lavio` | 62 (shared, dont jours de tournée, transitions, périodes) + 30 (web, dont la file d'envoi : mise en file, clé conservée, erreurs métier non mises en file) | Playwright, 17 parcours : **parcours 4, mobile de la responsable** (remise saisie au comptoir, visible sur le tableau de bord du téléphone, approuvée depuis le téléphone, tableau de bord à jour) et **tournée** (planifiée au comptoir, collectée par le livreur, liste imprimable) ; les autres parcours ont été rendus robustes à l'exécution en parallèle |
+| `lavio-api` | 62 + 53 (dont l'envoi différé : après réussite seulement) | 140, dont 9 nouveaux : tournées (jour de tournée, dérogation, montant à encaisser, statuts, droits), tableau de bord, push (abonnement, envoi après une demande de validation, rien quand l'écriture échoue, abonnements expirés), rejeu sans effet double, **isolation** |
+
+### Critères de fin de la phase 5
+
+| Critère | État |
+|---|---|
+| La responsable installe la PWA | Fait (manifest, service worker, invite d'installation, aide iOS) ; à vérifier sur un vrai téléphone |
+| Elle reçoit une notification de validation | Fait côté API (push envoyé aux appareils de la responsable, testé avec un envoi simulé) ; réception réelle à vérifier après déploiement avec les clés VAPID |
+| Elle l'approuve depuis son téléphone et voit le tableau de bord à jour | Fait (parcours Playwright sur téléphone) |
+
+### Hypothèses appliquées (configurables ou à confirmer)
+
+- Semaine du tableau de bord : du lundi à aujourd'hui.
+- « Retirés » : dépôts ayant eu au moins une restitution sur la période. « Prêts » : dépôts prêts ou en retrait partiel.
+- Une tournée ne se planifie pas à une date passée.
+- Le push est proposé sur téléphone seulement (écran étroit ou tactile). Un appareil appartient au dernier utilisateur qui s'y est abonné.
+- La file d'envoi est propre à chaque utilisateur sur l'appareil, et rejoue toutes les 30 s tant qu'il reste des envois.
+
+### Points à confirmer
+
+- Recevoir une vraie notification push nécessite un domaine en HTTPS et des clés VAPID : à vérifier lors du déploiement (phase 6).
+- Faut-il notifier aussi le magasinier et le livreur (stock bas, tournée du jour) en push ? Par défaut, seuls les destinataires prévus par chaque notification la reçoivent (la responsable, plus le magasinier pour le stock bas).
+
+### Idées notées (hors périmètre, non codées)
+
+- Aucune.
+
+### Prochaine étape
+
+Phase 6 : landing, recette, durcissement, déploiement.
