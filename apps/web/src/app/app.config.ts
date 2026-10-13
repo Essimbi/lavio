@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration, withNoIncrementalHydration } from '@angular/platform-browser';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
@@ -29,7 +29,7 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
     ),
     provideHttpClient(withInterceptors([offlineQueueInterceptor, apiInterceptor, authInterceptor])),
-    provideClientHydration(withEventReplay()),
+    provideClientHydration(withNoIncrementalHydration()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
