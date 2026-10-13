@@ -5,7 +5,7 @@
   "buildCommand": "pnpm --filter @lavio/shared build && pnpm --filter web build",
   "outputDirectory": "dist/web/browser",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://LAVIO_API_HOST/:path*" },
+    { "source": "/api/:path*", "destination": "https://lavio-api.vercel.app/:path*" },
     { "source": "/((?!api/|.*\\..*).*)", "destination": "/index.csr.html" }
   ],
   "headers": [
