@@ -14,3 +14,5 @@ export * from './tracking.js';
 export * from './phase3.js';
 export * from './stock.js';
 export * from './phase4.js';
+export * from './tours.js';
+export * from './phase5.js';
