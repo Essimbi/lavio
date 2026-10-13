@@ -9,7 +9,10 @@ import { confirmAction } from '../../shared/ui/confirm-dialog/confirm-dialog';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Toast } from '../../shared/ui/toast/toast.service';
 
-/** Validations à distance (module 10) : remises, ventes à crédit, clôtures de caisse. */
+/**
+ * Validations à distance (module 10) : remises, ventes à crédit, clôtures de caisse,
+ * ajustements de stock, inventaires, dépenses importantes.
+ */
 @Component({
   selector: 'lv-approvals-page',
   imports: [RouterLink, PageHeader, FrDateTimePipe, XafPipe],

@@ -1,0 +1,354 @@
+<lv-page-header
+  heading="Dépenses"
+  subtitle="Sorties d’argent par catégorie, avec validation des montants importants."
+>
+  @if (!isManager()) {
+    <a class="lv-link-button" routerLink="/app/cash">Voir la caisse</a>
+  }
+</lv-page-header>
+
+@if (isManager()) {
+  <div class="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Vues des dépenses">
+    <button
+      type="button"
+      role="tab"
+      class="lv-choice"
+      [attr.aria-selected]="view() === 'expenses'"
+      [class.bg-mint-100]="view() === 'expenses'"
+      (click)="show('expenses')"
+    >
+      Dépenses
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="lv-choice"
+      [attr.aria-selected]="view() === 'recurring'"
+      [class.bg-mint-100]="view() === 'recurring'"
+      (click)="show('recurring')"
+    >
+      Récurrentes
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="lv-choice"
+      [attr.aria-selected]="view() === 'categories'"
+      [class.bg-mint-100]="view() === 'categories'"
+      (click)="show('categories')"
+    >
+      Catégories
+    </button>
+  </div>
+}
+
+@switch (view()) {
+  @case ('expenses') {
+    <form
+      class="lv-card mb-6 grid gap-3 md:grid-cols-[1.4fr_1fr_1.2fr_2fr_auto] md:items-end"
+      (ngSubmit)="create()"
+      aria-labelledby="expense-form-title"
+    >
+      <h2 id="expense-form-title" class="text-lg md:col-span-5">
+        {{ isManager() ? 'Nouvelle dépense' : 'Dépense payée en espèces (caisse ouverte)' }}
+      </h2>
+      <div>
+        <label class="lv-label" for="exp-category">Catégorie</label>
+        <select
+          id="exp-category"
+          class="lv-select"
+          name="category"
+          [ngModel]="categoryId()"
+          (ngModelChange)="categoryId.set($event)"
+        >
+          <option value="">— Choisir —</option>
+          @for (c of activeCategories(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="lv-label" for="exp-amount">Montant (FCFA)</label>
+        <input
+          id="exp-amount"
+          class="lv-input tabular"
+          type="number"
+          min="1"
+          inputmode="numeric"
+          name="amount"
+          [ngModel]="amount()"
+          (ngModelChange)="amount.set($event)"
+        />
+      </div>
+      @if (isManager()) {
+        <div>
+          <label class="lv-label" for="exp-account">Payé depuis</label>
+          <select
+            id="exp-account"
+            class="lv-select"
+            name="account"
+            [ngModel]="accountId()"
+            (ngModelChange)="accountId.set($event)"
+          >
+            <option value="">Caisse (espèces)</option>
+            @for (a of activeAccounts(); track a.id) {
+              @if (a.type !== 'CASH') {
+                <option [value]="a.id">{{ a.name }}</option>
+              }
+            }
+          </select>
+        </div>
+      } @else {
+        <p class="text-sm">Payé depuis la caisse</p>
+      }
+      <div>
+        <label class="lv-label" for="exp-description">Description</label>
+        <input
+          id="exp-description"
+          class="lv-input"
+          maxlength="500"
+          name="description"
+          [ngModel]="description()"
+          (ngModelChange)="description.set($event)"
+        />
+      </div>
+      <button type="submit" class="lv-primary" [disabled]="!canSave() || busy()">
+        Enregistrer
+      </button>
+    </form>
+
+    <div class="mb-4 max-w-xs">
+      <label class="lv-label" for="exp-status">Statut</label>
+      <select
+        id="exp-status"
+        class="lv-select"
+        [ngModel]="status()"
+        (ngModelChange)="status.set($event); page.set(1)"
+      >
+        <option value="">Tous</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ statusLabels[s] }}</option>
+        }
+      </select>
+    </div>
+    <div class="lv-table-wrap">
+      <table class="lv-table">
+        <caption class="sr-only">
+          Dépenses
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Catégorie</th>
+            <th scope="col">Description</th>
+            <th scope="col">Compte</th>
+            <th scope="col">Statut</th>
+            <th scope="col" class="num">Montant</th>
+            @if (isManager()) {
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of list.hasValue() ? list.value().data : []; track e.id) {
+            <tr>
+              <td>{{ e.status === 'DRAFT' ? (e.paidAt | frDate) : (e.paidAt | frDateTime) }}</td>
+              <td>{{ e.categoryName }}</td>
+              <td>
+                {{ e.description ?? '—' }}
+                @if (e.supplierName) {
+                  <span class="block text-sm">{{ e.supplierName }}</span>
+                }
+                @if (e.cancelReason) {
+                  <span class="block text-sm text-coral-600">Annulée : {{ e.cancelReason }}</span>
+                }
+              </td>
+              <td>
+                {{ e.accountName }} <span class="block text-sm">{{ methodLabels[e.method] }}</span>
+              </td>
+              <td>
+                <span class="lv-chip {{ statusTones[e.status] }}">{{
+                  statusLabels[e.status]
+                }}</span>
+              </td>
+              <td class="num">{{ e.amountXaf | xaf }}</td>
+              @if (isManager()) {
+                <td class="whitespace-nowrap">
+                  @if (e.status === 'DRAFT') {
+                    <button type="button" class="lv-link-button" (click)="confirm(e)">
+                      Confirmer
+                    </button>
+                  }
+                  @if (['DRAFT', 'PENDING_APPROVAL', 'RECORDED'].includes(e.status)) {
+                    <button type="button" class="lv-link-button text-coral-600" (click)="cancel(e)">
+                      Annuler
+                    </button>
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td [attr.colspan]="isManager() ? 7 : 6">
+                {{ list.isLoading() ? 'Chargement…' : 'Aucune dépense.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <lv-pager [meta]="list.hasValue() ? list.value().meta : null" (page)="page.set($event)" />
+  }
+
+  @case ('recurring') {
+    <form
+      class="lv-card mb-6 grid gap-3 md:grid-cols-[2fr_1.4fr_1fr_0.8fr_1.2fr_auto] md:items-end"
+      (ngSubmit)="addRecurring()"
+    >
+      <div>
+        <label class="lv-label" for="rec-label">Libellé</label>
+        <input
+          id="rec-label"
+          class="lv-input"
+          maxlength="80"
+          name="label"
+          [ngModel]="rLabel()"
+          (ngModelChange)="rLabel.set($event)"
+        />
+      </div>
+      <div>
+        <label class="lv-label" for="rec-category">Catégorie</label>
+        <select
+          id="rec-category"
+          class="lv-select"
+          name="category"
+          [ngModel]="rCategory()"
+          (ngModelChange)="rCategory.set($event)"
+        >
+          <option value="">— Choisir —</option>
+          @for (c of activeCategories(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="lv-label" for="rec-amount">Montant (FCFA)</label>
+        <input
+          id="rec-amount"
+          class="lv-input tabular"
+          type="number"
+          min="1"
+          name="amount"
+          [ngModel]="rAmount()"
+          (ngModelChange)="rAmount.set($event)"
+        />
+      </div>
+      <div>
+        <label class="lv-label" for="rec-day">Jour (1 à 28)</label>
+        <input
+          id="rec-day"
+          class="lv-input tabular"
+          type="number"
+          min="1"
+          max="28"
+          name="day"
+          [ngModel]="rDay()"
+          (ngModelChange)="rDay.set($event)"
+        />
+      </div>
+      <div>
+        <label class="lv-label" for="rec-account">Compte</label>
+        <select
+          id="rec-account"
+          class="lv-select"
+          name="account"
+          [ngModel]="rAccount()"
+          (ngModelChange)="rAccount.set($event)"
+        >
+          <option value="">— Choisir —</option>
+          @for (a of activeAccounts(); track a.id) {
+            <option [value]="a.id">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+      <button
+        type="submit"
+        class="lv-primary"
+        [disabled]="
+          rLabel().trim().length < 2 ||
+          !rCategory() ||
+          !rAccount() ||
+          !(rAmount() ?? 0) ||
+          !(rDay() ?? 0)
+        "
+      >
+        Ajouter
+      </button>
+    </form>
+    <p class="mb-3 text-sm">
+      À chaque échéance, un brouillon apparaît dans « Dépenses » ; il compte une fois confirmé.
+    </p>
+    <ul class="grid gap-3 md:grid-cols-2" role="list">
+      @for (r of recurring.hasValue() ? recurring.value() : []; track r.id) {
+        <li class="lv-card flex items-start justify-between gap-3" [class.opacity-60]="!r.isActive">
+          <div>
+            <p class="font-semibold">{{ r.label }}</p>
+            <p class="text-sm">
+              {{ r.categoryName }} · {{ r.accountName }} · le {{ r.dayOfMonth }} du mois
+            </p>
+            <p class="text-sm">Prochaine échéance : {{ r.nextDueOn | frDate }}</p>
+          </div>
+          <div class="text-right">
+            <p class="tabular font-semibold">{{ r.amountXaf | xaf }}</p>
+            <button type="button" class="lv-link-button" (click)="toggleRecurring(r)">
+              {{ r.isActive ? 'Suspendre' : 'Reprendre' }}
+            </button>
+          </div>
+        </li>
+      } @empty {
+        <li class="lv-card">
+          {{ recurring.isLoading() ? 'Chargement…' : 'Aucune dépense récurrente.' }}
+        </li>
+      }
+    </ul>
+  }
+
+  @case ('categories') {
+    <form class="lv-card mb-6 flex flex-wrap items-end gap-3" (ngSubmit)="addCategory()">
+      <div class="min-w-64 grow">
+        <label class="lv-label" for="cat-name">Nouvelle catégorie</label>
+        <input
+          id="cat-name"
+          class="lv-input"
+          maxlength="60"
+          name="name"
+          [ngModel]="newCategory()"
+          (ngModelChange)="newCategory.set($event)"
+        />
+      </div>
+      <button type="submit" class="lv-primary" [disabled]="newCategory().trim().length < 2">
+        Ajouter
+      </button>
+    </form>
+    <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="list">
+      @for (c of categories.hasValue() ? categories.value() : []; track c.id) {
+        <li
+          class="lv-card flex items-center justify-between gap-3"
+          [class.opacity-60]="!c.isActive"
+        >
+          <span>
+            <span class="font-semibold">{{ c.name }}</span>
+            @if (c.systemKey) {
+              <span class="block text-sm">Factures fournisseurs</span>
+            }
+          </span>
+          @if (!c.systemKey) {
+            <button type="button" class="lv-link-button" (click)="toggleCategory(c)">
+              {{ c.isActive ? 'Archiver' : 'Réactiver' }}
+            </button>
+          }
+        </li>
+      }
+    </ul>
+  }
+}

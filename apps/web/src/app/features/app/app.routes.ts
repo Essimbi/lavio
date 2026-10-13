@@ -9,6 +9,9 @@ import { ModulePlaceholder } from './module-placeholder';
 /** Rôles des écrans de suivi et d'argent (docs/05, matrice des droits). */
 const TRACKING_ROLES: TenantRole[] = ['OPERATOR', 'QUALITY', 'CASHIER'];
 const MONEY_ROLES: TenantRole[] = ['CASHIER', 'ACCOUNTANT'];
+const STOCK_ROLES: TenantRole[] = ['CASHIER', 'OPERATOR', 'STOCK_KEEPER', 'ACCOUNTANT'];
+const PURCHASING_ROLES: TenantRole[] = ['CASHIER', 'STOCK_KEEPER', 'ACCOUNTANT'];
+const ACCOUNTING_ROLES: TenantRole[] = ['ACCOUNTANT'];
 
 /** Navigation de l'application du pressing (docs/08, « Navigation »). */
 const items: NavItem[] = [
@@ -25,10 +28,10 @@ const items: NavItem[] = [
   { label: 'Suivi', path: '/app/tracking', icon: 'track', tenantRoles: TRACKING_ROLES },
   { label: 'Caisse', path: '/app/cash', icon: 'cash', tenantRoles: MONEY_ROLES },
   { label: 'Paiements', path: '/app/payments', icon: 'card', tenantRoles: MONEY_ROLES },
-  { label: 'Stock', path: '/app/stock', icon: 'box' },
-  { label: 'Achats', path: '/app/purchasing', icon: 'cart' },
-  { label: 'Dépenses', path: '/app/expenses', icon: 'receipt' },
-  { label: 'Comptabilité', path: '/app/accounting', icon: 'chart' },
+  { label: 'Stock', path: '/app/stock', icon: 'box', tenantRoles: STOCK_ROLES },
+  { label: 'Achats', path: '/app/purchasing', icon: 'cart', tenantRoles: PURCHASING_ROLES },
+  { label: 'Dépenses', path: '/app/expenses', icon: 'receipt', tenantRoles: MONEY_ROLES },
+  { label: 'Comptabilité', path: '/app/accounting', icon: 'chart', tenantRoles: ACCOUNTING_ROLES },
   { label: 'Tournées', path: '/app/tours', icon: 'truck' },
   { label: 'Notifications', path: '/app/notifications', icon: 'bell', badge: 'notifications' },
   { label: 'Paramètres', path: '/app/settings', icon: 'settings' },
@@ -45,6 +48,10 @@ const BUILT = [
   '/app/payments',
   '/app/notifications',
   '/app/settings',
+  '/app/stock',
+  '/app/purchasing',
+  '/app/expenses',
+  '/app/accounting',
 ];
 
 const byPath = (path: string): NavItem => {
@@ -147,6 +154,27 @@ const moreEntries: MenuEntry[] = [
     icon: 'card',
     tenantRoles: MONEY_ROLES,
   },
+  {
+    label: 'Achats',
+    description: 'Commandes, réceptions, fournisseurs.',
+    path: '/app/purchasing',
+    icon: 'cart',
+    tenantRoles: PURCHASING_ROLES,
+  },
+  {
+    label: 'Dépenses',
+    description: 'Saisie, brouillons, récurrences.',
+    path: '/app/expenses',
+    icon: 'receipt',
+    tenantRoles: MONEY_ROLES,
+  },
+  {
+    label: 'Comptabilité',
+    description: 'Trésorerie, rapports, exports.',
+    path: '/app/accounting',
+    icon: 'chart',
+    tenantRoles: ACCOUNTING_ROLES,
+  },
   { label: 'Clients', description: 'Fiches et historique.', path: '/app/customers', icon: 'users' },
   ...settingsEntries,
 ];
@@ -221,6 +249,60 @@ export const appRoutes: Routes = [
         title: 'Paiements — Lavio',
         canActivate: [tenantRoleGuard(...MONEY_ROLES)],
         loadComponent: () => import('./payments/payments-page').then((m) => m.PaymentsPage),
+      },
+      {
+        path: 'stock',
+        title: 'Stock — Lavio',
+        canActivate: [tenantRoleGuard(...STOCK_ROLES)],
+        loadComponent: () => import('./stock/stock-page').then((m) => m.StockPage),
+      },
+      {
+        path: 'stock/inventories',
+        title: 'Inventaires — Lavio',
+        canActivate: [tenantRoleGuard('STOCK_KEEPER', 'ACCOUNTANT')],
+        loadComponent: () => import('./stock/inventories-page').then((m) => m.InventoriesPage),
+      },
+      {
+        path: 'stock/inventories/:id',
+        title: 'Inventaire — Lavio',
+        canActivate: [tenantRoleGuard('STOCK_KEEPER', 'ACCOUNTANT')],
+        loadComponent: () => import('./stock/inventory-page').then((m) => m.InventoryPage),
+      },
+      {
+        path: 'stock/:id',
+        title: 'Produit — Lavio',
+        canActivate: [tenantRoleGuard(...STOCK_ROLES)],
+        loadComponent: () => import('./stock/stock-item-page').then((m) => m.StockItemPage),
+      },
+      {
+        path: 'purchasing',
+        title: 'Achats — Lavio',
+        canActivate: [tenantRoleGuard(...PURCHASING_ROLES)],
+        loadComponent: () => import('./purchasing/purchasing-page').then((m) => m.PurchasingPage),
+      },
+      {
+        path: 'purchasing/new',
+        title: 'Nouvelle commande — Lavio',
+        canActivate: [tenantRoleGuard('STOCK_KEEPER')],
+        loadComponent: () => import('./purchasing/order-new-page').then((m) => m.OrderNewPage),
+      },
+      {
+        path: 'purchasing/:id',
+        title: 'Commande — Lavio',
+        canActivate: [tenantRoleGuard(...PURCHASING_ROLES)],
+        loadComponent: () => import('./purchasing/order-page').then((m) => m.OrderPage),
+      },
+      {
+        path: 'expenses',
+        title: 'Dépenses — Lavio',
+        canActivate: [tenantRoleGuard(...MONEY_ROLES)],
+        loadComponent: () => import('./expenses/expenses-page').then((m) => m.ExpensesPage),
+      },
+      {
+        path: 'accounting',
+        title: 'Comptabilité — Lavio',
+        canActivate: [tenantRoleGuard(...ACCOUNTING_ROLES)],
+        loadComponent: () => import('./accounting/accounting-page').then((m) => m.AccountingPage),
       },
       {
         path: 'notifications',

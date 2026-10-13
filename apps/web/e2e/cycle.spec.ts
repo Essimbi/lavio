@@ -1,8 +1,9 @@
 import { type Browser, expect, type Page, test } from '@playwright/test';
 
 /**
- * Cycle complet (docs/12, fin de phase 3) : ouverture de caisse → dépôt → statuts →
- * reprise → contrôle qualité → encaissement → restitution → reçu → clôture validée.
+ * Cycle complet (docs/12 et docs/13, parcours 2) : ouverture de caisse → dépôt → statuts →
+ * reprise → contrôle qualité → encaissement Mobile Money avec référence → restitution → reçu →
+ * clôture validée.
  * Nécessite l'API (API_ORIGIN) et les données `pnpm e2e:fixtures` (E2E_PASSWORD).
  */
 const password = process.env['E2E_PASSWORD'];
@@ -101,12 +102,15 @@ test('cycle complet : dépôt, suivi, contrôle qualité, encaissement, restitut
   await expect(quality.page.getByText('1 article(s) : Prêt.')).toBeVisible();
   await quality.close();
 
-  // 5. Le caissier encaisse en espèces puis restitue l'article.
+  // 5. Le caissier encaisse en Mobile Money avec la référence (docs/13, parcours 2), puis restitue.
   await page.goto(`/app/deposits/${depositId}`);
   await expect(page.getByRole('heading', { name: 'Incidents' })).toBeVisible();
   await page.getByRole('button', { name: 'Encaisser' }).click();
   const payment = page.getByRole('dialog');
   await expect(payment.getByLabel('Montant (FCFA)')).toHaveValue('1000');
+  await payment.getByText('Orange Money', { exact: true }).click();
+  await expect(payment.getByRole('button', { name: 'Enregistrer le paiement' })).toBeDisabled();
+  await payment.getByLabel('Référence de la transaction').fill(`OM-${Date.now()}`);
   await payment.getByRole('button', { name: 'Enregistrer le paiement' }).click();
   await expect(page.getByText('Paiement enregistré.')).toBeVisible();
   const restitution = page.getByRole('region', { name: 'Restitution' });
@@ -120,14 +124,15 @@ test('cycle complet : dépôt, suivi, contrôle qualité, encaissement, restitut
   const receipt = page.getByRole('article', { name: 'Reçu' });
   await expect(receipt.locator('.number')).toHaveText(`N° ${number}`);
   await expect(receipt).toContainText('Articles restitués');
-  await expect(receipt).toContainText('Espèces');
+  await expect(receipt).toContainText('Orange Money');
 
   // 7. Clôture demandée par le caissier, sans écart.
   await page.goto('/app/cash');
   const expected = (
     (await page.locator('dt:has-text("Espèces attendues") + dd').textContent()) ?? ''
   ).replace(/\D/g, '');
-  expect(Number(expected)).toBeGreaterThanOrEqual(11000);
+  // Paiement Mobile Money : hors espèces, l'attendu reste le fonds de caisse.
+  expect(Number(expected)).toBe(10000);
   await page.getByLabel('Espèces comptées (FCFA)').fill(expected);
   await expect(page.getByText(/Écart : 0/)).toBeVisible();
   await page.getByRole('button', { name: 'Demander la clôture' }).click();
