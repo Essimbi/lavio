@@ -1,16 +1,47 @@
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { apiInterceptor } from '../../core/http/api.interceptor';
 import { Home } from './home';
 
-describe('Home', () => {
-  it('présente la promesse et le parcours des statuts dans l’ordre', async () => {
-    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+describe('Home (landing)', () => {
+  async function render() {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([apiInterceptor])),
+        provideHttpClientTesting(),
+      ],
+    });
     const fixture = TestBed.createComponent(Home);
     await fixture.whenStable();
-    const el = fixture.nativeElement as HTMLElement;
+    const http = TestBed.inject(HttpTestingController);
+    return { fixture, el: fixture.nativeElement as HTMLElement, http };
+  }
 
+  const flushConfig = async (
+    http: HttpTestingController,
+    fixture: { whenStable: () => Promise<unknown> },
+    plans: unknown[] = [],
+  ) => {
+    http.expectOne('/api/v1/public/config').flush({
+      whatsappNumber: '237600000099',
+      whatsappDefaultMessage: 'Bonjour, je souhaite en savoir plus sur Lavio pour mon pressing.',
+      plans,
+    });
+    await new Promise((r) => setTimeout(r));
+    await fixture.whenStable();
+  };
+
+  it('présente la promesse, les sections et le parcours des statuts dans l’ordre', async () => {
+    const { el } = await render();
     expect(el.querySelector('h1')?.textContent).toContain('Votre pressing');
-    expect(el.querySelector('a[href="/login"]')).not.toBeNull();
+    for (const id of ['fonctionnalites', 'comment', 'tarifs', 'questions', 'contact']) {
+      expect(el.querySelector(`#${id}`)).not.toBeNull();
+    }
+    expect(el.querySelectorAll('.features > li')).toHaveLength(6);
+    expect(el.querySelectorAll('.faq details').length).toBeGreaterThanOrEqual(6);
     const steps = [...el.querySelectorAll('.journey .chip')].map((c) => c.textContent.trim());
     expect(steps).toEqual([
       'Reçu',
@@ -20,14 +51,92 @@ describe('Home', () => {
       'Prêt',
       'Retiré',
     ]);
+    expect(el.querySelector('a[href="/mentions-legales"]')).not.toBeNull();
+    expect(el.querySelector('a[href="/confidentialite"]')).not.toBeNull();
+  });
+
+  it('construit le lien WhatsApp depuis la configuration (jamais en dur)', async () => {
+    const { el, http, fixture } = await render();
+    expect(el.querySelector('a[href^="https://wa.me"]')).toBeNull();
+    await flushConfig(http, fixture);
+    const links = [...el.querySelectorAll<HTMLAnchorElement>('a[href^="https://wa.me"]')];
+    expect(links.length).toBeGreaterThan(0);
+    expect(links[0]?.href).toBe(
+      'https://wa.me/237600000099?text=Bonjour%2C%20je%20souhaite%20en%20savoir%20plus%20sur%20Lavio%20pour%20mon%20pressing.',
+    );
+    const floating = el.querySelector('.wa-float');
+    expect(floating?.getAttribute('aria-label')).toBe('Contacter le service client sur WhatsApp');
+  });
+
+  it('affiche les tarifs lus depuis l’API, ou « Tarif sur demande »', async () => {
+    const { el, http, fixture } = await render();
+    await flushConfig(http, fixture, [
+      {
+        code: 'STANDARD',
+        name: 'Standard',
+        priceMonthlyXaf: 15000,
+        priceYearlyXaf: null,
+        includedUsers: 2,
+        extraUserPriceXaf: null,
+        trialDays: 14,
+      },
+      {
+        code: 'PRO',
+        name: 'Pro',
+        priceMonthlyXaf: null,
+        priceYearlyXaf: null,
+        includedUsers: 5,
+        extraUserPriceXaf: null,
+        trialDays: 0,
+      },
+    ]);
+    const plans = [...el.querySelectorAll('.plan')].map((p) => p.textContent);
+    expect(plans[0]).toMatch(/15\s000\sFCFA/);
+    expect(plans[0]).toContain('Essai gratuit de 14 jours');
+    expect(plans[1]).toContain('Tarif sur demande');
+    expect(plans[1]).not.toContain('Essai gratuit');
+    expect(el.querySelector<HTMLAnchorElement>('.plan a[href^="https://wa.me"]')?.href).toContain(
+      encodeURIComponent('Plan Standard.'),
+    );
+  });
+
+  it('valide le formulaire, exige le consentement et envoie la demande', async () => {
+    const { el, http, fixture } = await render();
+    await flushConfig(http, fixture);
+    const submit = el.querySelector<HTMLButtonElement>('#contact button[type="submit"]');
+    submit?.click();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('.field-error').length).toBeGreaterThanOrEqual(4);
+    http.expectNone('/api/v1/public/leads');
+
+    const set = (id: string, value: string) => {
+      const input = el.querySelector<HTMLInputElement>(`#${id}`);
+      if (!input) throw new Error(id);
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    };
+    set('lead-name', 'Awa Démo');
+    set('lead-pressing', 'Pressing Démo');
+    set('lead-phone', '6 90 00 00 00');
+    el.querySelector<HTMLInputElement>('input[formcontrolname="consent"]')?.click();
+    await fixture.whenStable();
+    submit?.click();
+    const req = http.expectOne('/api/v1/public/leads');
+    expect(req.request.body).toMatchObject({
+      name: 'Awa Démo',
+      pressingName: 'Pressing Démo',
+      consent: true,
+    });
+    expect(req.request.body.website).toBeUndefined();
+    req.flush({ ok: true });
+    await new Promise((r) => setTimeout(r));
+    await fixture.whenStable();
+    expect(el.textContent).toContain('Merci ! Nous vous recontactons très vite.');
   });
 
   it('respecte les contrastes de la charte : jamais de texte blanc sur aqua ni ambre', async () => {
-    TestBed.configureTestingModule({ providers: [provideRouter([])] });
-    const fixture = TestBed.createComponent(Home);
-    await fixture.whenStable();
-    const chips = [...(fixture.nativeElement as HTMLElement).querySelectorAll('.chip')];
-    for (const chip of chips) {
+    const { el } = await render();
+    for (const chip of el.querySelectorAll('.chip')) {
       const onLight =
         chip.classList.contains('bg-aqua-400') || chip.classList.contains('bg-amber-500');
       if (onLight) expect(chip.classList.contains('text-white')).toBe(false);

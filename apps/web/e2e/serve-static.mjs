@@ -1,8 +1,9 @@
-// Sert le build statique comme Vercel : fichiers prérendus, sinon repli SPA sur index.csr.html.
+// Sert le build statique comme Vercel : fichiers prérendus (compressés), sinon repli SPA sur index.csr.html.
 // Si API_ORIGIN est défini, `/api/*` est relayé vers l'API (comme la réécriture Vercel).
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer, request } from 'node:http';
 import { extname, join, normalize } from 'node:path';
+import { createGzip } from 'node:zlib';
 
 const root = join(import.meta.dirname, '..', 'dist', 'web', 'browser');
 const port = Number(process.argv[2] ?? 4300);
@@ -58,7 +59,19 @@ createServer((req, res) => {
     res.writeHead(404).end('Introuvable');
     return;
   }
-  res.writeHead(200, { 'Content-Type': types[extname(file)] ?? 'application/octet-stream' });
+  const type = types[extname(file)] ?? 'application/octet-stream';
+  // Compression comme sur Vercel (textes seulement), pour des mesures Lighthouse réalistes.
+  const compressible = /^(text\/|application\/(json|manifest))|svg/.test(type);
+  if (compressible && /\bgzip\b/.test(String(req.headers['accept-encoding'] ?? ''))) {
+    res.writeHead(200, {
+      'Content-Type': type,
+      'Content-Encoding': 'gzip',
+      Vary: 'Accept-Encoding',
+    });
+    createReadStream(file).pipe(createGzip()).pipe(res);
+    return;
+  }
+  res.writeHead(200, { 'Content-Type': type });
   createReadStream(file).pipe(res);
 }).listen(port, () =>
   console.warn(

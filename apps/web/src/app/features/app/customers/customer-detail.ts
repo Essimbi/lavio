@@ -8,11 +8,14 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import type { CustomerDto, SpecialPriceDto } from '@lavio/shared';
 import { PressingApi } from '../../../core/api/pressing-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe, PhonePipe, XafPipe } from '../../../shared/format/format';
+import { saveBlob } from '../../../shared/format/labels';
+import { confirmAction } from '../../../shared/ui/confirm-dialog/confirm-dialog';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { DepositChip } from '../../../shared/ui/status-chip/deposit-chip';
@@ -41,12 +44,28 @@ import { CustomerForm } from './customer-form';
         [subtitle]="(c.phone | phone) + (c.type === 'COMPANY' ? ' · Entreprise' : '')"
       >
         <a class="lv-link-button" routerLink="/app/customers">Tous les clients</a>
-        @if (auth.hasTenantRole('CASHIER')) {
+        @if (auth.hasTenantRole('CASHIER') && !c.anonymizedAt) {
           <button type="button" class="lv-secondary" (click)="editing.set(!editing())">
             {{ editing() ? 'Fermer' : 'Modifier' }}
           </button>
         }
+        @if (auth.hasTenantRole()) {
+          <button type="button" class="lv-secondary" (click)="exportData()">
+            Exporter ses données
+          </button>
+          @if (!c.anonymizedAt) {
+            <button type="button" class="lv-link-button text-coral-600" (click)="anonymize()">
+              Anonymiser
+            </button>
+          }
+        }
       </lv-page-header>
+      @if (c.anonymizedAt) {
+        <p class="lv-alert mb-4" role="status">
+          Données personnelles effacées le {{ c.anonymizedAt | frDate }} à la demande du client. Les
+          montants restent dans la comptabilité.
+        </p>
+      }
       @if (editing()) {
         <lv-customer-form
           class="mb-6 block"
@@ -167,6 +186,7 @@ export class CustomerDetail {
   readonly id = input.required<string>();
   private readonly api = inject(PressingApi);
   private readonly toast = inject(Toast);
+  private readonly dialog = inject(MatDialog);
   protected readonly auth = inject(AuthService);
   protected readonly customer = resource({
     params: () => this.id(),
@@ -198,6 +218,37 @@ export class CustomerDetail {
       return list;
     },
   });
+
+  /** Droits des personnes (docs/10) : export JSON des données du client. */
+  protected async exportData(): Promise<void> {
+    try {
+      saveBlob(
+        await this.api.exportCustomer(this.id()),
+        `lavio-client-${this.id().slice(0, 8)}.json`,
+      );
+    } catch (e) {
+      this.toast.error(e);
+    }
+  }
+
+  protected async anonymize(): Promise<void> {
+    const ok = await confirmAction(this.dialog, {
+      title: 'Anonymiser ce client ?',
+      message:
+        'Nom, téléphones, adresse, notes et descriptions des articles seront effacés définitivement. Les dépôts et paiements restent dans la comptabilité. Exportez d’abord ses données s’il les demande.',
+      confirmLabel: 'Anonymiser',
+      danger: true,
+      reasonRequired: true,
+    });
+    if (!ok?.reason) return;
+    try {
+      await this.api.anonymizeCustomer(this.id(), ok.reason);
+      this.toast.success('Client anonymisé.');
+      this.customer.reload();
+    } catch (e) {
+      this.toast.error(e);
+    }
+  }
 
   protected saved(c: CustomerDto): void {
     this.editing.set(false);

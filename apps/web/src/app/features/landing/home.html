@@ -1,45 +1,141 @@
 <div class="page">
-  <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-    <lv-logo [width]="120" />
-    <a
-      routerLink="/login"
-      class="inline-flex min-h-11 items-center rounded-field border-2 border-teal-900 px-4 font-semibold text-teal-900 no-underline transition-colors hover:bg-teal-900 hover:text-white"
-    >
-      Se connecter
-    </a>
+  <a class="skip-link sr-only-focusable" href="#contenu">Aller au contenu</a>
+  <header class="site-header">
+    <div class="wrap flex items-center justify-between gap-4 py-4">
+      <a routerLink="/" aria-label="Lavio, accueil"><lv-logo [width]="112" /></a>
+      <nav class="anchors" aria-label="Sections de la page">
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#comment">Comment ça marche</a>
+        <a href="#tarifs">Tarifs</a>
+        <a href="#questions">Questions</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a routerLink="/login" class="btn btn-ghost">Se connecter</a>
+        @if (whatsapp(); as wa) {
+          <a class="btn btn-wa hide-sm" [href]="wa" target="_blank" rel="noopener">WhatsApp</a>
+        }
+      </div>
+    </div>
   </header>
 
-  <main
-    class="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:pt-14"
-  >
-    <section class="flex flex-col gap-6">
-      <h1 class="text-[40px] font-semibold leading-[1.1] sm:text-[52px]">
-        Votre pressing,<br />sous contrôle.
-      </h1>
-      <p class="max-w-xl text-lg text-ink-900/85">
-        Dépôts, suivi des vêtements, caisse, stock et comptabilité de gestion dans un seul outil,
-        avec une vue à 360° sur votre téléphone.
-      </p>
-      <div class="flex flex-wrap gap-3">
-        <a
-          routerLink="/login"
-          class="inline-flex min-h-12 items-center rounded-field bg-teal-900 px-6 font-semibold text-white no-underline shadow-card transition-transform hover:-translate-y-0.5"
-        >
-          Se connecter
-        </a>
+  <main id="contenu" tabindex="-1">
+    <!-- Hero -->
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Logiciel de gestion de pressing</p>
+        <h1 id="hero-title">Votre pressing,<br />sous contrôle.</h1>
+        <p class="lead">
+          Dépôts, suivi des vêtements, caisse, stock et comptabilité de gestion dans un seul outil,
+          avec une vue à 360° sur votre téléphone.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          @if (whatsapp(); as wa) {
+            <a class="btn btn-wa btn-lg" [href]="wa" target="_blank" rel="noopener"
+              >Parler au service client</a
+            >
+          } @else {
+            <a class="btn btn-wa btn-lg" href="#contact">Parler au service client</a>
+          }
+          <a class="btn btn-ghost btn-lg" href="#fonctionnalites">Voir les fonctionnalités</a>
+        </div>
       </div>
-      <p class="text-[13px] font-medium text-teal-700">
-        Site en préparation : la présentation complète arrive bientôt.
-      </p>
+
+      <div
+        class="phone"
+        role="img"
+        aria-label="Aperçu du tableau de bord Lavio sur téléphone : chiffre d’affaires, caisse du jour, stock bas et validations"
+      >
+        <div class="phone-screen" aria-hidden="true">
+          <p class="ph-title">Tableau de bord</p>
+          <div class="ph-kpi">
+            <span>Chiffre d’affaires</span>
+            <strong>186 500 FCFA</strong>
+            <em>42 dépôts aujourd’hui</em>
+          </div>
+          <div class="ph-grid">
+            <div><strong>18</strong><span>En cours</span></div>
+            <div><strong>9</strong><span>Prêts</span></div>
+            <div class="ph-alert"><strong>2</strong><span>En retard</span></div>
+            <div><strong>31</strong><span>Retirés</span></div>
+          </div>
+          <div class="ph-row"><span>Caisse du jour</span><strong>74 000 FCFA</strong></div>
+          <div class="ph-row ph-warn"><span>Stock bas</span><strong>Détachant</strong></div>
+          <div class="ph-approve">
+            <span>Remise à valider</span>
+            <b>Valider</b>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="flex justify-center lg:justify-end" aria-label="Exemple de ticket de dépôt">
-      <div class="printer">
+    <!-- Le problème -->
+    <section class="band" aria-labelledby="probleme">
+      <div class="wrap">
+        <h2 id="probleme" class="section-title">
+          Cahiers, tickets perdus, caisse qui ne tombe pas juste…
+        </h2>
+        <ul class="grid gap-4 md:grid-cols-3" role="list">
+          @for (p of problems; track p.title) {
+            <li class="card">
+              <h3>{{ p.title }}</h3>
+              <p>{{ p.text }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- Fonctionnalités -->
+    <section id="fonctionnalites" class="wrap section" aria-labelledby="fonctionnalites-title">
+      <h2 id="fonctionnalites-title" class="section-title">
+        Tout votre pressing, dans un seul outil
+      </h2>
+      <ul class="features" role="list">
+        @for (f of features; track f.title) {
+          <li class="card feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path [attr.d]="f.icon" />
+              </svg>
+            </span>
+            <h3>{{ f.title }}</h3>
+            <p>{{ f.text }}</p>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <!-- Du dépôt au retrait -->
+    <section class="wrap section split" aria-labelledby="parcours">
+      <div>
+        <h2 id="parcours" class="section-title">Chaque vêtement suivi, du dépôt au retrait</h2>
+        <p class="mb-5">
+          Le client repart avec un ticket numéroté. Votre équipe sait à tout moment où en est chaque
+          pièce.
+        </p>
+        <ol class="journey" role="list">
+          @for (step of steps; track step.label) {
+            <li class="journey-step">
+              <span class="chip {{ step.tone }}">{{ step.label }}</span>
+            </li>
+          }
+        </ol>
+      </div>
+      <div class="printer" aria-label="Exemple de ticket de dépôt" role="img">
         <div class="printer-slot" aria-hidden="true"></div>
-        <figure class="ticket">
+        <figure class="ticket" aria-hidden="true">
           <p class="ticket-shop">Pressing de démonstration</p>
           <p class="ticket-label">Ticket de dépôt</p>
-          <p class="ticket-number tabular" aria-label="Numéro 000124">N° 000124</p>
+          <p class="ticket-number tabular">N° 000124</p>
           <dl class="ticket-lines">
             <div>
               <dt>1 chemise</dt>
@@ -55,7 +151,7 @@
             </div>
           </dl>
           <div class="ticket-footer">
-            <svg class="ticket-qr" viewBox="0 0 21 21" aria-hidden="true" focusable="false">
+            <svg class="ticket-qr" viewBox="0 0 21 21" focusable="false">
               <path
                 d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM8 4h2v2H8zM11 5h2v2h-2zM9 8h3v1H9zM8 10h2v2H8zM12 9h2v3h-2zM15 8h2v2h-2zM18 9h3v2h-3zM9 13h2v2H9zM13 13h3v2h-3zM17 12h2v3h-2zM9 17h3v2H9zM13 16h2v2h-2zM16 17h2v4h-2zM19 16h2v2h-2zM10 19h2v2h-2zM19 19h2v2h-2zM0 8h2v2H0zM3 9h3v2H3z"
               />
@@ -66,24 +162,271 @@
         </figure>
       </div>
     </section>
+
+    <!-- Comment ça marche -->
+    <section id="comment" class="band" aria-labelledby="comment-title">
+      <div class="wrap">
+        <h2 id="comment-title" class="section-title">Comment ça marche</h2>
+        <ol class="steps" role="list">
+          <li class="card">
+            <span class="step-n">1</span>
+            <h3>Vous nous contactez sur WhatsApp</h3>
+            <p>Nous découvrons votre pressing et vos habitudes.</p>
+          </li>
+          <li class="card">
+            <span class="step-n">2</span>
+            <h3>Nous créons votre espace</h3>
+            <p>Catalogue, tarifs, utilisateurs : nous formons votre équipe.</p>
+          </li>
+          <li class="card">
+            <span class="step-n">3</span>
+            <h3>Vous suivez votre pressing en direct</h3>
+            <p>Au comptoir comme sur votre téléphone.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Pour la responsable -->
+    <section class="wrap section split" aria-labelledby="responsable">
+      <div>
+        <h2 id="responsable" class="section-title">Pour la responsable : tout, sur le téléphone</h2>
+        <ul class="checks" role="list">
+          <li>Chiffre d’affaires et encaissements du jour, de la semaine, du mois</li>
+          <li>Caisse du jour et écarts à la clôture</li>
+          <li>Produits sous le seuil avant la rupture</li>
+          <li>Remises, crédits et clôtures validés en un geste</li>
+          <li>Alertes sur votre téléphone, même à distance</li>
+        </ul>
+      </div>
+      <div class="card quote">
+        <p>« Je vois la caisse du jour et je valide une remise depuis le marché. »</p>
+        <p class="text-sm">Exemple d’usage</p>
+      </div>
+    </section>
+
+    <!-- Tarifs -->
+    <section id="tarifs" class="band" aria-labelledby="tarifs-title">
+      <div class="wrap">
+        <h2 id="tarifs-title" class="section-title">Tarifs</h2>
+        <div class="plans">
+          @for (p of plans(); track p.code) {
+            <article class="card plan">
+              <h3>{{ p.name }}</h3>
+              <p class="plan-price">
+                {{ price(p.priceMonthlyXaf) }}
+                @if (p.priceMonthlyXaf !== null) {
+                  <span>/ mois</span>
+                }
+              </p>
+              @if (p.priceYearlyXaf !== null) {
+                <p>ou {{ price(p.priceYearlyXaf) }} par an</p>
+              }
+              <ul class="checks" role="list">
+                <li>{{ p.includedUsers }} utilisateurs inclus</li>
+                @if (p.extraUserPriceXaf !== null) {
+                  <li>Utilisateur supplémentaire : {{ price(p.extraUserPriceXaf) }} / mois</li>
+                }
+                <li>Toutes les fonctionnalités, mises à jour comprises</li>
+              </ul>
+              @if (p.trialDays > 0) {
+                <p class="trial">Essai gratuit de {{ p.trialDays }} jours</p>
+              }
+              @if (planLink(p); as link) {
+                <a class="btn btn-wa" [href]="link" target="_blank" rel="noopener"
+                  >Demander ce plan sur WhatsApp</a
+                >
+              }
+            </article>
+          } @empty {
+            <article class="card plan">
+              <h3>Abonnement Lavio</h3>
+              <p class="plan-price">Tarif sur demande</p>
+              <p>Contactez-nous : nous vous présentons l’offre adaptée à votre pressing.</p>
+              <a
+                class="btn btn-wa"
+                [href]="whatsapp() ?? '#contact'"
+                [attr.target]="whatsapp() ? '_blank' : null"
+                rel="noopener"
+                >Nous contacter</a
+              >
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Questions -->
+    <section id="questions" class="wrap section" aria-labelledby="questions-title">
+      <h2 id="questions-title" class="section-title">Questions fréquentes</h2>
+      <div class="faq">
+        @for (item of faq; track item.q) {
+          <details class="card">
+            <summary>{{ item.q }}</summary>
+            <p>{{ item.a }}</p>
+          </details>
+        }
+      </div>
+    </section>
+
+    <!-- Formulaire -->
+    <section id="contact" class="band" aria-labelledby="contact-title">
+      <div class="wrap split">
+        <div>
+          <h2 id="contact-title" class="section-title">Être recontacté</h2>
+          <p>Laissez-nous vos coordonnées : nous vous rappelons pour une démonstration.</p>
+        </div>
+        @if (sent()) {
+          <div class="card" role="status">
+            <h3>Merci ! Nous vous recontactons très vite.</h3>
+          </div>
+        } @else {
+          <form class="card grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="lv-label" for="lead-name">Votre nom</label>
+                <input
+                  id="lead-name"
+                  class="lv-input"
+                  formControlName="name"
+                  autocomplete="name"
+                  [attr.aria-invalid]="invalid('name')"
+                  aria-describedby="lead-name-err"
+                />
+                @if (invalid('name')) {
+                  <p id="lead-name-err" class="field-error">Indiquez votre nom.</p>
+                }
+              </div>
+              <div>
+                <label class="lv-label" for="lead-pressing">Nom du pressing</label>
+                <input
+                  id="lead-pressing"
+                  class="lv-input"
+                  formControlName="pressingName"
+                  autocomplete="organization"
+                  [attr.aria-invalid]="invalid('pressingName')"
+                  aria-describedby="lead-pressing-err"
+                />
+                @if (invalid('pressingName')) {
+                  <p id="lead-pressing-err" class="field-error">Indiquez le nom du pressing.</p>
+                }
+              </div>
+              <div>
+                <label class="lv-label" for="lead-phone">Téléphone</label>
+                <input
+                  id="lead-phone"
+                  class="lv-input"
+                  formControlName="phone"
+                  type="tel"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  [attr.aria-invalid]="invalid('phone')"
+                  aria-describedby="lead-phone-err"
+                />
+                @if (invalid('phone')) {
+                  <p id="lead-phone-err" class="field-error">
+                    Indiquez un numéro valide (ex. 6 90 00 00 00).
+                  </p>
+                }
+              </div>
+              <div>
+                <label class="lv-label" for="lead-city">Ville (facultatif)</label>
+                <input
+                  id="lead-city"
+                  class="lv-input"
+                  formControlName="city"
+                  autocomplete="address-level2"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="lv-label" for="lead-message">Message (facultatif)</label>
+              <textarea
+                id="lead-message"
+                class="lv-input"
+                rows="3"
+                formControlName="message"
+              ></textarea>
+            </div>
+            <!-- Champ piège : invisible pour les personnes, rempli par les robots. -->
+            <div class="trap" aria-hidden="true">
+              <label for="lead-website">Site web</label>
+              <input id="lead-website" formControlName="website" tabindex="-1" autocomplete="off" />
+            </div>
+            <label class="flex items-start gap-2">
+              <input
+                type="checkbox"
+                formControlName="consent"
+                class="mt-1 size-5 accent-teal-900"
+                [attr.aria-invalid]="invalid('consent')"
+                aria-describedby="lead-consent-err"
+              />
+              <span
+                >J’accepte d’être recontacté(e). Voir la
+                <a routerLink="/confidentialite">politique de confidentialité</a>.</span
+              >
+            </label>
+            @if (invalid('consent')) {
+              <p id="lead-consent-err" class="field-error">
+                Votre accord est nécessaire pour être recontacté(e).
+              </p>
+            }
+            @if (formError(); as e) {
+              <p class="lv-alert" role="alert">{{ e }}</p>
+            }
+            <button
+              type="submit"
+              class="btn btn-primary btn-lg justify-self-start"
+              [disabled]="sending()"
+            >
+              {{ sending() ? 'Envoi…' : 'Envoyer ma demande' }}
+            </button>
+          </form>
+        }
+      </div>
+    </section>
   </main>
 
-  <section class="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6" aria-labelledby="parcours">
-    <h2 id="parcours" class="mb-4 text-xl">Chaque vêtement suivi, du dépôt au retrait</h2>
-    <ol class="journey" role="list">
-      @for (step of steps; track step.label) {
-        <li class="journey-step">
-          <span class="chip {{ step.tone }}">{{ step.label }}</span>
-        </li>
-      }
-    </ol>
-  </section>
-
-  <footer class="border-t border-mint-100">
-    <div
-      class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-sm sm:px-6"
-    >
-      <span>Lavio, le pressing sous contrôle · {{ year }}</span>
+  <footer class="site-footer">
+    <div class="wrap flex flex-wrap items-center justify-between gap-4 py-8">
+      <div class="flex items-center gap-3">
+        <lv-logo variant="inverse" [width]="96" />
+        <span>Lavio, le pressing sous contrôle · {{ year }}</span>
+      </div>
+      <nav class="flex flex-wrap gap-4" aria-label="Informations légales">
+        <a routerLink="/mentions-legales">Mentions légales</a>
+        <a routerLink="/confidentialite">Confidentialité</a>
+        @if (config()?.whatsappNumber; as n) {
+          <a [href]="whatsapp()" target="_blank" rel="noopener">WhatsApp : +{{ n }}</a>
+        }
+      </nav>
     </div>
   </footer>
+
+  @if (whatsapp(); as wa) {
+    <a
+      class="wa-float"
+      [href]="wa"
+      target="_blank"
+      rel="noopener"
+      aria-label="Contacter le service client sur WhatsApp"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="26"
+        height="26"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z" />
+        <path
+          d="M9 9.5c.3 1.9 2.6 4.3 4.6 4.6l1.1-1.1 1.8.8-.4 1.6c-3.5.4-8-4-7.6-7.6l1.6-.4.8 1.8z"
+        />
+      </svg>
+    </a>
+  }
 </div>

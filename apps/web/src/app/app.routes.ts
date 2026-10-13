@@ -8,6 +8,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/landing/home').then((m) => m.Home),
   },
   {
+    path: 'mentions-legales',
+    title: 'Mentions légales — Lavio',
+    data: { page: 'mentions' },
+    loadComponent: () => import('./features/legal/legal-page').then((m) => m.LegalPage),
+  },
+  {
+    path: 'confidentialite',
+    title: 'Politique de confidentialité — Lavio',
+    data: { page: 'confidentialite' },
+    loadComponent: () => import('./features/legal/legal-page').then((m) => m.LegalPage),
+  },
+  {
     path: 'login',
     title: 'Connexion — Lavio',
     data: { area: 'app' },

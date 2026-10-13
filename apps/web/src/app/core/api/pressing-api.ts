@@ -99,6 +99,9 @@ export class PressingApi {
     this.patch<CustomerDto>(`/customers/${id}`, body);
   customerHistory = (id: string, page = 1) =>
     this.get<Paginated<DepositListItem>>(`/customers/${id}/history`, { page });
+  exportCustomer = (id: string) => this.blob(`/customers/${id}/export`);
+  anonymizeCustomer = (id: string, reason: string) =>
+    this.post<null>(`/customers/${id}/anonymize`, { reason });
   specialPrices = (id: string) => this.get<SpecialPriceDto[]>(`/customers/${id}/special-prices`);
   setSpecialPrices = (id: string, prices: SpecialPriceDto[]) =>
     this.put<SpecialPriceDto[]>(`/customers/${id}/special-prices`, { prices });
