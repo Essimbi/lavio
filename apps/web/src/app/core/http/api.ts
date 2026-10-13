@@ -3,7 +3,8 @@ import type { ApiErrorBody, ErrorCode } from '@lavio/shared';
 /** Préfixe des appels à l'API (proxifié vers le projet lavio-api, même domaine). */
 export const API_BASE = '/api/v1';
 
-export type ClientErrorCode = ErrorCode | 'NETWORK_ERROR';
+/** `QUEUED` : écriture mise en file d'envoi faute de réseau (docs/09), envoyée plus tard. */
+export type ClientErrorCode = ErrorCode | 'NETWORK_ERROR' | 'QUEUED';
 
 /** Erreur d'API normalisée, toujours avec un message en français affichable. */
 export class ApiError extends Error {
@@ -15,6 +16,11 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = 'ApiError';
+  }
+
+  /** Écriture conservée dans la file d'envoi : elle partira au retour du réseau. */
+  get isQueued(): boolean {
+    return this.code === 'QUEUED';
   }
 
   /** Erreur réseau : la requête n'a pas atteint le serveur (coupure brève, hors ligne). */

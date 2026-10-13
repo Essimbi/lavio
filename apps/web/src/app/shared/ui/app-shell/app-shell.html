@@ -63,6 +63,9 @@
   </header>
 
   <main id="contenu" class="content" tabindex="-1">
+    @if (config().notifications) {
+      <lv-pwa-banners />
+    }
     @if (config().licenseBanner) {
       <lv-license-banner />
     }

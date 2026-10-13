@@ -1,0 +1,179 @@
+<header class="dash-hero mb-6">
+  <h1 class="text-[28px]">Tableau de bord</h1>
+  <p class="text-teal-700">{{ greeting() }} {{ firstName() }} · {{ auth.tenant()?.name }}</p>
+  @if (canSee()) {
+    <div class="mt-4 flex flex-wrap items-end gap-2" role="group" aria-label="Période">
+      @for (p of periods; track p.key) {
+        <button
+          type="button"
+          class="lv-choice"
+          [attr.aria-pressed]="period() === p.key"
+          [class.bg-mint-100]="period() === p.key"
+          (click)="period.set(p.key)"
+        >
+          {{ p.label }}
+        </button>
+      }
+      @if (period() === 'custom') {
+        <div>
+          <label class="lv-label" for="dash-from">Du</label>
+          <input
+            id="dash-from"
+            class="lv-input"
+            type="date"
+            [ngModel]="from()"
+            (ngModelChange)="from.set($event)"
+          />
+        </div>
+        <div>
+          <label class="lv-label" for="dash-to">Au</label>
+          <input
+            id="dash-to"
+            class="lv-input"
+            type="date"
+            [ngModel]="to()"
+            (ngModelChange)="to.set($event)"
+          />
+        </div>
+      }
+    </div>
+  }
+</header>
+
+@if (canSee()) {
+  @if (data.hasValue()) {
+    @let d = data.value();
+    <p class="mb-4 text-sm" aria-live="polite">
+      {{
+        d.period.from === d.period.to
+          ? 'Le ' + (d.period.from | frDate)
+          : 'Du ' + (d.period.from | frDate) + ' au ' + (d.period.to | frDate)
+      }}
+    </p>
+
+    <section aria-label="Chiffres de la période" class="dash-grid mb-6">
+      <article class="lv-card dash-kpi dash-kpi--primary">
+        <p class="dash-label">Chiffre d’affaires</p>
+        <p class="dash-value">{{ d.revenueXaf | xaf }}</p>
+        <p class="text-sm">{{ d.deposits.received }} dépôt(s) reçu(s)</p>
+      </article>
+      <article class="lv-card dash-kpi">
+        <p class="dash-label">Encaissements</p>
+        <p class="dash-value">{{ d.collectionsXaf | xaf }}</p>
+      </article>
+      <article class="lv-card dash-kpi">
+        <p class="dash-label">Dépenses</p>
+        <p class="dash-value">{{ d.expensesXaf | xaf }}</p>
+      </article>
+      <a
+        class="lv-card dash-kpi dash-link"
+        routerLink="/app/payments"
+        [queryParams]="{ tab: 'receivables' }"
+      >
+        <p class="dash-label">Créances clients</p>
+        <p class="dash-value">{{ d.receivablesXaf | xaf }}</p>
+      </a>
+    </section>
+
+    <section aria-labelledby="dash-activity" class="mb-6">
+      <h2 id="dash-activity" class="mb-3 text-xl">Activité</h2>
+      <div class="dash-grid dash-grid--5">
+        <a class="lv-card dash-stat dash-link" routerLink="/app/deposits" [queryParams]="{}">
+          <span class="dash-stat-value">{{ d.deposits.received }}</span>
+          <span class="dash-label">Reçus (période)</span>
+        </a>
+        <a class="lv-card dash-stat dash-link" routerLink="/app/tracking">
+          <span class="dash-stat-value">{{ d.deposits.inProgress }}</span>
+          <span class="dash-label">En cours</span>
+        </a>
+        <div class="lv-card dash-stat">
+          <span class="dash-stat-value">{{ d.deposits.ready }}</span>
+          <span class="dash-label">Prêts à retirer</span>
+        </div>
+        <div class="lv-card dash-stat">
+          <span class="dash-stat-value">{{ d.deposits.returned }}</span>
+          <span class="dash-label">Retirés (période)</span>
+        </div>
+        <a
+          class="lv-card dash-stat dash-link"
+          [class.dash-alert]="d.deposits.late > 0"
+          routerLink="/app/deposits"
+        >
+          <span class="dash-stat-value">{{ d.deposits.late }}</span>
+          <span class="dash-label">En retard</span>
+        </a>
+      </div>
+    </section>
+
+    <section aria-label="Situation" class="dash-grid">
+      <a class="lv-card dash-link" routerLink="/app/cash">
+        <p class="dash-label flex items-center gap-2">
+          <lv-icon name="cash" [size]="18" /> Caisse du jour
+        </p>
+        @if (d.cash) {
+          <p class="dash-value">{{ d.cash.expectedCashXaf | xaf }}</p>
+          <p class="text-sm">
+            {{ d.cash.status === 'OPEN' ? 'Ouverte' : 'Clôture à valider' }} depuis
+            {{ d.cash.openedAt | frDateTime }}
+          </p>
+        } @else {
+          <p class="dash-value">Fermée</p>
+        }
+      </a>
+      <a
+        class="lv-card dash-link"
+        [class.dash-alert]="d.pendingApprovals > 0"
+        routerLink="/app/approvals"
+      >
+        <p class="dash-label flex items-center gap-2">
+          <lv-icon name="shield" [size]="18" /> Validations
+        </p>
+        <p class="dash-value">{{ d.pendingApprovals }}</p>
+        <p class="text-sm">
+          {{ d.pendingApprovals ? 'en attente de votre décision' : 'Rien à valider' }}
+        </p>
+      </a>
+      <a class="lv-card dash-link" [class.dash-alert]="d.lowStockItems > 0" routerLink="/app/stock">
+        <p class="dash-label flex items-center gap-2">
+          <lv-icon name="box" [size]="18" /> Stock bas
+        </p>
+        <p class="dash-value">{{ d.lowStockItems }}</p>
+        <p class="text-sm">produit(s) sous le seuil</p>
+      </a>
+      <a class="lv-card dash-link" routerLink="/app/tours">
+        <p class="dash-label flex items-center gap-2">
+          <lv-icon name="truck" [size]="18" /> Tournée du jour
+        </p>
+        <p class="dash-value">{{ d.toursToday }}</p>
+        <p class="text-sm">demande(s) à traiter</p>
+      </a>
+    </section>
+  } @else if (data.error()) {
+    <p class="lv-alert" role="alert">
+      Le tableau de bord n’a pas pu être chargé. Vérifiez votre connexion.
+    </p>
+  } @else {
+    <div class="dash-grid" aria-busy="true">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="lv-card dash-skeleton"></div>
+      }
+    </div>
+  }
+} @else {
+  <ul class="dash-grid" role="list">
+    @for (s of shortcuts(); track s.path) {
+      <li>
+        <a class="lv-card dash-link flex items-start gap-3" [routerLink]="s.path">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-full bg-mint-100 text-teal-900"
+            ><lv-icon [name]="s.icon"
+          /></span>
+          <span>
+            <span class="block font-semibold text-teal-900">{{ s.label }}</span>
+            <span class="text-sm">{{ s.description }}</span>
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+}

@@ -4,7 +4,6 @@ import { sessionGuard, tenantGuard, tenantRoleGuard } from '../../core/auth/guar
 import { AppShell } from '../../shared/ui/app-shell/app-shell';
 import type { NavItem, ShellConfig } from '../../shared/ui/app-shell/nav';
 import type { MenuEntry } from './menu-page';
-import { ModulePlaceholder } from './module-placeholder';
 
 /** Rôles des écrans de suivi et d'argent (docs/05, matrice des droits). */
 const TRACKING_ROLES: TenantRole[] = ['OPERATOR', 'QUALITY', 'CASHIER'];
@@ -12,6 +11,7 @@ const MONEY_ROLES: TenantRole[] = ['CASHIER', 'ACCOUNTANT'];
 const STOCK_ROLES: TenantRole[] = ['CASHIER', 'OPERATOR', 'STOCK_KEEPER', 'ACCOUNTANT'];
 const PURCHASING_ROLES: TenantRole[] = ['CASHIER', 'STOCK_KEEPER', 'ACCOUNTANT'];
 const ACCOUNTING_ROLES: TenantRole[] = ['ACCOUNTANT'];
+const TOUR_ROLES: TenantRole[] = ['CASHIER', 'DRIVER'];
 
 /** Navigation de l'application du pressing (docs/08, « Navigation »). */
 const items: NavItem[] = [
@@ -32,26 +32,9 @@ const items: NavItem[] = [
   { label: 'Achats', path: '/app/purchasing', icon: 'cart', tenantRoles: PURCHASING_ROLES },
   { label: 'Dépenses', path: '/app/expenses', icon: 'receipt', tenantRoles: MONEY_ROLES },
   { label: 'Comptabilité', path: '/app/accounting', icon: 'chart', tenantRoles: ACCOUNTING_ROLES },
-  { label: 'Tournées', path: '/app/tours', icon: 'truck' },
+  { label: 'Tournées', path: '/app/tours', icon: 'truck', tenantRoles: TOUR_ROLES },
   { label: 'Notifications', path: '/app/notifications', icon: 'bell', badge: 'notifications' },
   { label: 'Paramètres', path: '/app/settings', icon: 'settings' },
-];
-
-/** Écrans réalisés (les autres modules restent des emplacements réservés). */
-const BUILT = [
-  '/app',
-  '/app/approvals',
-  '/app/deposits',
-  '/app/customers',
-  '/app/tracking',
-  '/app/cash',
-  '/app/payments',
-  '/app/notifications',
-  '/app/settings',
-  '/app/stock',
-  '/app/purchasing',
-  '/app/expenses',
-  '/app/accounting',
 ];
 
 const byPath = (path: string): NavItem => {
@@ -155,6 +138,13 @@ const moreEntries: MenuEntry[] = [
     tenantRoles: MONEY_ROLES,
   },
   {
+    label: 'Tournées',
+    description: 'Ramassages, livraisons, liste du jour.',
+    path: '/app/tours',
+    icon: 'truck',
+    tenantRoles: TOUR_ROLES,
+  },
+  {
     label: 'Achats',
     description: 'Commandes, réceptions, fournisseurs.',
     path: '/app/purchasing',
@@ -179,13 +169,6 @@ const moreEntries: MenuEntry[] = [
   ...settingsEntries,
 ];
 
-const placeholder = (path: string, heading: string, icon: NavItem['icon']) => ({
-  path,
-  title: `${heading} — Lavio`,
-  component: ModulePlaceholder,
-  data: { heading, icon },
-});
-
 export const appRoutes: Routes = [
   {
     path: 'password',
@@ -199,7 +182,17 @@ export const appRoutes: Routes = [
     canActivate: [tenantGuard],
     data: { config: appShellConfig },
     children: [
-      placeholder('', 'Tableau de bord', 'home'),
+      {
+        path: '',
+        title: 'Tableau de bord — Lavio',
+        loadComponent: () => import('./dashboard/dashboard-page').then((m) => m.DashboardPage),
+      },
+      {
+        path: 'tours',
+        title: 'Tournées — Lavio',
+        canActivate: [tenantRoleGuard(...TOUR_ROLES)],
+        loadComponent: () => import('./tours/tours-page').then((m) => m.ToursPage),
+      },
       {
         path: 'deposits/new',
         title: 'Nouveau dépôt — Lavio',
@@ -329,9 +322,6 @@ export const appRoutes: Routes = [
         loadComponent: () =>
           import('./settings/pressing-settings-page').then((m) => m.PressingSettingsPage),
       },
-      ...items
-        .filter((i) => !BUILT.includes(i.path))
-        .map((i) => placeholder(i.path.replace('/app/', ''), i.label, i.icon)),
       {
         path: 'license',
         title: 'Ma licence — Lavio',

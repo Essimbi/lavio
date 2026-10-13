@@ -21,4 +21,10 @@ export const printRoutes: Routes = [
     canActivate: [tenantGuard],
     loadComponent: () => import('./print-receipt').then((m) => m.PrintReceipt),
   },
+  {
+    path: 'tours/:date',
+    title: 'Liste de tournée — Lavio',
+    canActivate: [tenantGuard],
+    loadComponent: () => import('./print-tours').then((m) => m.PrintTours),
+  },
 ];

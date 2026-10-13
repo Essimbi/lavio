@@ -1,0 +1,290 @@
+<lv-page-header
+  heading="Tournées"
+  [subtitle]="
+    tourDayNames() ? 'Jours de tournée : ' + tourDayNames() + '.' : 'Ramassages et livraisons.'
+  "
+>
+  @if (day.hasValue()) {
+    <a class="lv-secondary" [routerLink]="['/print/tours', day.value().date]">Imprimer la liste</a>
+  }
+  @if (isCashier()) {
+    <button type="button" class="lv-primary" (click)="showForm.set(!showForm())">
+      {{ showForm() ? 'Fermer' : 'Nouvelle demande' }}
+    </button>
+  }
+</lv-page-header>
+
+@if (showForm()) {
+  <form class="lv-card mb-6 grid gap-4" (ngSubmit)="create()" aria-labelledby="tour-form-title">
+    <h2 id="tour-form-title" class="text-xl">Nouvelle demande</h2>
+    <fieldset>
+      <legend class="lv-label">Type</legend>
+      <div class="flex flex-wrap gap-2">
+        <label class="lv-choice"
+          ><input
+            type="radio"
+            name="type"
+            value="PICKUP"
+            [ngModel]="type()"
+            (ngModelChange)="type.set($event)"
+          />
+          Ramassage</label
+        >
+        <label class="lv-choice"
+          ><input
+            type="radio"
+            name="type"
+            value="DELIVERY"
+            [ngModel]="type()"
+            (ngModelChange)="type.set($event)"
+          />
+          Livraison</label
+        >
+      </div>
+    </fieldset>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="relative">
+        <label class="lv-label" for="tour-customer">Client (nom ou téléphone)</label>
+        <input
+          id="tour-customer"
+          class="lv-input"
+          autocomplete="off"
+          name="customer"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event); customer.set(null)"
+        />
+        @if (!customer() && customers.hasValue() && customers.value().data.length) {
+          <ul
+            class="lv-card absolute z-10 mt-1 grid w-full gap-1 p-2"
+            role="listbox"
+            aria-label="Clients trouvés"
+          >
+            @for (c of customers.value().data; track c.id) {
+              <li role="option" [attr.aria-selected]="false">
+                <button
+                  type="button"
+                  class="w-full rounded-field p-2 text-left hover:bg-mint-100"
+                  (click)="pick(c)"
+                >
+                  <span class="font-semibold">{{ c.name }}</span> · {{ c.phone | phone }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+        @if (customer(); as c) {
+          <p class="mt-1 text-sm">
+            {{ c.phone | phone }} ·
+            <button type="button" class="lv-link-button" (click)="resetCustomer()">Changer</button>
+          </p>
+        }
+      </div>
+      <div>
+        <label class="lv-label" for="tour-date">Date de tournée</label>
+        <input
+          id="tour-date"
+          class="lv-input"
+          type="date"
+          name="date"
+          [min]="day.hasValue() ? day.value().nextTourDates[0] : ''"
+          [ngModel]="tourDate()"
+          (ngModelChange)="tourDate.set($event)"
+        />
+        @if (day.hasValue()) {
+          <div class="mt-2 flex flex-wrap gap-2">
+            @for (d of day.value().nextTourDates; track d) {
+              <button
+                type="button"
+                class="lv-choice"
+                [class.bg-mint-100]="tourDate() === d"
+                (click)="tourDate.set(d)"
+              >
+                {{ d | frDate }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <div class="md:col-span-2">
+        <label class="lv-label" for="tour-address">Adresse</label>
+        <input
+          id="tour-address"
+          class="lv-input"
+          maxlength="300"
+          name="address"
+          [ngModel]="address()"
+          (ngModelChange)="address.set($event)"
+        />
+      </div>
+      @if (type() === 'DELIVERY') {
+        <div>
+          <label class="lv-label" for="tour-deposit">Dépôt à livrer</label>
+          <select
+            id="tour-deposit"
+            class="lv-select"
+            name="deposit"
+            [ngModel]="depositId()"
+            (ngModelChange)="depositId.set($event)"
+          >
+            <option value="">— Aucun —</option>
+            @for (d of openDeposits(); track d.id) {
+              <option [value]="d.id">
+                N° {{ d.ticketNumber }} · reste {{ d.balanceXaf | xaf }}
+              </option>
+            }
+          </select>
+        </div>
+      }
+      @if (!depositId()) {
+        <div>
+          <label class="lv-label" for="tour-amount">Montant à encaisser (FCFA)</label>
+          <input
+            id="tour-amount"
+            class="lv-input tabular"
+            type="number"
+            min="0"
+            name="amount"
+            [ngModel]="amount()"
+            (ngModelChange)="amount.set($event)"
+          />
+        </div>
+      }
+      <div class="md:col-span-2">
+        <label class="lv-label" for="tour-notes">Notes</label>
+        <input
+          id="tour-notes"
+          class="lv-input"
+          maxlength="500"
+          name="notes"
+          [ngModel]="notes()"
+          (ngModelChange)="notes.set($event)"
+        />
+      </div>
+    </div>
+    @if (offDay()) {
+      <div class="lv-alert" role="alert">
+        <p class="font-semibold">Ce n’est pas un jour de tournée ({{ tourDayNames() }}).</p>
+        @if (isOwner()) {
+          <label class="mt-2 flex items-start gap-2">
+            <input
+              type="checkbox"
+              name="allowOffDay"
+              [ngModel]="allowOffDay()"
+              (ngModelChange)="allowOffDay.set($event)"
+            />
+            Planifier quand même (dérogation tracée)
+          </label>
+        } @else {
+          <p class="text-sm">
+            Choisissez un jour de tournée ; seule la responsable peut passer outre.
+          </p>
+        }
+      </div>
+    }
+    <button type="submit" class="lv-primary justify-self-start" [disabled]="!canSave() || busy()">
+      Enregistrer la demande
+    </button>
+  </form>
+}
+
+@if (day.hasValue()) {
+  @let dl = day.value();
+  <div class="mb-4 flex flex-wrap items-end gap-3">
+    <div>
+      <label class="lv-label" for="tour-day">Jour</label>
+      <input
+        id="tour-day"
+        class="lv-input"
+        type="date"
+        [ngModel]="dl.date"
+        (ngModelChange)="go($event)"
+      />
+    </div>
+    @for (d of dl.nextTourDates; track d) {
+      <button type="button" class="lv-choice" [class.bg-mint-100]="dl.date === d" (click)="go(d)">
+        {{ d | frDate }}
+      </button>
+    }
+  </div>
+  <p class="mb-4">
+    <strong class="capitalize">{{ dayLabel() }}</strong> {{ dl.date | frDate }}
+    @if (!dl.isTourDay) {
+      <span class="lv-chip ml-2 bg-amber-500 text-ink-900">Hors jour de tournée</span>
+    }
+    · À encaisser : <strong class="tabular">{{ dl.totalToCollectXaf | xaf }}</strong>
+  </p>
+
+  <div class="grid gap-6 xl:grid-cols-2">
+    @for (
+      group of [
+        { title: 'Ramassages', list: pickups() },
+        { title: 'Livraisons', list: deliveries() },
+      ];
+      track group.title
+    ) {
+      <section [attr.aria-label]="group.title">
+        <h2 class="mb-3 text-xl">{{ group.title }} ({{ group.list.length }})</h2>
+        <ul class="grid gap-3" role="list">
+          @for (r of group.list; track r.id) {
+            <li class="lv-card" [class.opacity-60]="r.status === 'CANCELLED'">
+              <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p class="font-semibold">{{ r.customerName }}</p>
+                  <p class="text-sm">
+                    <a [href]="'tel:+' + r.customerPhone">{{ r.customerPhone | phone }}</a>
+                  </p>
+                  <p>{{ r.address }}</p>
+                  @if (r.ticketNumber) {
+                    <p class="text-sm">
+                      Dépôt
+                      <a [routerLink]="['/app/deposits', r.depositId]">n° {{ r.ticketNumber }}</a> ·
+                      {{ r.itemCount }} article(s)
+                    </p>
+                  }
+                  @if (r.notes) {
+                    <p class="text-sm">{{ r.notes }}</p>
+                  }
+                  @if (r.cancelReason) {
+                    <p class="text-sm text-coral-600">Annulé : {{ r.cancelReason }}</p>
+                  }
+                </div>
+                <div class="text-right">
+                  <span class="lv-chip bg-mint-100 text-teal-900">{{
+                    statusLabels[r.status]
+                  }}</span>
+                  @if (r.amountToCollectXaf) {
+                    <p class="tabular mt-1 font-semibold">{{ r.amountToCollectXaf | xaf }}</p>
+                  }
+                </div>
+              </div>
+              @if (r.status === 'TO_COLLECT' || r.status === 'TO_DELIVER') {
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="lv-primary"
+                    (click)="setStatus(r, r.type === 'PICKUP' ? 'COLLECTED' : 'DELIVERED')"
+                  >
+                    {{ r.type === 'PICKUP' ? 'Marquer collecté' : 'Marquer livré' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="lv-link-button text-coral-600"
+                    (click)="setStatus(r, 'CANCELLED')"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              }
+            </li>
+          } @empty {
+            <li class="lv-card">Aucune demande.</li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+} @else if (day.error()) {
+  <p class="lv-alert" role="alert">Impossible de charger la tournée.</p>
+} @else {
+  <p aria-busy="true">Chargement…</p>
+}

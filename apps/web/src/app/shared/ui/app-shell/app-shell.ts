@@ -10,6 +10,9 @@ import {
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationCenter } from '../../../core/notifications/notification-center';
+import { OfflineQueue } from '../../../core/offline/offline-queue';
+import { PwaService } from '../../../core/pwa/pwa.service';
+import { PwaBanners } from '../pwa-banners/pwa-banners';
 import { Icon } from '../icon/icon';
 import { LicenseBanner } from '../license-banner/license-banner';
 import { Logo } from '../logo/logo';
@@ -21,7 +24,7 @@ import type { NavItem, ShellConfig } from './nav';
  */
 @Component({
   selector: 'lv-app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Logo, LicenseBanner],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Logo, LicenseBanner, PwaBanners],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,9 +35,15 @@ export class AppShell implements OnInit {
   private readonly router = inject(Router);
   private readonly center = inject(NotificationCenter);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pwa = inject(PwaService);
+  private readonly queue = inject(OfflineQueue);
 
   ngOnInit(): void {
-    if (this.config().notifications) this.destroyRef.onDestroy(this.center.start());
+    if (!this.config().notifications) return;
+    // Application du pressing : compteurs, file d'envoi, PWA (mise à jour, installation, push).
+    this.destroyRef.onDestroy(this.center.start());
+    this.destroyRef.onDestroy(this.queue.start());
+    this.pwa.start(this.destroyRef);
   }
 
   protected readonly unread = this.center.unread;

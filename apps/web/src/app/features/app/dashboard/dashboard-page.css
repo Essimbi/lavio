@@ -1,0 +1,113 @@
+:host {
+  display: block;
+}
+
+.dash-hero h1 {
+  margin: 4px 0 0;
+}
+
+.dash-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  padding: 0;
+}
+
+.dash-grid--5 {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.dash-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lv-teal-700);
+}
+
+.dash-value {
+  margin: 6px 0 2px;
+  font: 700 26px/1.15 var(--lv-font-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--lv-ink-900);
+}
+
+.dash-kpi--primary {
+  background: linear-gradient(135deg, var(--lv-teal-900), var(--lv-teal-700));
+  color: var(--lv-white);
+}
+
+.dash-kpi--primary .dash-label,
+.dash-kpi--primary .dash-value {
+  color: var(--lv-white);
+}
+
+.dash-stat,
+.dash-link.dash-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-stat-value {
+  font: 700 30px/1 var(--lv-font-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--lv-teal-900);
+}
+
+.dash-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform var(--lv-duration) var(--lv-ease),
+    box-shadow var(--lv-duration) var(--lv-ease);
+}
+
+.dash-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--lv-teal-900) 14%, transparent);
+}
+
+.dash-link:focus-visible {
+  outline: 3px solid var(--lv-aqua-400);
+  outline-offset: 2px;
+}
+
+/* Signal d'attention : bordure corail, texte toujours sombre (contraste AA). */
+.dash-alert {
+  box-shadow:
+    inset 4px 0 0 var(--lv-coral-600),
+    var(--lv-shadow-card);
+}
+
+.dash-alert .dash-stat-value,
+.dash-alert .dash-value {
+  color: var(--lv-coral-600);
+}
+
+.dash-skeleton {
+  min-height: 112px;
+  background: linear-gradient(90deg, var(--lv-white), var(--lv-mint-100), var(--lv-white));
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes dash-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-link,
+  .dash-skeleton {
+    transition: none;
+    animation: none;
+  }
+  .dash-link:hover {
+    transform: none;
+  }
+}

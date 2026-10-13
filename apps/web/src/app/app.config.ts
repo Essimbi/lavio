@@ -13,6 +13,7 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from 
 import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { offlineQueueInterceptor } from './core/offline/offline-queue.interceptor';
 import { apiInterceptor } from './core/http/api.interceptor';
 
 registerLocaleData(localeFr);
@@ -27,7 +28,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
     ),
-    provideHttpClient(withInterceptors([apiInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([offlineQueueInterceptor, apiInterceptor, authInterceptor])),
     provideClientHydration(withEventReplay()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

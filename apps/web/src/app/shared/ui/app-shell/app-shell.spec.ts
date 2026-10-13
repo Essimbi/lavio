@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import type { MeResponse } from '@lavio/shared';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AppShell } from './app-shell';
@@ -47,6 +48,7 @@ describe('AppShell', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideServiceWorker('ngsw-worker.js', { enabled: false }),
         provideRouter([
           {
             path: 'app',

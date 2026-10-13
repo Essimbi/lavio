@@ -209,7 +209,9 @@ export class PaymentDialog {
         this.duplicate.set(true);
         this.key = crypto.randomUUID();
       } else {
-        if (e instanceof ApiError && !e.isNetworkError) this.key = crypto.randomUUID();
+        // Même clé après une coupure ou une mise en file : un nouvel envoi ne crée pas de doublon.
+        if (e instanceof ApiError && !e.isNetworkError && !e.isQueued)
+          this.key = crypto.randomUUID();
         this.needsCash.set(e instanceof ApiError && e.code === 'CASH_SESSION_REQUIRED');
         this.error.set(errorMessage(e));
       }

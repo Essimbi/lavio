@@ -110,6 +110,10 @@ test('une remise au-delà du seuil bloque le ticket jusqu’à la validation de 
   await expect(page.getByText('en attente de validation par la responsable')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Imprimer le ticket' })).toHaveCount(0);
   const depositUrl = page.url();
+  const ticket = ((await page.getByRole('heading', { level: 1 }).textContent()) ?? '').replace(
+    /\D/g,
+    '',
+  );
 
   const ownerContext = await browser.newContext();
   const owner = await ownerContext.newPage();
@@ -117,8 +121,7 @@ test('une remise au-delà du seuil bloque le ticket jusqu’à la validation de 
   await owner.goto('/app/approvals');
   await owner
     .getByRole('listitem')
-    .filter({ hasText: 'Remise exceptionnelle' })
-    .first()
+    .filter({ hasText: `Dépôt n° ${ticket}` })
     .getByRole('button', { name: 'Valider' })
     .click();
   await expect(owner.getByText('Demande validée.')).toBeVisible();

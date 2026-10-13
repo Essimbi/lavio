@@ -2,6 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import type {
   AccountTransferDto,
+  CreateTourRequest,
+  DashboardDto,
+  DashboardPeriod,
+  TourDayList,
+  TourRequestDto,
+  TourStatus,
   CreateExpenseRequest,
   CreateStockMovementRequest,
   ExpenseCategoryDto,
@@ -61,7 +67,7 @@ export interface OrderLineInput {
   unitCostXaf: number;
 }
 
-/** Appels de la phase 4 : stock, achats, comptabilité de gestion, rapports. */
+/** Appels de gestion : stock, achats, comptabilité, rapports, tableau de bord, tournées, push. */
 @Injectable({ providedIn: 'root' })
 export class ManagementApi {
   private readonly http = inject(HttpClient);
@@ -199,6 +205,27 @@ export class ManagementApi {
   readings = (type?: UtilityType) => this.get<UtilityReadingDto[]>('/utility-readings', { type });
   addReading = (body: { type: UtilityType; readingDate: string; value: number; note?: string }) =>
     this.post<UtilityReadingDto>('/utility-readings', body);
+
+  // Tableau de bord
+  dashboard = (period: DashboardPeriod, from?: string, to?: string) =>
+    this.get<DashboardDto>('/reports/dashboard', { period, from, to });
+
+  // Tournées
+  tourDay = (date?: string) => this.get<TourDayList>('/tours/day', { date });
+  tours = (q: { from?: string; to?: string; status?: TourStatus | ''; page?: number } = {}) =>
+    this.get<Paginated<TourRequestDto>>('/tours', q);
+  createTour = (body: CreateTourRequest) => this.post<TourRequestDto>('/tours', body);
+  updateTour = (
+    id: string,
+    body: { tourDate?: string; address?: string; notes?: string | null; allowOffDay?: boolean },
+  ) => this.patch<TourRequestDto>(`/tours/${id}`, body);
+  tourStatus = (id: string, status: TourStatus, reason?: string) =>
+    this.post<TourRequestDto>(`/tours/${id}/status`, { status, reason });
+
+  // Notifications push
+  pushConfig = () => this.get<{ enabled: boolean; publicKey: string | null }>('/push/config');
+  pushSubscribe = (sub: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
+    this.post<null>('/push/subscribe', sub);
 
   // Rapports
   report = (key: ReportKey, from?: string, to?: string) =>

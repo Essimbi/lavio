@@ -22,6 +22,7 @@ import {
   RECEPTION_CHECKLIST,
   type ReceptionChecklist,
 } from '@lavio/shared';
+import { ApiError } from '../../../core/http/api';
 import { PressingApi } from '../../../core/api/pressing-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe, PhonePipe, XafPipe } from '../../../shared/format/format';
@@ -324,7 +325,12 @@ export class NewDeposit {
         await this.router.navigate(['/app/deposits', deposit.id]);
       }
     } catch (e) {
-      this.error.set(errorMessage(e));
+      // Clé conservée : un nouvel envoi du même dépôt ne crée jamais de doublon.
+      this.error.set(
+        e instanceof ApiError && e.isQueued
+          ? 'Pas de réseau : le dépôt est en attente d’envoi. Le ticket s’imprimera dès le retour du réseau, depuis la liste des dépôts.'
+          : errorMessage(e),
+      );
     } finally {
       this.submitting.set(false);
     }

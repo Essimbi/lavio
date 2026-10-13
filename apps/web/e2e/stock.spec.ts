@@ -29,12 +29,15 @@ test('stock : produit, entrée au coût, sortie sous le seuil, valorisation expo
   await page.goto('/app/stock');
   await page.getByRole('button', { name: 'Nouveau produit' }).click();
   const dialog = page.getByRole('dialog', { name: 'Nouveau produit' });
-  // Valeurs initiales écrites par le formulaire avant toute saisie.
+  // Dialogue prêt : valeurs initiales écrites et focus initial posé sur le premier champ.
   await expect(dialog.getByLabel('Seuil d’alerte')).toHaveValue('0');
+  await expect(dialog.getByLabel('Nom')).toBeFocused();
   await dialog.getByLabel('Nom').fill(name);
   await dialog.getByLabel('Unité (L, kg, pièce…)').fill('L');
   await dialog.getByLabel('Prix d’achat (FCFA)').fill('500');
   await dialog.getByLabel('Seuil d’alerte').fill('3');
+  await expect(dialog.getByLabel('Nom')).toHaveValue(name);
+  await expect(dialog.getByLabel('Unité (L, kg, pièce…)')).toHaveValue('L');
   await expect(dialog.getByLabel('Seuil d’alerte')).toHaveValue('3');
   await expect(dialog.getByLabel('Prix d’achat (FCFA)')).toHaveValue('500');
   await dialog.getByRole('button', { name: 'Enregistrer' }).click();
