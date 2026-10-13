@@ -1,82 +1,180 @@
 <div class="page">
   <a class="skip-link sr-only-focusable" href="#contenu">Aller au contenu</a>
   <header class="site-header">
-    <div class="wrap flex items-center justify-between gap-4 py-4">
-      <a routerLink="/" aria-label="Lavio, accueil"><lv-logo [width]="112" /></a>
+    <div class="wrap header-row">
       <nav class="anchors" aria-label="Sections de la page">
         <a href="#fonctionnalites">Fonctionnalités</a>
         <a href="#comment">Comment ça marche</a>
-        <a href="#tarifs">Tarifs</a>
-        <a href="#questions">Questions</a>
       </nav>
-      <div class="flex items-center gap-2">
+      <a routerLink="/" class="brand" aria-label="Lavio, accueil"><lv-logo [width]="112" /></a>
+      <div class="header-end">
+        <nav class="anchors" aria-label="Autres sections">
+          <a href="#tarifs">Tarifs</a>
+          <a href="#questions">Questions</a>
+        </nav>
         <a routerLink="/login" class="btn btn-ghost">Se connecter</a>
-        @if (whatsapp(); as wa) {
-          <a class="btn btn-wa hide-sm" [href]="wa" target="_blank" rel="noopener">WhatsApp</a>
-        }
       </div>
     </div>
   </header>
 
   <main id="contenu" tabindex="-1">
-    <!-- Hero -->
-    <section class="hero wrap" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <p class="eyebrow">Logiciel de gestion de pressing</p>
-        <h1 id="hero-title">Votre pressing,<br />sous contrôle.</h1>
-        <p class="lead">
-          Dépôts, suivi des vêtements, caisse, stock et comptabilité de gestion dans un seul outil,
-          avec une vue à 360° sur votre téléphone.
-        </p>
-        <div class="flex flex-wrap gap-3">
-          @if (whatsapp(); as wa) {
-            <a class="btn btn-wa btn-lg" [href]="wa" target="_blank" rel="noopener"
-              >Parler au service client</a
-            >
-          } @else {
-            <a class="btn btn-wa btn-lg" href="#contact">Parler au service client</a>
-          }
-          <a class="btn btn-ghost btn-lg" href="#fonctionnalites">Voir les fonctionnalités</a>
+    <!-- Hero : titre, téléphone entouré de cartes, bande oblique -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Logiciel de gestion de pressing</p>
+          <h1 id="hero-title">Votre pressing,<br /><span class="accent">sous contrôle.</span></h1>
+          <p class="lead">
+            Dépôts, suivi des vêtements, caisse, stock et comptabilité de gestion dans un seul
+            outil, avec une vue à 360° sur votre téléphone.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            @if (whatsapp(); as wa) {
+              <a class="btn btn-accent btn-lg" [href]="wa" target="_blank" rel="noopener"
+                >Parler au service client</a
+              >
+            } @else {
+              <a class="btn btn-accent btn-lg" href="#contact">Parler au service client</a>
+            }
+            <a class="btn btn-ghost btn-lg" href="#fonctionnalites">Voir les fonctionnalités</a>
+          </div>
+        </div>
+
+        <div class="stage" aria-hidden="true">
+          <div class="float-card float-left">
+            <span class="badge-dot"></span>
+            <div>
+              <strong>Ticket en 90 s</strong>
+              <span>numéro et QR code</span>
+            </div>
+          </div>
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="ph-top">
+                <span class="ph-brand">lavio</span><span class="ph-menu"></span>
+              </div>
+              <p class="ph-hello">Bonjour,<br /><strong>Madame la responsable</strong></p>
+              <div class="ph-kpi">
+                <span>Chiffre d’affaires du jour</span>
+                <strong>186 500 FCFA</strong>
+                <em>42 dépôts</em>
+              </div>
+              <div class="ph-list">
+                <div><span class="dot dot-teal"></span>En traitement<b>18</b></div>
+                <div><span class="dot dot-aqua"></span>Prêts à retirer<b>9</b></div>
+                <div><span class="dot dot-coral"></span>En retard<b>2</b></div>
+              </div>
+              <div class="ph-approve"><span>Remise à valider</span><b>Valider</b></div>
+            </div>
+          </div>
+          <div class="float-card float-right">
+            <p class="fc-title">Caisse du jour</p>
+            <p class="fc-value">74 000 FCFA</p>
+            <p class="fc-note">Écart 0 à la clôture</p>
+          </div>
+          <div class="float-card float-bottom">
+            <p class="fc-title">Stock bas</p>
+            <p class="fc-row"><span class="dot dot-coral"></span>Détachant · 4 L</p>
+          </div>
         </div>
       </div>
 
-      <div
-        class="phone"
-        role="img"
-        aria-label="Aperçu du tableau de bord Lavio sur téléphone : chiffre d’affaires, caisse du jour, stock bas et validations"
-      >
-        <div class="phone-screen" aria-hidden="true">
-          <p class="ph-title">Tableau de bord</p>
-          <div class="ph-kpi">
-            <span>Chiffre d’affaires</span>
-            <strong>186 500 FCFA</strong>
-            <em>42 dépôts aujourd’hui</em>
+      <div class="hero-band">
+        <div class="wrap band-cards">
+          <div class="band-card">
+            <span class="band-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 6h14M5 12h14M5 18h9M3 6h.01M3 12h.01M3 18h.01" />
+              </svg>
+            </span>
+            <h2>Chaque vêtement suivi</h2>
+            <p>Du dépôt au retrait, les retards ressortent avant que le client ne s’impatiente.</p>
           </div>
-          <div class="ph-grid">
-            <div><strong>18</strong><span>En cours</span></div>
-            <div><strong>9</strong><span>Prêts</span></div>
-            <div class="ph-alert"><strong>2</strong><span>En retard</span></div>
-            <div><strong>31</strong><span>Retirés</span></div>
-          </div>
-          <div class="ph-row"><span>Caisse du jour</span><strong>74 000 FCFA</strong></div>
-          <div class="ph-row ph-warn"><span>Stock bas</span><strong>Détachant</strong></div>
-          <div class="ph-approve">
-            <span>Remise à valider</span>
-            <b>Valider</b>
+          <div class="band-card">
+            <span class="band-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 7h18v10H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 10v4M18 10v4" />
+              </svg>
+            </span>
+            <h2>Caisse et Mobile Money</h2>
+            <p>Espèces, Orange Money, MTN MoMo avec référence : la caisse tombe juste.</p>
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- Chiffres clés -->
+    <section class="wrap section facts" aria-label="Lavio en chiffres">
+      <div class="facts-visual" aria-hidden="true">
+        <span class="facts-badge">
+          <svg
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M2 6h12v10H2zM14 10h4l3 3v3h-7M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
+            />
+          </svg>
+        </span>
+        <div class="mini-card">
+          <p class="mc-title">Tournée du jour <span>+ Demande</span></p>
+          <p class="mc-row"><span class="check checked"></span>Ramassage · Bonamoussadi</p>
+          <p class="mc-row"><span class="check"></span>Livraison · Akwa · 6 500 FCFA</p>
+          <p class="mc-row"><span class="check"></span>Livraison · Bonapriso</p>
+        </div>
+        <div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <dl class="facts-numbers">
+        @for (f of facts; track f.value) {
+          <div>
+            <dt>{{ f.value }}</dt>
+            <dd>{{ f.label }}</dd>
+          </div>
+        }
+      </dl>
+      <ul class="facts-list" role="list">
+        @for (h of highlights; track h.title) {
+          <li>
+            <h3>{{ h.title }}</h3>
+            <p>{{ h.text }}</p>
+          </li>
+        }
+      </ul>
     </section>
 
     <!-- Le problème -->
     <section class="band" aria-labelledby="probleme">
       <div class="wrap">
         <h2 id="probleme" class="section-title">
-          Cahiers, tickets perdus, caisse qui ne tombe pas juste…
+          Cahiers, tickets perdus, caisse qui ne tombe <span class="accent">pas juste…</span>
         </h2>
-        <ul class="grid gap-4 md:grid-cols-3" role="list">
+        <ul class="problems" role="list">
           @for (p of problems; track p.title) {
-            <li class="card">
+            <li class="card problem">
               <h3>{{ p.title }}</h3>
               <p>{{ p.text }}</p>
             </li>
@@ -86,111 +184,200 @@
     </section>
 
     <!-- Fonctionnalités -->
-    <section id="fonctionnalites" class="wrap section" aria-labelledby="fonctionnalites-title">
-      <h2 id="fonctionnalites-title" class="section-title">
-        Tout votre pressing, dans un seul outil
-      </h2>
-      <ul class="features" role="list">
-        @for (f of features; track f.title) {
-          <li class="card feature">
-            <span class="feature-icon" aria-hidden="true">
-              <svg
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path [attr.d]="f.icon" />
-              </svg>
-            </span>
-            <h3>{{ f.title }}</h3>
-            <p>{{ f.text }}</p>
-          </li>
-        }
-      </ul>
+    <section
+      id="fonctionnalites"
+      class="wrap section features-split"
+      aria-labelledby="fonctionnalites-title"
+    >
+      <div>
+        <h2 id="fonctionnalites-title" class="section-title">
+          Tout votre pressing,<br />dans <span class="accent">un seul outil</span>
+        </h2>
+        <ul class="features" role="list">
+          @for (f of features; track f.title) {
+            <li class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path [attr.d]="f.icon" />
+                </svg>
+              </span>
+              <div>
+                <h3>{{ f.title }}</h3>
+                <p>{{ f.text }}</p>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="ui-stack" aria-hidden="true">
+        <div class="ui-card ui-a">
+          <span class="ui-icon">
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </span>
+          <div><strong>Nouveau dépôt</strong><span>3 articles · 8 000 FCFA</span></div>
+          <div><strong>N° 000124</strong><span>Retrait vendredi</span></div>
+        </div>
+        <div class="ui-card ui-b">
+          <strong>Contrôle qualité</strong>
+          <span>Propre, repassé, boutons intacts, emballé</span>
+        </div>
+        <div class="ui-card ui-c">
+          <span>Encaissé aujourd’hui</span>
+          <strong>124 500 FCFA</strong>
+          <em>Mobile Money rapproché</em>
+        </div>
+      </div>
     </section>
 
     <!-- Du dépôt au retrait -->
-    <section class="wrap section split" aria-labelledby="parcours">
-      <div>
-        <h2 id="parcours" class="section-title">Chaque vêtement suivi, du dépôt au retrait</h2>
-        <p class="mb-5">
-          Le client repart avec un ticket numéroté. Votre équipe sait à tout moment où en est chaque
-          pièce.
-        </p>
-        <ol class="journey" role="list">
-          @for (step of steps; track step.label) {
-            <li class="journey-step">
-              <span class="chip {{ step.tone }}">{{ step.label }}</span>
-            </li>
-          }
-        </ol>
-      </div>
-      <div class="printer" aria-label="Exemple de ticket de dépôt" role="img">
-        <div class="printer-slot" aria-hidden="true"></div>
-        <figure class="ticket" aria-hidden="true">
-          <p class="ticket-shop">Pressing de démonstration</p>
-          <p class="ticket-label">Ticket de dépôt</p>
-          <p class="ticket-number tabular">N° 000124</p>
-          <dl class="ticket-lines">
-            <div>
-              <dt>1 chemise</dt>
-              <dd>Lavage, repassage</dd>
+    <section class="band" aria-labelledby="parcours">
+      <div class="wrap split">
+        <div>
+          <h2 id="parcours" class="section-title">Chaque vêtement suivi, du dépôt au retrait</h2>
+          <p class="mb-5">
+            Le client repart avec un ticket numéroté. Votre équipe sait à tout moment où en est
+            chaque pièce.
+          </p>
+          <ol class="journey" role="list">
+            @for (step of steps; track step.label) {
+              <li class="journey-step">
+                <span class="chip {{ step.tone }}">{{ step.label }}</span>
+              </li>
+            }
+          </ol>
+        </div>
+        <div class="printer" aria-label="Exemple de ticket de dépôt" role="img">
+          <div class="printer-slot" aria-hidden="true"></div>
+          <figure class="ticket" aria-hidden="true">
+            <p class="ticket-shop">Pressing de démonstration</p>
+            <p class="ticket-label">Ticket de dépôt</p>
+            <p class="ticket-number tabular">N° 000124</p>
+            <dl class="ticket-lines">
+              <div>
+                <dt>1 chemise</dt>
+                <dd>Lavage, repassage</dd>
+              </div>
+              <div>
+                <dt>1 costume</dt>
+                <dd>Nettoyage à sec</dd>
+              </div>
+              <div>
+                <dt>1 robe</dt>
+                <dd>Nettoyage à sec</dd>
+              </div>
+            </dl>
+            <div class="ticket-footer">
+              <svg class="ticket-qr" viewBox="0 0 21 21" focusable="false">
+                <path
+                  d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM8 4h2v2H8zM11 5h2v2h-2zM9 8h3v1H9zM8 10h2v2H8zM12 9h2v3h-2zM15 8h2v2h-2zM18 9h3v2h-3zM9 13h2v2H9zM13 13h3v2h-3zM17 12h2v3h-2zM9 17h3v2H9zM13 16h2v2h-2zM16 17h2v4h-2zM19 16h2v2h-2zM10 19h2v2h-2zM19 19h2v2h-2zM0 8h2v2H0zM3 9h3v2H3z"
+                />
+              </svg>
+              <p>Retrait prévu<br /><strong>vendredi</strong></p>
             </div>
-            <div>
-              <dt>1 costume</dt>
-              <dd>Nettoyage à sec</dd>
-            </div>
-            <div>
-              <dt>1 robe</dt>
-              <dd>Nettoyage à sec</dd>
-            </div>
-          </dl>
-          <div class="ticket-footer">
-            <svg class="ticket-qr" viewBox="0 0 21 21" focusable="false">
-              <path
-                d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM8 4h2v2H8zM11 5h2v2h-2zM9 8h3v1H9zM8 10h2v2H8zM12 9h2v3h-2zM15 8h2v2h-2zM18 9h3v2h-3zM9 13h2v2H9zM13 13h3v2h-3zM17 12h2v3h-2zM9 17h3v2H9zM13 16h2v2h-2zM16 17h2v4h-2zM19 16h2v2h-2zM10 19h2v2h-2zM19 19h2v2h-2zM0 8h2v2H0zM3 9h3v2H3z"
-              />
-            </svg>
-            <p>Retrait prévu<br /><strong>vendredi</strong></p>
-          </div>
-          <figcaption class="ticket-caption">Présentez ce ticket au retrait</figcaption>
-        </figure>
+            <figcaption class="ticket-caption">Présentez ce ticket au retrait</figcaption>
+          </figure>
+        </div>
       </div>
     </section>
 
     <!-- Comment ça marche -->
-    <section id="comment" class="band" aria-labelledby="comment-title">
-      <div class="wrap">
-        <h2 id="comment-title" class="section-title">Comment ça marche</h2>
-        <ol class="steps" role="list">
-          <li class="card">
-            <span class="step-n">1</span>
-            <h3>Vous nous contactez sur WhatsApp</h3>
-            <p>Nous découvrons votre pressing et vos habitudes.</p>
-          </li>
-          <li class="card">
-            <span class="step-n">2</span>
-            <h3>Nous créons votre espace</h3>
-            <p>Catalogue, tarifs, utilisateurs : nous formons votre équipe.</p>
-          </li>
-          <li class="card">
-            <span class="step-n">3</span>
-            <h3>Vous suivez votre pressing en direct</h3>
-            <p>Au comptoir comme sur votre téléphone.</p>
-          </li>
-        </ol>
+    <section id="comment" class="wrap section" aria-labelledby="comment-title">
+      <h2 id="comment-title" class="section-title">
+        Comment <span class="accent">ça marche</span>
+      </h2>
+      <ol class="steps" role="list">
+        <li class="card">
+          <span class="step-n">1</span>
+          <h3>Vous nous contactez sur WhatsApp</h3>
+          <p>Nous découvrons votre pressing et vos habitudes.</p>
+        </li>
+        <li class="card">
+          <span class="step-n">2</span>
+          <h3>Nous créons votre espace</h3>
+          <p>Catalogue, tarifs, utilisateurs : nous formons votre équipe.</p>
+        </li>
+        <li class="card">
+          <span class="step-n">3</span>
+          <h3>Vous suivez votre pressing en direct</h3>
+          <p>Au comptoir comme sur votre téléphone.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Appel à l'action -->
+    <section class="wrap cta-wrap" aria-labelledby="cta-title">
+      <div class="cta">
+        <div class="cta-phone" aria-hidden="true">
+          <div class="phone phone-tilt">
+            <div class="phone-screen">
+              <div class="ph-top">
+                <span class="ph-brand">lavio</span><span class="ph-menu"></span>
+              </div>
+              <div class="ph-kpi">
+                <span>Validations</span><strong>3 en attente</strong
+                ><em>Remise · Crédit · Clôture</em>
+              </div>
+              <div class="ph-list">
+                <div><span class="dot dot-aqua"></span>Remise 15 %<b>Valider</b></div>
+                <div><span class="dot dot-teal"></span>Clôture de caisse<b>Valider</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cta-copy">
+          <h2 id="cta-title">
+            Prêt ? Passez votre pressing <span class="accent-light">sous contrôle</span> avec Lavio
+          </h2>
+          <p>
+            Un échange sur WhatsApp suffit pour démarrer : nous créons votre espace et formons votre
+            équipe.
+          </p>
+          @if (whatsapp(); as wa) {
+            <a class="btn btn-accent btn-lg" [href]="wa" target="_blank" rel="noopener"
+              >Démarrer sur WhatsApp</a
+            >
+          } @else {
+            <a class="btn btn-accent btn-lg" href="#contact">Démarrer</a>
+          }
+        </div>
       </div>
     </section>
 
     <!-- Pour la responsable -->
-    <section class="wrap section split" aria-labelledby="responsable">
+    <section class="wrap section split owner" aria-labelledby="responsable">
+      <div class="owner-visual" aria-hidden="true">
+        <div class="owner-avatar">R</div>
+        <div class="owner-card">
+          <p class="fc-title">Validations du jour</p>
+          <p class="fc-row"><span class="check checked"></span>Remise · dépôt n° 000124</p>
+          <p class="fc-row"><span class="check checked"></span>Clôture de caisse · écart 0</p>
+          <p class="fc-row"><span class="check"></span>Ajustement de stock</p>
+        </div>
+      </div>
       <div>
-        <h2 id="responsable" class="section-title">Pour la responsable : tout, sur le téléphone</h2>
+        <h2 id="responsable" class="section-title">
+          Pour la responsable : <span class="accent">tout, sur le téléphone</span>
+        </h2>
         <ul class="checks" role="list">
           <li>Chiffre d’affaires et encaissements du jour, de la semaine, du mois</li>
           <li>Caisse du jour et écarts à la clôture</li>
@@ -198,10 +385,10 @@
           <li>Remises, crédits et clôtures validés en un geste</li>
           <li>Alertes sur votre téléphone, même à distance</li>
         </ul>
-      </div>
-      <div class="card quote">
-        <p>« Je vois la caisse du jour et je valide une remise depuis le marché. »</p>
-        <p class="text-sm">Exemple d’usage</p>
+        <blockquote class="quote">
+          <p>« Je vois la caisse du jour et je valide une remise depuis le marché. »</p>
+          <footer>Exemple d’usage</footer>
+        </blockquote>
       </div>
     </section>
 

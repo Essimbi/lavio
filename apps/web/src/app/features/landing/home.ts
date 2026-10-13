@@ -101,6 +101,29 @@ export class Home {
     },
   ];
 
+  /** Chiffres clés : des faits du produit, jamais des statistiques inventées. */
+  protected readonly facts = [
+    { value: '< 90 s', label: 'pour enregistrer un dépôt et imprimer le ticket' },
+    { value: '6', label: 'statuts suivis pour chaque vêtement, du dépôt au retrait' },
+    { value: '5', label: 'modes de paiement : espèces, Orange Money, MTN MoMo, virement, chèque' },
+  ];
+
+  /** Points forts listés à côté des chiffres. */
+  protected readonly highlights = [
+    {
+      title: 'Ticket et QR code',
+      text: 'Numéro écrit en toutes lettres, étiquette par vêtement, impression 80 mm.',
+    },
+    {
+      title: 'Caisse qui tombe juste',
+      text: 'Comptage, écart expliqué, clôture validée par la responsable.',
+    },
+    {
+      title: 'Coupure de réseau sans perte',
+      text: 'Les saisies partent dès le retour de la connexion, sans doublon.',
+    },
+  ];
+
   protected readonly faq = [
     {
       q: 'Faut-il installer un logiciel ?',
