@@ -130,8 +130,17 @@ export type TreasuryAccountType = keyof typeof TreasuryAccountType;
 export const UtilityType = values('WATER', 'ELECTRICITY');
 export type UtilityType = keyof typeof UtilityType;
 
-export const InventoryStatus = values('DRAFT', 'VALIDATED');
+export const InventoryStatus = values('DRAFT', 'PENDING_APPROVAL', 'VALIDATED');
 export type InventoryStatus = keyof typeof InventoryStatus;
+
+export const ExpenseStatus = values(
+  'DRAFT',
+  'PENDING_APPROVAL',
+  'RECORDED',
+  'REJECTED',
+  'CANCELLED',
+);
+export type ExpenseStatus = keyof typeof ExpenseStatus;
 
 export const StockReasonCode = values('CONSUMPTION', 'LOSS', 'BREAKAGE', 'EXPIRED', 'OTHER');
 export type StockReasonCode = keyof typeof StockReasonCode;

@@ -12,3 +12,5 @@ export * from './deposits.js';
 export * from './phase2.js';
 export * from './tracking.js';
 export * from './phase3.js';
+export * from './stock.js';
+export * from './phase4.js';
