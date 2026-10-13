@@ -46,10 +46,12 @@ pnpm dev                                 # web sur :4200 (proxy /api -> API loca
 pnpm test                                # tests unitaires (shared, web)
 pnpm --filter web test:e2e               # Playwright (après pnpm build ; PLAYWRIGHT_CHANNEL=chrome en local)
 pnpm lint
-pnpm build
+pnpm build                               # PUBLIC_SITE_URL=https://… génère aussi sitemap.xml
 ```
 
-Parcours Playwright complets (superadmin, dépôt) : démarrer l'API de `lavio-api` sur la base de test (`NODE_ENV=test`), créer les données de test (`pnpm e2e:admin` et `pnpm e2e:fixtures`), puis `API_ORIGIN=http://localhost:3000 E2E_ADMIN_EMAIL=… E2E_ADMIN_PASSWORD=… E2E_PASSWORD=… pnpm --filter web test:e2e`. Sans `API_ORIGIN`, ces parcours sont sautés.
+Parcours Playwright complets (superadmin, dépôt, cycle, stock, tournée, mobile, landing) : démarrer l'API de `lavio-api` sur la base de test (`NODE_ENV=test`), créer les données de test (`pnpm e2e:admin` et `pnpm e2e:fixtures`), puis `API_ORIGIN=http://localhost:3000 E2E_ADMIN_EMAIL=… E2E_ADMIN_PASSWORD=… E2E_PASSWORD=… pnpm --filter web test:e2e`. Sans `API_ORIGIN`, ces parcours sont sautés.
+
+Recette et exploitation : `docs/RECETTE.md`, `docs/EXPLOITATION.md`.
 
 ## Définition de « terminé » pour une phase
 

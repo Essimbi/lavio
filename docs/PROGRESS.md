@@ -426,3 +426,68 @@ Phase 5 : tournées, tableau de bord 360°, mobile de la responsable, notificati
 ### Prochaine étape
 
 Phase 6 : landing, recette, durcissement, déploiement.
+
+## Phase 6 — Landing, recette, durcissement (13/10/2026) : tout sauf le déploiement de production
+
+### Fait
+
+- **Landing complète** (docs/07), prérendue :
+  - toutes les sections de docs/07 : en-tête à ancres, promesse, téléphone dessiné en HTML/CSS, problème, 6 fonctionnalités, parcours d'un vêtement avec le ticket, déroulé, bloc responsable, tarifs, questions, formulaire, pied de page ;
+  - **numéro WhatsApp, message et tarifs lus depuis l'API** (`GET /public/config`, plans actifs ; « Tarif sur demande » sans prix) ;
+  - bouton WhatsApp flottant sur mobile ;
+  - formulaire avec consentement, champ piège et erreurs accessibles.
+- **Pages légales provisoires** `/mentions-legales` et `/confidentialite`, prérendues, contenu provisoire clairement signalé.
+- **Référencement** :
+  - meta, Open Graph, Twitter Card, JSON-LD `SoftwareApplication` ;
+  - image de partage 1200 × 630 ;
+  - `sitemap.xml`, ligne `Sitemap` du `robots.txt` et adresses canoniques générés au build si `PUBLIC_SITE_URL` est défini.
+- **Lighthouse mobile** (landing, build compressé) : performance 95-96, accessibilité 100, bonnes pratiques 100, référencement 100.
+- **Droits des personnes** (docs/10) :
+  - export JSON des données d'un client et anonymisation (responsable seulement), avec les écritures comptables conservées ;
+  - refus tant qu'un dépôt est en cours ou qu'un reste à payer existe ;
+  - le garde-fou SQL des paiements n'autorise que l'effacement du téléphone du payeur.
+- **Durcissement** :
+  - test exhaustif : les plus de 60 routes d'écriture du pressing sont refusées en lecture seule ;
+  - configuration de production refusée avec des secrets d'exemple, identiques ou trop courts ;
+  - `pnpm audit` sans alerte (dépendances transitives corrigées) ;
+  - historique git sans secret.
+- **Recette** : `docs/RECETTE.md` (tests obligatoires, parcours 1 à 5, critères de la V1, liste de contrôle). **Exploitation** : `docs/EXPLOITATION.md`.
+- **Données de démonstration** complétées : 15 produits dont 3 sous le seuil, paiements cohérents, caisse ouverte, licences en grâce et à échéance.
+- **Couverture** des services métier : 85,5 % des lignes (`pnpm test:coverage`).
+
+### Tests (tous verts)
+
+| Dépôt | Unitaires | End-to-end |
+|---|---|---|
+| `lavio` | 62 (shared) + 33 (web, dont landing : WhatsApp depuis la configuration, tarifs, formulaire) | Playwright, 19 parcours : nouveau **parcours 5, landing** (lien WhatsApp, formulaire, pages légales) |
+| `lavio-api` | 62 + 56 | 150, dont 10 nouveaux : lecture seule exhaustive, droits des personnes, plans et demandes de contact |
+
+### Critères de fin de la phase 6
+
+| Critère | État |
+|---|---|
+| Tous les critères de réussite de la V1 démontrés | Fait en local (`docs/RECETTE.md`) ; push réel et en-têtes à revérifier sur le domaine déployé |
+| Liste de contrôle avant production cochée ou écarts expliqués | Écarts expliqués : région d'hébergement (bloquant), test de restauration, mot de passe initial du superadmin, contenu des pages légales |
+| Déploiement de production | **Non lancé** : en attente de votre accord, de la région d'hébergement validée et des comptes Vercel et Neon |
+
+### Hypothèses appliquées
+
+- Pages légales : structure définitive, contenu provisoire marqué [●].
+- Sans `PUBLIC_SITE_URL`, le build reste valable avec des adresses relatives et sans sitemap.
+- Anonymisation refusée tant qu'un dépôt est en cours ou qu'un reste à payer existe ; le client anonymisé garde son historique chiffré.
+- Le code d'un plan est normalisé en majuscules.
+
+### Points à confirmer
+
+- **Région d'hébergement** et formalités APDP : bloquant avant toute donnée réelle (docs/10).
+- Contenu des mentions légales et de la politique de confidentialité ; nom de domaine et adresse de support (docs/14, questions 1 à 3).
+- Les photos des articles d'un client anonymisé sont détachées de ses dépôts mais pas supprimées du stockage Blob : faut-il les supprimer, et après quel délai (docs/14, question 10) ?
+- Le nom d'un client anonymisé peut subsister dans l'historique des validations (remise, vente à crédit) et dans le texte des notifications déjà envoyées : faut-il aussi les effacer, ou les purger après un délai ? À valider avec le conseil.
+
+### Écarts avec docs/03
+
+- `customers.anonymized_at` ; `tour_requests.off_day_override` et `cancel_reason` ; `push_subscriptions.tenant_id`.
+
+### Prochaine étape
+
+Déploiement de production (docs/11, `docs/EXPLOITATION.md`), après votre accord.
