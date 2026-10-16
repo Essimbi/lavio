@@ -500,6 +500,12 @@ Déploiement de production (docs/11, `docs/EXPLOITATION.md`), après votre accor
 - Écrans de connexion refaits (formulaire à gauche, disque de marque à droite, champs encadrés, accès démo) ; pas de connexion par réseaux sociaux ni d'inscription libre (hors périmètre).
 - Correctif : la CSP bloquait les scripts en ligne d'Angular (feuille globale inactive dans la coque du service worker) ; production sans CSS critique incrusté ni hydratation incrémentale.
 
+- Stock de démonstration enrichi d'après un pressing pilote : facturier, stylo indélébile, encre à cachet, agrafes, housses (plastique veste, plastique vêtement, rouleau de plastique) et sacs de livraison (grand et petit plastique d'emballage) ; les produits génériques « Housses plastiques » et « Sacs de livraison » sont archivés.
+
+### Écarts avec docs/13
+
+- Le seed compte 22 produits de stock (3 sous le seuil) au lieu des 15 décrits, à la demande du pressing pilote.
+
 ### Idées notées (non codées)
 
 - Réinitialisation automatique des données du pressing de démonstration (par exemple chaque nuit), les visiteurs partageant les mêmes comptes.
