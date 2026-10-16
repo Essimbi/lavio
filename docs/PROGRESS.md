@@ -508,5 +508,6 @@ Déploiement de production (docs/11, `docs/EXPLOITATION.md`), après votre accor
 
 ### Idées notées (non codées)
 
+- **Plateforme pour les consommateurs** (hors périmètre V1, docs/01) : un client cherche un pressing par service, prix et proximité, le contacte sur WhatsApp ou commande en ligne ; le pressing reçoit la demande, fait le ramassage, le client suit son ticket ; pressings notés sur la qualité et la rapidité (mesurée à partir des délais réels). Démarche proposée : (1) lien de suivi du ticket, page vitrine par pressing avec demande de ramassage et note privée ; (2) annuaire et notes publiques vérifiées quand une zone compte 15 à 30 pressings ; (3) commandes en ligne, puis paiement et commission. À valider auprès des pressings pilotes et de clients ; impose de nouvelles formalités APDP (Lavio responsable de traitement des données des consommateurs).
 - Réinitialisation automatique des données du pressing de démonstration (par exemple chaque nuit), les visiteurs partageant les mêmes comptes.
 

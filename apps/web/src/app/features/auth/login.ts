@@ -43,7 +43,14 @@ import { PasswordField } from './password-field';
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <mat-form-field class="w-full">
           <mat-label>E-mail ou téléphone</mat-label>
-          <input matInput formControlName="identifier" autocomplete="username" inputmode="email" />
+          <input
+            matInput
+            formControlName="identifier"
+            autocomplete="username"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+          <mat-hint>Votre e-mail ou votre numéro, par ex. 6 90 00 00 00</mat-hint>
           @if (form.controls.identifier.hasError('required')) {
             <mat-error>Indiquez votre e-mail ou votre numéro de téléphone.</mat-error>
           }
