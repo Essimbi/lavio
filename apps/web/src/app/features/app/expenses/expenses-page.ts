@@ -23,7 +23,9 @@ import { EXPENSE_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../../../shared/fo
 import { confirmAction } from '../../../shared/ui/confirm-dialog/confirm-dialog';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
-import { Toast } from '../../../shared/ui/toast/toast.service';
+import { ApiError } from '../../../core/http/api';
+import { errorMessage, Toast } from '../../../shared/ui/toast/toast.service';
+import { compressImage, uploadToBlob } from '../../../shared/upload/photo-upload';
 
 type Tab = 'expenses' | 'recurring' | 'categories';
 
@@ -91,6 +93,10 @@ export class ExpensesPage {
   protected readonly amount = signal<number | null>(null);
   protected readonly accountId = signal('');
   protected readonly description = signal('');
+  /** Photo du justificatif (facultative), envoyée avant l'enregistrement. */
+  protected readonly receiptFile = signal<File | null>(null);
+  /** Dépense dont le justificatif est en cours d'envoi. */
+  protected readonly attaching = signal<string | null>(null);
   protected readonly busy = signal(false);
   protected readonly canSave = computed(
     () =>
@@ -119,11 +125,14 @@ export class ExpensesPage {
     if (!this.canSave()) return;
     this.busy.set(true);
     try {
+      const file = this.receiptFile();
+      const receiptUrl = file ? await this.uploadReceipt(file) : undefined;
       const created = await this.api.createExpense({
         categoryId: this.categoryId(),
         amountXaf: Number(this.amount()),
         accountId: this.accountId() || undefined,
         description: this.description().trim() || undefined,
+        receiptUrl,
       });
       this.toast.success(
         created.status === 'PENDING_APPROVAL'
@@ -132,12 +141,41 @@ export class ExpensesPage {
       );
       this.amount.set(null);
       this.description.set('');
+      this.receiptFile.set(null);
       this.list.reload();
     } catch (e) {
-      this.toast.error(e);
+      this.toast.error(asApiError(e));
     } finally {
       this.busy.set(false);
     }
+  }
+
+  protected pickReceipt(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.receiptFile.set(input.files?.[0] ?? null);
+  }
+
+  /** Ajoute la photo du justificatif à une dépense déjà enregistrée. */
+  protected async attach(e: ExpenseDto, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.attaching.set(e.id);
+    try {
+      await this.api.attachReceipt(e.id, await this.uploadReceipt(file));
+      this.toast.success('Justificatif ajouté.');
+      this.list.reload();
+    } catch (err) {
+      this.toast.error(asApiError(err));
+    } finally {
+      this.attaching.set(null);
+    }
+  }
+
+  private async uploadReceipt(file: File): Promise<string> {
+    const token = await this.api.receiptUploadToken();
+    return uploadToBlob(token, await compressImage(file));
   }
 
   protected async confirm(e: ExpenseDto): Promise<void> {
@@ -216,3 +254,9 @@ export class ExpensesPage {
     }
   }
 }
+
+/** Les erreurs d'envoi du navigateur (taille, réseau) sont présentées comme celles de l'API. */
+const asApiError = (e: unknown): unknown =>
+  e instanceof ApiError || !(e instanceof Error)
+    ? e
+    : new ApiError('INTERNAL_ERROR', e.message || errorMessage(e), 0);

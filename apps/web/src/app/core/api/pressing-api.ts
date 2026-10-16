@@ -134,6 +134,9 @@ export class PressingApi {
     late?: boolean;
     page?: number;
     customerId?: string;
+    /** Date de retrait prévue, bornes incluses (AAAA-MM-JJ). */
+    dueFrom?: string;
+    dueTo?: string;
   }) => this.get<Paginated<DepositListItem>>('/deposits', q);
   deposit = (id: string) => this.get<DepositDto>(`/deposits/${id}`);
   depositByNumber = (number: string) =>

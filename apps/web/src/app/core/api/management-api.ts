@@ -30,6 +30,7 @@ import type {
   TreasuryAccountType,
   UtilityReadingDto,
   UtilityType,
+  UploadToken,
 } from '@lavio/shared';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE } from '../http/api';
@@ -172,6 +173,10 @@ export class ManagementApi {
     page?: number;
   }) => this.get<Paginated<ExpenseDto>>('/expenses', q);
   createExpense = (body: CreateExpenseRequest) => this.post<ExpenseDto>('/expenses', body);
+  /** Justificatif : jeton d'envoi direct vers Vercel Blob, puis rattachement à une dépense. */
+  receiptUploadToken = () => this.post<UploadToken>('/expenses/receipts/upload-token');
+  attachReceipt = (id: string, url: string) =>
+    this.post<ExpenseDto>(`/expenses/${id}/receipt`, { url });
   confirmExpense = (id: string, body: { amountXaf?: number; accountId?: string } = {}) =>
     this.post<ExpenseDto>(`/expenses/${id}/confirm`, body);
   cancelExpense = (id: string, reason: string) =>

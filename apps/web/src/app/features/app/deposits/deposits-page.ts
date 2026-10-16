@@ -10,7 +10,10 @@ import { Pager } from '../../../shared/ui/pager/pager';
 import { DEPOSIT_STATUS_LABELS, DepositChip } from '../../../shared/ui/status-chip/deposit-chip';
 import { errorMessage } from '../../../shared/ui/toast/toast.service';
 
-/** Liste des dépôts : recherche par numéro, client ou téléphone ; filtre par statut et retards. */
+/**
+ * Liste des dépôts : recherche par numéro, client ou téléphone ; filtres par statut, date de
+ * retrait prévue et retards.
+ */
 @Component({
   selector: 'lv-deposits-page',
   imports: [FormsModule, RouterLink, PageHeader, Pager, DepositChip, FrDatePipe, XafPipe],
@@ -49,6 +52,37 @@ import { errorMessage } from '../../../shared/ui/toast/toast.service';
           }
         </select>
       </div>
+      <fieldset class="flex items-end gap-2">
+        <legend class="lv-label">Retrait prévu</legend>
+        <div>
+          <label class="sr-only" for="deposit-due-from">Retrait à partir du</label>
+          <input
+            id="deposit-due-from"
+            class="lv-input"
+            type="date"
+            [ngModel]="dueFrom()"
+            (ngModelChange)="dueFrom.set($event ?? ''); page.set(1)"
+            name="dueFrom"
+            [max]="dueTo() || null"
+          />
+        </div>
+        <span class="pb-3" aria-hidden="true">au</span>
+        <div>
+          <label class="sr-only" for="deposit-due-to">Retrait jusqu’au</label>
+          <input
+            id="deposit-due-to"
+            class="lv-input"
+            type="date"
+            [ngModel]="dueTo()"
+            (ngModelChange)="dueTo.set($event ?? ''); page.set(1)"
+            name="dueTo"
+            [min]="dueFrom() || null"
+          />
+        </div>
+        @if (dueFrom() || dueTo()) {
+          <button type="button" class="lv-link-button pb-3" (click)="clearDue()">Effacer</button>
+        }
+      </fieldset>
       <label class="flex min-h-11 items-center gap-2"
         ><input
           type="checkbox"
@@ -116,6 +150,8 @@ export class DepositsPage {
   protected readonly q = signal('');
   protected readonly status = signal<DepositStatus | ''>('');
   protected readonly late = signal(false);
+  protected readonly dueFrom = signal('');
+  protected readonly dueTo = signal('');
   protected readonly page = signal(1);
   protected readonly error = signal<string | null>(null);
   protected readonly list = resource({
@@ -123,10 +159,18 @@ export class DepositsPage {
       q: this.q().trim(),
       status: this.status(),
       late: this.late() || undefined,
+      dueFrom: this.dueFrom(),
+      dueTo: this.dueTo(),
       page: this.page(),
     }),
     loader: ({ params }) => this.api.deposits(params),
   });
+
+  protected clearDue(): void {
+    this.dueFrom.set('');
+    this.dueTo.set('');
+    this.page.set(1);
+  }
 
   /** Entrée sur un numéro : ouverture directe du dépôt (avec ou sans zéros initiaux). */
   protected async open(): Promise<void> {

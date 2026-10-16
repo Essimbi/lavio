@@ -61,6 +61,46 @@ import { Toast } from '../../shared/ui/toast/toast.service';
             <a class="mt-1 inline-block text-sm" routerLink="/app/cash"
               >Voir le journal de caisse</a
             >
+          } @else if (a.type === 'STOCK_ADJUSTMENT') {
+            <p class="mt-1 text-lg font-semibold">
+              <a [routerLink]="['/app/stock', a.payload['itemId']]">{{ a.payload['itemName'] }}</a>
+            </p>
+            <dl class="lv-dl tabular mt-2">
+              <dt>Ajustement</dt>
+              <dd class="font-semibold">{{ signedQty(a) }} {{ a.payload['unit'] }}</dd>
+              <dt>Motif</dt>
+              <dd>{{ a.payload['reasonLabel'] ?? '—' }}</dd>
+            </dl>
+            @if (a.payload['note']) {
+              <p class="mt-2 text-sm">Note : {{ a.payload['note'] }}</p>
+            }
+          } @else if (a.type === 'INVENTORY') {
+            <dl class="lv-dl tabular mt-2">
+              <dt>Lignes comptées</dt>
+              <dd>{{ a.payload['countedLines'] }}</dd>
+              <dt>Écarts</dt>
+              <dd>{{ a.payload['changedLines'] }}</dd>
+              <dt>Valeur des écarts</dt>
+              <dd class="font-semibold" [class.text-coral-600]="a.payload['varianceXaf'] !== 0">
+                {{ $any(a.payload['varianceXaf']) | xaf }}
+              </dd>
+            </dl>
+            <a
+              class="mt-1 inline-block text-sm"
+              [routerLink]="['/app/stock/inventories', a.payload['inventoryId']]"
+              >Voir l’inventaire</a
+            >
+          } @else if (a.type === 'EXPENSE') {
+            <p class="mt-1 text-lg font-semibold tabular">
+              {{ $any(a.payload['amountXaf']) | xaf }} · {{ a.payload['categoryName'] }}
+            </p>
+            <dl class="lv-dl mt-2">
+              <dt>Compte</dt>
+              <dd>{{ a.payload['accountName'] ?? '—' }}</dd>
+              <dt>Libellé</dt>
+              <dd>{{ a.payload['description'] ?? '—' }}</dd>
+            </dl>
+            <a class="mt-1 inline-block text-sm" routerLink="/app/expenses">Voir les dépenses</a>
           }
           <p class="mt-1 text-sm">
             Demandée par {{ a.requestedByName ?? '—' }} le {{ a.createdAt | frDateTime }}
@@ -86,6 +126,11 @@ export class ApprovalsPage {
   private readonly center = inject(NotificationCenter);
   protected readonly pending = resource({ loader: () => this.api.approvals('PENDING') });
   protected readonly typeLabel = (a: ApprovalDto) => APPROVAL_TYPE_LABELS[a.type];
+  /** Quantité d'un ajustement de stock, avec son signe (+ entrée, − sortie). */
+  protected signedQty(a: ApprovalDto): string {
+    const q = Number(a.payload['quantity'] ?? 0);
+    return `${q > 0 ? '+' : q < 0 ? '−' : ''}${new Intl.NumberFormat('fr-FR').format(Math.abs(q))}`;
+  }
 
   protected async approve(a: ApprovalDto): Promise<void> {
     try {

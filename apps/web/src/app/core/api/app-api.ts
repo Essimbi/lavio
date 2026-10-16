@@ -53,11 +53,15 @@ export class AppApi {
     );
   }
 
-  auditLogs(page = 1): Promise<Paginated<AuditLogDto>> {
+  /** Journal du pressing ; `from` inclus et `to` exclu (instants ISO 8601). */
+  auditLogs(
+    q: { page?: number; userId?: string; entity?: string; from?: string; to?: string } = {},
+  ): Promise<Paginated<AuditLogDto>> {
+    const params = Object.fromEntries(
+      Object.entries({ pageSize: 25, page: 1, ...q }).filter(([, v]) => v !== ''),
+    ) as Record<string, string | number>;
     return firstValueFrom(
-      this.http.get<Paginated<AuditLogDto>>(`${API_BASE}/audit-logs`, {
-        params: { page, pageSize: 25 },
-      }),
+      this.http.get<Paginated<AuditLogDto>>(`${API_BASE}/audit-logs`, { params }),
     );
   }
 }

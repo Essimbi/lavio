@@ -502,6 +502,15 @@ Déploiement de production (docs/11, `docs/EXPLOITATION.md`), après votre accor
 
 - Stock de démonstration enrichi d'après un pressing pilote : facturier, stylo indélébile, encre à cachet, agrafes, housses (plastique veste, plastique vêtement, rouleau de plastique) et sacs de livraison (grand et petit plastique d'emballage) ; les produits génériques « Housses plastiques » et « Sacs de livraison » sont archivés.
 
+- **Compléments V1 après audit du périmètre** (16/10/2026) :
+  - envoi des photos et du logo : la CSP autorise désormais `https://vercel.com/api/blob/` (adresse d'envoi de `@vercel/blob`), vérifié par un test Playwright qui applique la CSP de `vercel.json` ;
+  - justificatif de dépense : photo à la saisie ou ajoutée plus tard (une seule fois, tracée), adresse acceptée seulement dans le dossier du pressing ;
+  - liste des dépôts filtrable par date de retrait prévue ;
+  - validations à distance détaillées pour les ajustements de stock (produit, quantité, motif), les inventaires (écarts, valeur) et les dépenses (montant, catégorie, compte) ;
+  - logo du pressing sur la facture PDF (PNG ou JPEG, meilleur effort) ;
+  - journal d'audit du pressing filtrable par utilisateur, élément et période.
+- Région d'hébergement de la base validée par le Concepteur (16/10/2026) ; formalités APDP encore à faire avant des données réelles.
+
 ### Écarts avec docs/13
 
 - Le seed compte 22 produits de stock (3 sous le seuil) au lieu des 15 décrits, à la demande du pressing pilote.
