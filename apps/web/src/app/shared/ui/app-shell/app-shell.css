@@ -62,6 +62,8 @@
 }
 
 .content {
+  /* Élément de grille : sans min-width 0, un tableau large élargit toute la page. */
+  min-width: 0;
   padding: 24px 16px 96px;
   outline: none;
 }

@@ -4,48 +4,39 @@ import { UtilityType } from '@lavio/shared';
 import { ManagementApi } from '../../../core/api/management-api';
 import { FrDatePipe, todayInput } from '../../../shared/format/format';
 import { QtyPipe, UTILITY_TYPE_LABELS } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
 /** Relevés mensuels des compteurs d'eau et d'électricité (données utiles à la V2). */
 @Component({
   selector: 'lv-utilities-panel',
-  imports: [FormsModule, FrDatePipe, QtyPipe],
+  imports: [FormsModule, LV_FIELD, FrDatePipe, QtyPipe],
   template: `
     <form
       class="lv-card mb-6 grid gap-3 md:grid-cols-[1fr_1fr_1fr_2fr_auto] md:items-end"
       (ngSubmit)="add()"
       aria-label="Nouveau relevé"
     >
-      <div>
-        <label class="lv-label" for="ut-type">Compteur</label>
-        <select
-          id="ut-type"
-          class="lv-select"
-          name="type"
-          [ngModel]="type()"
-          (ngModelChange)="type.set($event)"
-        >
+      <lv-field label="Compteur">
+        <select lvControl name="type" [ngModel]="type()" (ngModelChange)="type.set($event)">
           @for (t of types; track t) {
             <option [value]="t">{{ labels[t] }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="ut-date">Date du relevé</label>
+      </lv-field>
+      <lv-field label="Date du relevé">
         <input
-          id="ut-date"
-          class="lv-input"
+          lvControl
           type="date"
           name="date"
           [ngModel]="date()"
           (ngModelChange)="date.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="ut-value">Index</label>
+      </lv-field>
+      <lv-field label="Index" [errors]="{ min: 'L’index ne peut pas être négatif.' }">
         <input
-          id="ut-value"
-          class="lv-input tabular"
+          lvControl
+          class="tabular"
           type="number"
           min="0"
           step="0.001"
@@ -53,18 +44,16 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
           [ngModel]="value()"
           (ngModelChange)="value.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="ut-note">Note</label>
+      </lv-field>
+      <lv-field label="Note">
         <input
-          id="ut-note"
-          class="lv-input"
+          lvControl
           maxlength="500"
           name="note"
           [ngModel]="note()"
           (ngModelChange)="note.set($event)"
         />
-      </div>
+      </lv-field>
       <button type="submit" class="lv-primary" [disabled]="value() === null || !date()">
         Enregistrer
       </button>

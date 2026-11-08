@@ -94,6 +94,49 @@
   }
 }
 
+/*
+ * Composants Material restants (boutons, dialogues, notifications) : mêmes formes que les
+ * composants Lavio, via leurs variables (docs/08).
+ */
+html {
+  --mat-button-filled-container-shape: 999px;
+  --mat-button-filled-container-height: 44px;
+  --mat-button-filled-horizontal-padding: 20px;
+  --mat-button-filled-label-text-font: var(--lv-font-body);
+  --mat-button-filled-label-text-size: 15px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-label-text-tracking: 0;
+  --mat-button-outlined-container-shape: 999px;
+  --mat-button-outlined-container-height: 44px;
+  --mat-button-outlined-horizontal-padding: 20px;
+  --mat-button-outlined-label-text-font: var(--lv-font-body);
+  --mat-button-outlined-label-text-size: 15px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-tracking: 0;
+  --mat-button-outlined-outline-color: color-mix(in srgb, var(--lv-teal-900) 22%, transparent);
+  --mat-button-outlined-label-text-color: var(--lv-teal-900);
+  --mat-button-text-container-shape: 999px;
+  --mat-button-text-container-height: 44px;
+  --mat-button-text-label-text-font: var(--lv-font-body);
+  --mat-button-text-label-text-size: 15px;
+  --mat-button-text-label-text-weight: 600;
+  --mat-button-text-label-text-tracking: 0;
+  --mat-button-text-label-text-color: var(--lv-teal-700);
+  --mat-dialog-container-shape: var(--lv-radius-block);
+  --mat-dialog-container-color: var(--lv-white);
+  --mat-dialog-subhead-font: var(--lv-font-display);
+  --mat-dialog-subhead-size: 20px;
+  --mat-dialog-subhead-weight: 600;
+  --mat-dialog-subhead-color: var(--lv-teal-900);
+  --mat-dialog-supporting-text-font: var(--lv-font-body);
+  --mat-dialog-supporting-text-size: 15px;
+  --mat-dialog-supporting-text-color: var(--lv-ink-900);
+  --mat-dialog-actions-padding: 8px 24px 20px;
+  --mat-snack-bar-container-shape: 12px;
+  --mat-snack-bar-container-color: var(--lv-ink-900);
+  --mat-snack-bar-supporting-text-font: var(--lv-font-body);
+}
+
 /* ------------------------------------------------------------------ Composants communs */
 @layer components {
   .lv-card {
@@ -115,10 +158,12 @@
   }
 
   .lv-table-wrap {
+    /* Positionné : les textes « sr-only » (absolus) des cellules restent dans la zone défilante. */
+    position: relative;
     overflow-x: auto;
+    border: 1px solid color-mix(in srgb, var(--lv-teal-900) 8%, transparent);
     background: var(--lv-white);
     border-radius: var(--lv-radius-card);
-    box-shadow: var(--lv-shadow-card);
   }
 
   .lv-table {
@@ -130,19 +175,26 @@
   .lv-table th {
     position: sticky;
     top: 0;
-    background: var(--lv-mint-100);
-    color: var(--lv-teal-900);
+    background: var(--lv-foam-50);
+    color: color-mix(in srgb, var(--lv-ink-900) 72%, transparent);
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     text-align: left;
-    padding: 10px 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--lv-teal-900) 10%, transparent);
     white-space: nowrap;
   }
 
   .lv-table td {
-    padding: 10px 12px;
-    border-top: 1px solid var(--lv-mint-100);
+    padding: 12px 14px;
+    border-top: 1px solid color-mix(in srgb, var(--lv-teal-900) 7%, transparent);
     vertical-align: middle;
+  }
+
+  .lv-table tbody tr:first-child td {
+    border-top: 0;
   }
 
   .lv-table tbody tr:hover {
@@ -193,14 +245,16 @@
 
   .lv-form-grid {
     display: grid;
-    gap: 4px 16px;
+    gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   .lv-alert {
-    padding: 10px 14px;
+    padding: 12px 14px;
+    border: 1px solid color-mix(in srgb, var(--lv-coral-600) 25%, transparent);
+    border-left-width: 4px;
     border-radius: var(--lv-radius-field);
-    background: color-mix(in srgb, var(--lv-coral-600) 12%, white);
+    background: color-mix(in srgb, var(--lv-coral-600) 7%, white);
     color: var(--lv-coral-600);
     font-weight: 600;
   }
@@ -280,39 +334,339 @@
 }
 
 @layer components {
-  /* Champs denses natifs pour les saisies rapides au clavier (écran de dépôt, grilles). */
+  /*
+   * Champs (docs/08) : libellé au-dessus, contrôle blanc à bordure fine, halo aqua au focus.
+   * `lv-field` regroupe libellé, contrôle, aide et erreur ; `lv-input` et `lv-select` s'emploient
+   * aussi seuls (grilles de saisie rapide de l'écran de dépôt).
+   */
+  .lv-field {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .lv-label {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lv-teal-900);
+    transition: color var(--lv-duration) var(--lv-ease);
+  }
+
+  .lv-field > .lv-label {
+    margin-bottom: 0;
+  }
+
+  .lv-field:focus-within > .lv-label {
+    color: var(--lv-teal-700);
+  }
+
+  .lv-field-invalid > .lv-label {
+    color: var(--lv-coral-600);
+  }
+
+  .lv-optional {
+    font-size: 12px;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--lv-ink-900) 60%, transparent);
+  }
+
   .lv-input,
   .lv-select {
     width: 100%;
     min-height: 44px;
-    padding: 8px 12px;
-    border: 1px solid color-mix(in srgb, var(--lv-teal-900) 28%, white);
+    padding: 10px 14px;
+    border: 1px solid color-mix(in srgb, var(--lv-ink-900) 16%, transparent);
     border-radius: var(--lv-radius-field);
     background: var(--lv-white);
     color: var(--lv-ink-900);
-    font: inherit;
+    font: 400 15px/1.4 var(--lv-font-body);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--lv-teal-900) 6%, transparent);
     transition:
       border-color var(--lv-duration) var(--lv-ease),
-      box-shadow var(--lv-duration) var(--lv-ease);
+      box-shadow var(--lv-duration) var(--lv-ease),
+      background-color var(--lv-duration) var(--lv-ease);
+  }
+
+  textarea.lv-input {
+    min-height: 96px;
+    resize: vertical;
+  }
+
+  .lv-input::placeholder {
+    color: color-mix(in srgb, var(--lv-ink-900) 45%, transparent);
+  }
+
+  .lv-input:hover:not(:disabled):not(:focus),
+  .lv-select:hover:not(:disabled):not(:focus) {
+    border-color: color-mix(in srgb, var(--lv-ink-900) 32%, transparent);
   }
 
   .lv-input:focus,
   .lv-select:focus {
     border-color: var(--lv-teal-700);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lv-aqua-400) 45%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--lv-aqua-400) 32%, transparent);
     outline: none;
   }
 
-  .lv-input[aria-invalid='true'] {
+  .lv-input[aria-invalid='true'],
+  .lv-select[aria-invalid='true'] {
     border-color: var(--lv-coral-600);
   }
 
-  .lv-label {
-    display: block;
-    margin-bottom: 4px;
+  .lv-input[aria-invalid='true']:focus,
+  .lv-select[aria-invalid='true']:focus {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--lv-coral-600) 18%, transparent);
+  }
+
+  .lv-input:disabled,
+  .lv-select:disabled,
+  .lv-input[readonly] {
+    background: var(--lv-foam-50);
+    color: color-mix(in srgb, var(--lv-ink-900) 65%, transparent);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .lv-input[readonly] {
+    cursor: default;
+  }
+
+  .lv-input[type='number'],
+  .lv-input[type='date'],
+  .lv-input[inputmode='numeric'] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lv-input[type='date']::-webkit-calendar-picker-indicator {
+    opacity: 0.6;
+    cursor: pointer;
+  }
+
+  /* Liste native au chevron dessiné (même hauteur et même focus que les champs). */
+  .lv-select {
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b4f4a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    cursor: pointer;
+  }
+
+  /* Recherche : loupe intégrée à gauche. */
+  .lv-input.lv-search,
+  .lv-search .lv-input {
+    padding-left: 42px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231b7a72' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    background-size: 18px;
+  }
+
+  .lv-hint,
+  .lv-error,
+  .field-error {
+    margin: 0;
     font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .lv-hint {
+    color: color-mix(in srgb, var(--lv-ink-900) 68%, transparent);
+  }
+
+  .lv-error,
+  .field-error {
+    display: flex;
+    gap: 6px;
     font-weight: 600;
-    color: var(--lv-teal-900);
+    color: var(--lv-coral-600);
+  }
+
+  .lv-error::before,
+  .field-error::before {
+    content: '';
+    flex: none;
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2V7Zm0 9h2v2h-2v-2Z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+
+  /* Barre de filtres : un seul bandeau au-dessus des listes. */
+  .lv-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid color-mix(in srgb, var(--lv-teal-900) 8%, transparent);
+    border-radius: var(--lv-radius-card);
+    background: var(--lv-white);
+  }
+
+  .lv-toolbar > .lv-field {
+    flex: 1 1 180px;
+  }
+
+  .lv-toolbar > .lv-field.lv-grow {
+    flex: 3 1 280px;
+  }
+
+  /* Un fieldset ne descend jamais sous la largeur de son contenu par défaut : on l'autorise. */
+  fieldset {
+    min-width: 0;
+  }
+
+  .lv-toolbar > * {
+    min-width: 0;
+  }
+
+  .lv-toolbar > fieldset {
+    display: flex;
+    flex: 2 1 260px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .lv-toolbar > fieldset > legend {
+    float: left;
+    width: 100%;
+  }
+
+  .lv-toolbar > fieldset > .lv-field {
+    flex: 1 1 130px;
+  }
+
+  .lv-toolbar .lv-label {
+    font-size: 12px;
+    color: color-mix(in srgb, var(--lv-ink-900) 70%, transparent);
+  }
+
+  /* Cases à cocher et boutons radio dessinés (hors composants Material). */
+  input[type='checkbox']:not([class*='mdc']),
+  input[type='radio']:not([class*='mdc']) {
+    appearance: none;
+    flex: none;
+    display: inline-grid;
+    place-content: center;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border: 1.5px solid color-mix(in srgb, var(--lv-ink-900) 35%, transparent);
+    background: var(--lv-white);
+    vertical-align: middle;
+    cursor: pointer;
+    transition:
+      background-color var(--lv-duration) var(--lv-ease),
+      border-color var(--lv-duration) var(--lv-ease),
+      box-shadow var(--lv-duration) var(--lv-ease);
+  }
+
+  input[type='checkbox']:not([class*='mdc']) {
+    border-radius: 6px;
+  }
+
+  input[type='radio']:not([class*='mdc']) {
+    border-radius: 50%;
+  }
+
+  input[type='checkbox']:not([class*='mdc'])::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: var(--lv-white);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5 10 17 19 7'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    transform: scale(0);
+    transition: transform var(--lv-duration) var(--lv-ease);
+  }
+
+  input[type='radio']:not([class*='mdc'])::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--lv-white);
+    transform: scale(0);
+    transition: transform var(--lv-duration) var(--lv-ease);
+  }
+
+  input[type='checkbox']:not([class*='mdc']):hover:not(:disabled),
+  input[type='radio']:not([class*='mdc']):hover:not(:disabled) {
+    border-color: var(--lv-teal-700);
+  }
+
+  input[type='checkbox']:not([class*='mdc']):checked,
+  input[type='radio']:not([class*='mdc']):checked {
+    border-color: var(--lv-teal-900);
+    background: var(--lv-teal-900);
+  }
+
+  input[type='checkbox']:not([class*='mdc']):checked::after,
+  input[type='radio']:not([class*='mdc']):checked::after {
+    transform: scale(1);
+  }
+
+  input[type='checkbox']:not([class*='mdc']):focus-visible,
+  input[type='radio']:not([class*='mdc']):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--lv-aqua-400) 40%, transparent);
+  }
+
+  input[type='checkbox']:not([class*='mdc']):disabled,
+  input[type='radio']:not([class*='mdc']):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Case + libellé alignés, zone tactile de 44 px. */
+  .lv-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Interrupteur (réglage oui/non) : case à cocher avec role="switch". */
+  input.lv-switch[type='checkbox'] {
+    width: 40px;
+    height: 24px;
+    padding: 0 3px;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--lv-ink-900) 22%, transparent);
+    place-content: center start;
+  }
+
+  input.lv-switch[type='checkbox']::after {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    mask: none;
+    background: var(--lv-white);
+    box-shadow: 0 1px 3px rgba(20, 33, 31, 0.3);
+    transform: none;
+    transition: translate var(--lv-duration) var(--lv-ease);
+  }
+
+  input.lv-switch[type='checkbox']:checked {
+    background: var(--lv-teal-900);
+  }
+
+  input.lv-switch[type='checkbox']:checked::after {
+    transform: none;
+    translate: 16px 0;
   }
 
   .lv-kbd {
@@ -328,44 +682,99 @@
 
 @layer components {
   .lv-primary,
-  .lv-secondary {
+  .lv-secondary,
+  .lv-ghost {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 48px;
+    gap: 8px;
+    min-height: 44px;
     padding: 0 20px;
     border-radius: var(--lv-radius-pill);
     font: 600 15px/1 var(--lv-font-body);
+    text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
     transition:
       transform var(--lv-duration) var(--lv-ease),
-      background-color var(--lv-duration) var(--lv-ease);
+      background-color var(--lv-duration) var(--lv-ease),
+      border-color var(--lv-duration) var(--lv-ease),
+      box-shadow var(--lv-duration) var(--lv-ease);
   }
 
   .lv-primary {
     border: 0;
     background: var(--lv-teal-900);
     color: var(--lv-white);
+    box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--lv-teal-900) 80%, transparent);
   }
 
   .lv-primary:hover:not(:disabled) {
     transform: translateY(-1px);
+    background: color-mix(in srgb, var(--lv-teal-900) 88%, var(--lv-teal-700));
+  }
+
+  .lv-primary:active:not(:disabled),
+  .lv-secondary:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   .lv-primary:disabled {
-    background: color-mix(in srgb, var(--lv-teal-900) 35%, white);
+    background: color-mix(in srgb, var(--lv-teal-900) 30%, white);
     color: var(--lv-ink-900);
+    box-shadow: none;
     cursor: not-allowed;
   }
 
   .lv-secondary {
-    border: 2px solid var(--lv-teal-900);
+    border: 1px solid color-mix(in srgb, var(--lv-teal-900) 22%, transparent);
     background: var(--lv-white);
     color: var(--lv-teal-900);
   }
 
-  .lv-secondary:hover {
+  .lv-secondary:hover:not(:disabled) {
+    border-color: var(--lv-teal-900);
     background: var(--lv-mint-100);
+  }
+
+  .lv-secondary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .lv-ghost {
+    border: 0;
+    background: transparent;
+    color: var(--lv-teal-700);
+    padding: 0 14px;
+  }
+
+  .lv-ghost:hover:not(:disabled) {
+    background: var(--lv-mint-100);
+    color: var(--lv-teal-900);
+  }
+
+  /* Action destructrice : texte blanc sur corail, en gras (docs/08). */
+  .lv-danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: var(--lv-radius-pill);
+    background: var(--lv-coral-600);
+    color: var(--lv-white);
+    font: 700 15px/1 var(--lv-font-body);
+    cursor: pointer;
+  }
+
+  .lv-primary:focus-visible,
+  .lv-secondary:focus-visible,
+  .lv-ghost:focus-visible,
+  .lv-danger-button:focus-visible {
+    outline: 2px solid var(--lv-aqua-400);
+    outline-offset: 3px;
   }
 }
 

@@ -21,6 +21,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe, FrDateTimePipe, XafPipe } from '../../../shared/format/format';
 import { EXPENSE_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../../../shared/format/labels';
 import { confirmAction } from '../../../shared/ui/confirm-dialog/confirm-dialog';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { ApiError } from '../../../core/http/api';
@@ -43,7 +44,16 @@ const STATUS_TONES: Record<ExpenseStatus, string> = {
  */
 @Component({
   selector: 'lv-expenses-page',
-  imports: [FormsModule, RouterLink, PageHeader, Pager, FrDatePipe, FrDateTimePipe, XafPipe],
+  imports: [
+    FormsModule,
+    LV_FIELD,
+    RouterLink,
+    PageHeader,
+    Pager,
+    FrDatePipe,
+    FrDateTimePipe,
+    XafPipe,
+  ],
   templateUrl: './expenses-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

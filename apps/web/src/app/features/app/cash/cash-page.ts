@@ -12,6 +12,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { PressingApi } from '../../../core/api/pressing-api';
 import { formatXaf, FrDateTimePipe, XafPipe } from '../../../shared/format/format';
 import { CASH_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { Toast } from '../../../shared/ui/toast/toast.service';
@@ -22,7 +23,7 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
  */
 @Component({
   selector: 'lv-cash-page',
-  imports: [FormsModule, PageHeader, Pager, FrDateTimePipe, XafPipe],
+  imports: [FormsModule, LV_FIELD, PageHeader, Pager, FrDateTimePipe, XafPipe],
   templateUrl: './cash-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

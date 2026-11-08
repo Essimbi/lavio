@@ -11,12 +11,13 @@ import { PaymentMethod, TreasuryAccountType } from '@lavio/shared';
 import { ManagementApi } from '../../../core/api/management-api';
 import { FrDateTimePipe, XafPipe } from '../../../shared/format/format';
 import { ACCOUNT_TYPE_LABELS, PAYMENT_METHOD_LABELS } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
 /** Comptes de trésorerie (soldes calculés), virements, nouveau compte. */
 @Component({
   selector: 'lv-treasury-panel',
-  imports: [FormsModule, XafPipe, FrDateTimePipe],
+  imports: [FormsModule, LV_FIELD, XafPipe, FrDateTimePipe],
   template: `
     <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       @for (a of active(); track a.id) {
@@ -40,59 +41,42 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
       <form class="lv-card grid gap-3" (ngSubmit)="transfer()" aria-labelledby="transfer-title">
         <h3 id="transfer-title" class="text-lg">Virement entre comptes</h3>
         <div class="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label class="lv-label" for="tr-from">Depuis</label>
-            <select
-              id="tr-from"
-              class="lv-select"
-              name="from"
-              [ngModel]="from()"
-              (ngModelChange)="from.set($event)"
-            >
+          <lv-field label="Depuis">
+            <select lvControl name="from" [ngModel]="from()" (ngModelChange)="from.set($event)">
               <option value="">— Choisir —</option>
               @for (a of active(); track a.id) {
                 <option [value]="a.id">{{ a.name }}</option>
               }
             </select>
-          </div>
-          <div>
-            <label class="lv-label" for="tr-to">Vers</label>
-            <select
-              id="tr-to"
-              class="lv-select"
-              name="to"
-              [ngModel]="to()"
-              (ngModelChange)="to.set($event)"
-            >
+          </lv-field>
+          <lv-field label="Vers">
+            <select lvControl name="to" [ngModel]="to()" (ngModelChange)="to.set($event)">
               <option value="">— Choisir —</option>
               @for (a of active(); track a.id) {
                 <option [value]="a.id">{{ a.name }}</option>
               }
             </select>
-          </div>
-          <div>
-            <label class="lv-label" for="tr-amount">Montant (FCFA)</label>
+          </lv-field>
+          <lv-field label="Montant (FCFA)" [errors]="{ min: 'Le montant doit être positif.' }">
             <input
-              id="tr-amount"
-              class="lv-input tabular"
+              lvControl
+              class="tabular"
               type="number"
               min="1"
               name="amount"
               [ngModel]="amount()"
               (ngModelChange)="amount.set($event)"
             />
-          </div>
-          <div>
-            <label class="lv-label" for="tr-note">Note</label>
+          </lv-field>
+          <lv-field label="Note">
             <input
-              id="tr-note"
-              class="lv-input"
+              lvControl
               maxlength="500"
               name="note"
               [ngModel]="note()"
               (ngModelChange)="note.set($event)"
             />
-          </div>
+          </lv-field>
         </div>
         <p class="text-sm">
           Un virement n’est jamais modifié : une erreur se corrige par un virement inverse.
@@ -109,42 +93,32 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
       <form class="lv-card grid gap-3" (ngSubmit)="addAccount()" aria-labelledby="account-title">
         <h3 id="account-title" class="text-lg">Nouveau compte</h3>
         <div class="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label class="lv-label" for="acc-name">Nom</label>
+          <lv-field label="Nom">
             <input
-              id="acc-name"
-              class="lv-input"
+              lvControl
               maxlength="60"
               name="name"
               [ngModel]="name()"
               (ngModelChange)="name.set($event)"
             />
-          </div>
-          <div>
-            <label class="lv-label" for="acc-type">Type</label>
-            <select
-              id="acc-type"
-              class="lv-select"
-              name="type"
-              [ngModel]="type()"
-              (ngModelChange)="type.set($event)"
-            >
+          </lv-field>
+          <lv-field label="Type">
+            <select lvControl name="type" [ngModel]="type()" (ngModelChange)="type.set($event)">
               @for (t of types; track t) {
                 <option [value]="t">{{ typeLabels[t] }}</option>
               }
             </select>
-          </div>
-          <div>
-            <label class="lv-label" for="acc-opening">Solde d’ouverture (FCFA)</label>
+          </lv-field>
+          <lv-field label="Solde d’ouverture (FCFA)">
             <input
-              id="acc-opening"
-              class="lv-input tabular"
+              lvControl
+              class="tabular"
               type="number"
               name="opening"
               [ngModel]="opening()"
               (ngModelChange)="opening.set($event)"
             />
-          </div>
+          </lv-field>
         </div>
         <button
           type="submit"

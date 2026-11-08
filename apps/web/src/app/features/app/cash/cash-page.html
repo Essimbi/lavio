@@ -15,11 +15,17 @@
           </p>
           @if (isCashier()) {
             <form class="flex flex-wrap items-end gap-3" (ngSubmit)="open()">
-              <div class="grow">
-                <label class="lv-label" for="cash-float">Fond de caisse (FCFA)</label>
+              <lv-field
+                label="Fond de caisse (FCFA)"
+                [errors]="{
+                  required: 'Indiquez le fond de caisse.',
+                  min: 'Le montant ne peut pas être négatif.',
+                }"
+                class="grow"
+              >
                 <input
-                  id="cash-float"
-                  class="lv-input tabular"
+                  lvControl
+                  class="tabular"
                   type="number"
                   inputmode="numeric"
                   min="0"
@@ -28,7 +34,7 @@
                   [ngModel]="openingFloat()"
                   (ngModelChange)="openingFloat.set($event)"
                 />
-              </div>
+              </lv-field>
               <button type="submit" class="lv-primary" [disabled]="busy()">Ouvrir la caisse</button>
             </form>
           }
@@ -70,11 +76,16 @@
           } @else if (isCashier()) {
             <form class="mt-5 grid gap-3 border-t border-mint-100 pt-4" (ngSubmit)="close(s)">
               <h3 class="text-lg">Clôturer</h3>
-              <div>
-                <label class="lv-label" for="cash-counted">Espèces comptées (FCFA)</label>
+              <lv-field
+                label="Espèces comptées (FCFA)"
+                [errors]="{
+                  required: 'Indiquez les espèces comptées.',
+                  min: 'Le montant ne peut pas être négatif.',
+                }"
+              >
                 <input
-                  id="cash-counted"
-                  class="lv-input tabular"
+                  lvControl
+                  class="tabular"
                   type="number"
                   inputmode="numeric"
                   min="0"
@@ -83,7 +94,7 @@
                   [ngModel]="counted()"
                   (ngModelChange)="counted.set($event)"
                 />
-              </div>
+              </lv-field>
               @if (variance() !== null) {
                 <p
                   class="tabular font-semibold"
@@ -94,15 +105,12 @@
                   Écart : {{ signed(variance() ?? 0) }}
                 </p>
               }
-              <div>
-                <label class="lv-label" for="cash-note"
-                  >Note{{
-                    noteRequired() ? ' (obligatoire en cas d’écart)' : ' (facultatif)'
-                  }}</label
-                >
+              <lv-field
+                [label]="noteRequired() ? 'Note (obligatoire en cas d’écart)' : 'Note (facultatif)'"
+                [errors]="{ required: 'Expliquez l’écart de caisse.' }"
+              >
                 <textarea
-                  id="cash-note"
-                  class="lv-input"
+                  lvControl
                   rows="2"
                   maxlength="1000"
                   name="note"
@@ -110,7 +118,7 @@
                   [ngModel]="note()"
                   (ngModelChange)="note.set($event)"
                 ></textarea>
-              </div>
+              </lv-field>
               <button type="submit" class="lv-primary" [disabled]="!canClose() || busy()">
                 {{ isOwner() ? 'Clôturer la caisse' : 'Demander la clôture' }}
               </button>

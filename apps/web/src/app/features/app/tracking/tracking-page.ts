@@ -21,6 +21,7 @@ import {
 import { PressingApi } from '../../../core/api/pressing-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe } from '../../../shared/format/format';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import {
@@ -39,7 +40,16 @@ const TARGETS = ITEM_FLOW.filter((s) => s !== 'RETURNED');
  */
 @Component({
   selector: 'lv-tracking-page',
-  imports: [FormsModule, RouterLink, PageHeader, Pager, DepositChip, ItemChip, FrDatePipe],
+  imports: [
+    FormsModule,
+    LV_FIELD,
+    RouterLink,
+    PageHeader,
+    Pager,
+    DepositChip,
+    ItemChip,
+    FrDatePipe,
+  ],
   templateUrl: './tracking-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

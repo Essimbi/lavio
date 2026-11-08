@@ -70,7 +70,7 @@ describe('Home (landing)', () => {
     expect(floating?.getAttribute('aria-label')).toBe('Contacter le service client sur WhatsApp');
   });
 
-  it('affiche les tarifs lus depuis l’API, ou « Tarif sur demande »', async () => {
+  it('affiche les types d’offre publics lus depuis l’API, avec leurs avantages', async () => {
     const { el, http, fixture } = await render();
     await flushConfig(http, fixture, [
       {
@@ -81,6 +81,8 @@ describe('Home (landing)', () => {
         includedUsers: 2,
         extraUserPriceXaf: null,
         trialDays: 14,
+        description: 'Pour piloter votre pressing au quotidien.',
+        highlights: ['Assistance sur WhatsApp', 'Formation de votre équipe'],
       },
       {
         code: 'PRO',
@@ -90,11 +92,19 @@ describe('Home (landing)', () => {
         includedUsers: 5,
         extraUserPriceXaf: null,
         trialDays: 0,
+        description: null,
+        highlights: [],
       },
     ]);
     const plans = [...el.querySelectorAll('.plan')].map((p) => p.textContent);
     expect(plans[0]).toMatch(/15\s000\sFCFA/);
     expect(plans[0]).toContain('Essai gratuit · 14 jours');
+    expect(plans[0]).toContain('Pour piloter votre pressing au quotidien.');
+    expect(plans[0]).toContain('Assistance sur WhatsApp');
+    expect(plans[0]).toContain('Formation de votre équipe');
+    expect(plans[0]).not.toContain('Application sur PC et téléphone');
+    // Sans avantages saisis : texte générique.
+    expect(plans[1]).toContain('Application sur PC et téléphone');
     expect(plans[1]).toContain('Tarif sur demande');
     expect(plans[1]).not.toContain('Essai gratuit');
     expect(el.querySelector<HTMLAnchorElement>('.plan a[href^="https://wa.me"]')?.href).toContain(

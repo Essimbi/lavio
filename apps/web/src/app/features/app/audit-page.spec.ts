@@ -30,20 +30,25 @@ describe('AuditPage', () => {
 
     const flushAll = () =>
       http.match((r) => r.url === '/api/v1/audit-logs').forEach((r) => r.flush(empty));
-    const pick = async (id: string, value: string) => {
-      const field = el.querySelector<HTMLInputElement | HTMLSelectElement>(`#${id}`);
-      if (!field) throw new Error(id);
+    // Contrôle retrouvé par son libellé (l'identifiant est généré par lvControl).
+    const pick = async (label: string, value: string) => {
+      const forLabel = [...el.querySelectorAll('label')].find(
+        (l) => l.textContent.trim() === label,
+      );
+      const field =
+        forLabel && el.querySelector<HTMLInputElement | HTMLSelectElement>(`#${forLabel.htmlFor}`);
+      if (!field) throw new Error(label);
       field.value = value;
       field.dispatchEvent(new Event(field instanceof HTMLSelectElement ? 'change' : 'input'));
       await settle();
     };
-    await pick('audit-user', 'u1');
+    await pick('Utilisateur', 'u1');
     flushAll();
-    await pick('audit-entity', 'payment');
+    await pick('Élément', 'payment');
     flushAll();
-    await pick('audit-from', '2026-10-01');
+    await pick('Du', '2026-10-01');
     flushAll();
-    await pick('audit-to', '2026-10-15');
+    await pick('Au', '2026-10-15');
     const req = http.expectOne((r) => r.url === '/api/v1/audit-logs');
     expect(req.request.params.get('userId')).toBe('u1');
     expect(req.request.params.get('entity')).toBe('payment');

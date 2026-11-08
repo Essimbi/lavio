@@ -1,13 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import type { PlanDto } from '@lavio/shared';
+import { PLAN_HIGHLIGHTS, type PlanDto } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { XafPipe } from '../../shared/format/format';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Chip } from '../../shared/ui/status-chip/status-chip';
 import { errorMessage, Toast } from '../../shared/ui/toast/toast.service';
@@ -22,92 +19,166 @@ const FEATURES = [
 
 const amount = (v: string): number | null => (v.trim() === '' ? null : Math.round(Number(v)));
 
-/** Plans d'abonnement : prix lus ici, jamais écrits en dur (docs/06, docs/14). */
+/**
+ * Plans d'abonnement : prix lus ici, jamais écrits en dur (docs/06, docs/14). Seuls les plans
+ * publics, avec leur accroche et leurs avantages, sont présentés sur la landing.
+ */
 @Component({
   selector: 'lv-plans-page',
-  imports: [
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatInputModule,
-    PageHeader,
-    Chip,
-    XafPipe,
-  ],
+  imports: [ReactiveFormsModule, LV_FIELD, PageHeader, Chip, XafPipe],
   template: `
-    <lv-page-header heading="Plans" subtitle="Offres d’abonnement proposées aux pressings.">
+    <lv-page-header
+      heading="Plans"
+      subtitle="Offres d’abonnement. Seuls les plans publics sont présentés sur la landing."
+    >
       @if (admin && !editing()) {
-        <button mat-flat-button type="button" (click)="edit(null)">Nouveau plan</button>
+        <button class="lv-primary" type="button" (click)="edit(null)">Nouveau plan</button>
       }
     </lv-page-header>
 
     @if (editing()) {
-      <form class="lv-card mb-6" [formGroup]="form" (ngSubmit)="save()" novalidate>
-        <h2 class="mb-4 text-xl">{{ editId() ? 'Modifier le plan' : 'Nouveau plan' }}</h2>
-        <div class="lv-form-grid">
-          <mat-form-field
-            ><mat-label>Code</mat-label
-            ><input matInput formControlName="code" [readonly]="!!editId()" /><mat-hint
-              >Ex. STANDARD</mat-hint
-            ></mat-form-field
-          >
-          <mat-form-field
-            ><mat-label>Nom</mat-label><input matInput formControlName="name"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>Prix mensuel (FCFA)</mat-label
-            ><input matInput formControlName="priceMonthlyXaf" inputmode="numeric" /><mat-hint
-              >Vide : tarif sur demande.</mat-hint
-            ></mat-form-field
-          >
-          <mat-form-field
-            ><mat-label>Prix annuel (FCFA)</mat-label
-            ><input matInput formControlName="priceYearlyXaf" inputmode="numeric"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>Utilisateurs inclus</mat-label
-            ><input matInput type="number" min="1" formControlName="includedUsers"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>Prix par utilisateur supplémentaire (FCFA)</mat-label
-            ><input matInput formControlName="extraUserPriceXaf" inputmode="numeric"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>Durée d’essai (jours)</mat-label
-            ><input matInput type="number" min="0" formControlName="trialDays"
-          /></mat-form-field>
-        </div>
-        <fieldset class="mt-2">
-          <legend class="mb-2 font-semibold">Fonctionnalités</legend>
-          <div class="flex flex-wrap gap-x-6" formGroupName="features">
-            @for (f of features; track f.key) {
-              <mat-checkbox [formControlName]="f.key">{{ f.label }}</mat-checkbox>
-            }
+      <form class="lv-card mb-6 grid gap-6" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <h2 class="text-xl">{{ editId() ? 'Modifier le plan' : 'Nouveau plan' }}</h2>
+
+        <section class="grid gap-4" aria-labelledby="plan-terms">
+          <h3 id="plan-terms" class="text-base">Conditions</h3>
+          <div class="lv-form-grid">
+            <lv-field
+              label="Code"
+              hint="Ex. STANDARD : lettres, chiffres et « _ »."
+              [errors]="{
+                required: 'Indiquez un code.',
+                pattern: 'Lettres, chiffres et « _ » (2 à 30).',
+              }"
+            >
+              <input
+                lvControl
+                formControlName="code"
+                [readonly]="!!editId()"
+                autocapitalize="characters"
+              />
+            </lv-field>
+            <lv-field label="Nom" [errors]="{ required: 'Indiquez le nom du plan.' }">
+              <input lvControl formControlName="name" />
+            </lv-field>
+            <lv-field
+              label="Prix mensuel (FCFA)"
+              hint="Vide : « Tarif sur demande »."
+              [optional]="true"
+              [errors]="{ pattern: 'Montant entier en FCFA.' }"
+            >
+              <input lvControl formControlName="priceMonthlyXaf" inputmode="numeric" />
+            </lv-field>
+            <lv-field
+              label="Prix annuel (FCFA)"
+              [optional]="true"
+              [errors]="{ pattern: 'Montant entier en FCFA.' }"
+            >
+              <input lvControl formControlName="priceYearlyXaf" inputmode="numeric" />
+            </lv-field>
+            <lv-field
+              label="Utilisateurs inclus"
+              [errors]="{ required: 'Au moins 1.', min: 'Au moins 1.' }"
+            >
+              <input lvControl type="number" min="1" formControlName="includedUsers" />
+            </lv-field>
+            <lv-field
+              label="Utilisateur supplémentaire (FCFA / mois)"
+              [optional]="true"
+              [errors]="{ pattern: 'Montant entier en FCFA.' }"
+            >
+              <input lvControl formControlName="extraUserPriceXaf" inputmode="numeric" />
+            </lv-field>
+            <lv-field
+              label="Durée d’essai (jours)"
+              [errors]="{ required: 'Indiquez une durée.', min: '0 ou plus.' }"
+            >
+              <input lvControl type="number" min="0" formControlName="trialDays" />
+            </lv-field>
           </div>
-        </fieldset>
-        <mat-checkbox class="mt-2" formControlName="isActive"
-          >Plan proposé aux nouveaux pressings</mat-checkbox
-        >
+          <fieldset class="grid gap-1">
+            <legend class="lv-label">Fonctionnalités incluses</legend>
+            <div class="flex flex-wrap gap-x-6" formGroupName="features">
+              @for (f of features; track f.key) {
+                <label class="lv-check"
+                  ><input type="checkbox" [formControlName]="f.key" />{{ f.label }}</label
+                >
+              }
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="grid gap-4 border-t border-mint-100 pt-5" aria-labelledby="plan-public">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 id="plan-public" class="text-base">Présentation sur la landing</h3>
+              <p class="lv-hint">
+                Un plan négocié pour un seul client reste privé : il n’apparaît pas sur le site.
+              </p>
+            </div>
+            <label class="lv-check">
+              <input type="checkbox" role="switch" class="lv-switch" formControlName="isPublic" />
+              Présenté sur la landing
+            </label>
+          </div>
+          <lv-field
+            label="Accroche"
+            hint="Une phrase sous le nom du plan."
+            [optional]="true"
+            [errors]="{ maxlength: descriptionMax + ' caractères au plus.' }"
+          >
+            <input lvControl formControlName="description" [maxlength]="descriptionMax" />
+          </lv-field>
+          <lv-field
+            label="Avantages"
+            [hint]="
+              'Un avantage par ligne, ' +
+              highlightsMax +
+              ' au plus, ' +
+              highlightMaxLength +
+              ' caractères chacun.'
+            "
+            [optional]="true"
+            [error]="highlightsError()"
+          >
+            <textarea lvControl rows="5" formControlName="highlights"></textarea>
+          </lv-field>
+        </section>
+
+        <label class="lv-check">
+          <input type="checkbox" role="switch" class="lv-switch" formControlName="isActive" />
+          Plan proposé aux nouveaux pressings
+        </label>
+
         @if (error()) {
-          <p class="lv-alert mt-2" role="alert">{{ error() }}</p>
+          <p class="lv-alert" role="alert">{{ error() }}</p>
         }
-        <div class="mt-4 flex gap-2">
-          <button mat-flat-button type="submit">Enregistrer</button>
-          <button mat-button type="button" (click)="editing.set(false)">Annuler</button>
+        <div class="flex flex-wrap gap-2">
+          <button class="lv-primary" type="submit">Enregistrer le plan</button>
+          <button class="lv-ghost" type="button" (click)="editing.set(false)">Annuler</button>
         </div>
       </form>
     }
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       @for (p of plans.hasValue() ? plans.value() : []; track p.id) {
-        <article class="lv-card">
-          <div class="mb-2 flex items-center justify-between gap-2">
+        <article class="lv-card flex flex-col">
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-xl">{{ p.name }}</h2>
-            @if (!p.isActive) {
-              <lv-chip tone="bg-ink-900 text-white">Archivé</lv-chip>
-            }
+            <div class="flex gap-1">
+              @if (p.isPublic) {
+                <lv-chip tone="bg-aqua-400 text-ink-900">Public</lv-chip>
+              } @else {
+                <lv-chip tone="bg-mint-100 text-teal-900">Privé</lv-chip>
+              }
+              @if (!p.isActive) {
+                <lv-chip tone="bg-ink-900 text-white">Archivé</lv-chip>
+              }
+            </div>
           </div>
+          @if (p.description) {
+            <p class="mb-2 text-sm">{{ p.description }}</p>
+          }
           <p class="tabular text-2xl font-semibold text-teal-900">
             {{
               p.priceMonthlyXaf === null
@@ -119,16 +190,27 @@ const amount = (v: string): number | null => (v.trim() === '' ? null : Math.roun
             <dt>Code</dt>
             <dd>{{ p.code }}</dd>
             <dt>Annuel</dt>
-            <dd>{{ p.priceYearlyXaf | xaf }}</dd>
+            <dd>{{ p.priceYearlyXaf === null ? '—' : (p.priceYearlyXaf | xaf) }}</dd>
             <dt>Utilisateurs inclus</dt>
             <dd>{{ p.includedUsers }}</dd>
             <dt>Utilisateur en plus</dt>
-            <dd>{{ p.extraUserPriceXaf | xaf }}</dd>
+            <dd>{{ p.extraUserPriceXaf === null ? '—' : (p.extraUserPriceXaf | xaf) }}</dd>
             <dt>Essai</dt>
             <dd>{{ p.trialDays }} jours</dd>
           </dl>
+          @if (p.highlights.length) {
+            <ul class="mt-3 grid gap-1 text-sm" role="list">
+              @for (h of p.highlights; track $index) {
+                <li class="flex gap-2">
+                  <span class="text-teal-700" aria-hidden="true">✓</span>{{ h }}
+                </li>
+              }
+            </ul>
+          }
           @if (admin) {
-            <button type="button" class="lv-link-button mt-3" (click)="edit(p)">Modifier</button>
+            <button type="button" class="lv-secondary mt-4 self-start" (click)="edit(p)">
+              Modifier
+            </button>
           }
         </article>
       }
@@ -141,6 +223,9 @@ export class PlansPage {
   private readonly toast = inject(Toast);
   protected readonly admin = inject(AuthService).hasPlatformRole('SUPER_ADMIN');
   protected readonly features = FEATURES;
+  protected readonly highlightsMax = PLAN_HIGHLIGHTS.max;
+  protected readonly highlightMaxLength = PLAN_HIGHLIGHTS.maxLength;
+  protected readonly descriptionMax = PLAN_HIGHLIGHTS.descriptionMaxLength;
   protected readonly plans = resource({ loader: () => this.api.plans() });
   protected readonly editing = signal(false);
   protected readonly editId = signal<string | null>(null);
@@ -156,6 +241,9 @@ export class PlansPage {
     extraUserPriceXaf: ['', Validators.pattern(/^\d*$/)],
     trialDays: [14, [Validators.required, Validators.min(0)]],
     isActive: [true],
+    isPublic: [false],
+    description: ['', Validators.maxLength(PLAN_HIGHLIGHTS.descriptionMaxLength)],
+    highlights: [''],
     features: this.fb.group({ stock: [true], accounting: [true], tours: [true], push: [true] }),
   });
 
@@ -175,6 +263,9 @@ export class PlansPage {
         extraUserPriceXaf: p.extraUserPriceXaf?.toString() ?? '',
         trialDays: p.trialDays,
         isActive: p.isActive,
+        isPublic: p.isPublic,
+        description: p.description ?? '',
+        highlights: p.highlights.join('\n'),
         features: {
           stock: flags['stock'] ?? false,
           accounting: flags['accounting'] ?? false,
@@ -186,8 +277,24 @@ export class PlansPage {
     this.editing.set(true);
   }
 
+  /** Avantages saisis, un par ligne, sans lignes vides. */
+  private highlightLines(): string[] {
+    return this.form.controls.highlights.value
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l !== '');
+  }
+
+  protected highlightsError(): string | null {
+    const lines = this.highlightLines();
+    if (lines.length > PLAN_HIGHLIGHTS.max) return `${PLAN_HIGHLIGHTS.max} avantages au plus.`;
+    if (lines.some((l) => l.length > PLAN_HIGHLIGHTS.maxLength))
+      return `${PLAN_HIGHLIGHTS.maxLength} caractères au plus par avantage.`;
+    return null;
+  }
+
   protected async save(): Promise<void> {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.highlightsError()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -201,6 +308,9 @@ export class PlansPage {
       extraUserPriceXaf: amount(v.extraUserPriceXaf),
       trialDays: v.trialDays,
       isActive: v.isActive,
+      isPublic: v.isPublic,
+      description: v.description.trim() || null,
+      highlights: this.highlightLines(),
       features: v.features,
     };
     try {

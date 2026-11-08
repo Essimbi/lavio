@@ -12,30 +12,29 @@ import { ManagementApi } from '../../../core/api/management-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDateTimePipe } from '../../../shared/format/format';
 import { INVENTORY_STATUS_LABELS } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
 /** Inventaires (docs/05, « Stock », règle 4) : liste et lancement d'un comptage. */
 @Component({
   selector: 'lv-inventories-page',
-  imports: [FormsModule, RouterLink, PageHeader, FrDateTimePipe],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, FrDateTimePipe],
   template: `
     <lv-page-header heading="Inventaires" subtitle="Comptage physique et validation des écarts.">
       <a class="lv-link-button" routerLink="/app/stock">Retour au stock</a>
     </lv-page-header>
     @if (isKeeper() && !open()) {
       <form class="lv-card mb-6 flex flex-wrap items-end gap-3" (ngSubmit)="start()">
-        <div class="min-w-64 grow">
-          <label class="lv-label" for="inv-note">Note (facultatif)</label>
+        <lv-field label="Note (facultatif)" class="min-w-64 grow">
           <input
-            id="inv-note"
-            class="lv-input"
+            lvControl
             maxlength="500"
             name="note"
             [ngModel]="note()"
             (ngModelChange)="note.set($event)"
           />
-        </div>
+        </lv-field>
         <button type="submit" class="lv-primary" [disabled]="busy()">Lancer un inventaire</button>
       </form>
     }

@@ -6,7 +6,7 @@ import { PASSWORD_POLICY } from '@lavio/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { homeFor } from '../../core/auth/guards';
 import { errorMessage, Toast } from '../../shared/ui/toast/toast.service';
-import { AUTH_FIELD_OPTIONS, AuthLayout } from './auth-layout';
+import { AuthLayout } from './auth-layout';
 import { matchValidator } from './invitation';
 import { PasswordField } from './password-field';
 
@@ -23,7 +23,7 @@ import { PasswordField } from './password-field';
           : undefined
       "
     >
-      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <form class="grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <lv-password-field [control]="form.controls.current" label="Mot de passe actuel" />
         <lv-password-field
           [control]="form.controls.password"
@@ -37,7 +37,7 @@ import { PasswordField } from './password-field';
           autocomplete="new-password"
         />
         @if (error()) {
-          <p class="lv-alert mb-4" role="alert">{{ error() }}</p>
+          <p class="lv-alert" role="alert">{{ error() }}</p>
         }
         <button mat-flat-button class="lv-auth-submit w-full" type="submit" [disabled]="pending()">
           {{ pending() ? 'Enregistrement…' : 'Enregistrer le mot de passe' }}
@@ -48,7 +48,6 @@ import { PasswordField } from './password-field';
       </form>
     </lv-auth-layout>
   `,
-  providers: [AUTH_FIELD_OPTIONS],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChangePassword {

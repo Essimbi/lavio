@@ -8,11 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { LicenseStatus } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
@@ -25,6 +21,7 @@ import {
   todayInput,
 } from '../../shared/format/format';
 import { confirmAction } from '../../shared/ui/confirm-dialog/confirm-dialog';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Pager } from '../../shared/ui/pager/pager';
 import { LicenseChip } from '../../shared/ui/status-chip/status-chip';
@@ -34,42 +31,33 @@ import { LICENSE_EVENT_LABELS } from './labels';
 /** Liste des licences, filtrable par statut ou par échéance proche. */
 @Component({
   selector: 'lv-licenses-page',
-  imports: [
-    FormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    RouterLink,
-    PageHeader,
-    Pager,
-    LicenseChip,
-    FrDatePipe,
-  ],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, Pager, LicenseChip, FrDatePipe],
   template: `
     <lv-page-header heading="Licences" subtitle="Abonnements des pressings." />
-    <div class="mb-4 flex flex-wrap gap-4">
-      <mat-form-field>
-        <mat-label>Statut</mat-label>
-        <mat-select
+    <div class="lv-toolbar" role="search">
+      <lv-field label="Statut">
+        <select
+          lvControl
           [ngModel]="status()"
           (ngModelChange)="status.set($event); soon.set(''); page.set(1)"
         >
-          <mat-option [value]="''">Tous</mat-option>
+          <option value="">Tous</option>
           @for (s of statuses; track s) {
-            <mat-option [value]="s">{{ label[s] }}</mat-option>
+            <option [value]="s">{{ label[s] }}</option>
           }
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Échéance</mat-label>
-        <mat-select
+        </select>
+      </lv-field>
+      <lv-field label="Échéance">
+        <select
+          lvControl
           [ngModel]="soon()"
           (ngModelChange)="soon.set($event); status.set(''); page.set(1)"
         >
-          <mat-option [value]="''">Toutes</mat-option>
-          <mat-option [value]="'15'">Sous 15 jours</mat-option>
-          <mat-option [value]="'30'">Sous 30 jours</mat-option>
-        </mat-select>
-      </mat-form-field>
+          <option value="">Toutes</option>
+          <option value="15">Sous 15 jours</option>
+          <option value="30">Sous 30 jours</option>
+        </select>
+      </lv-field>
     </div>
     <div class="lv-table-wrap">
       <table class="lv-table">
@@ -131,23 +119,12 @@ export class LicensesPage {
 /** Détail d'une licence : historique et actions (renouveler, changer de plan, suspendre…). */
 @Component({
   selector: 'lv-license-detail',
-  imports: [
-    FormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    RouterLink,
-    PageHeader,
-    LicenseChip,
-    FrDatePipe,
-    FrDateTimePipe,
-  ],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, LicenseChip, FrDatePipe, FrDateTimePipe],
   template: `
     @if (license.hasValue()) {
       @let l = license.value();
       <lv-page-header [heading]="l.key" [subtitle]="l.tenantName + ' · plan ' + l.planName">
-        <a mat-button [routerLink]="['/admin/tenants', l.tenantId]">Voir le pressing</a>
+        <a class="lv-ghost" [routerLink]="['/admin/tenants', l.tenantId]">Voir le pressing</a>
       </lv-page-header>
       <div class="grid gap-6 xl:grid-cols-2">
         <section class="lv-card">
@@ -170,30 +147,34 @@ export class LicensesPage {
           @if (admin && l.status !== 'REVOKED') {
             <div class="mt-6 grid gap-4">
               <div class="flex flex-wrap items-end gap-3">
-                <mat-form-field>
-                  <mat-label>Nouvelle date de fin</mat-label>
+                <lv-field label="Nouvelle date de fin">
                   <input
-                    matInput
+                    lvControl
                     type="date"
                     [ngModel]="renewTo()"
                     (ngModelChange)="renewTo.set($event)"
                   />
-                </mat-form-field>
-                <button mat-stroked-button type="button" (click)="renew()" [disabled]="!renewTo()">
+                </lv-field>
+                <button
+                  class="lv-secondary"
+                  type="button"
+                  (click)="renew()"
+                  [disabled]="!renewTo()"
+                >
                   Renouveler
                 </button>
               </div>
               <div class="flex flex-wrap items-end gap-3">
-                <mat-form-field>
-                  <mat-label>Plan</mat-label>
-                  <mat-select [ngModel]="planId()" (ngModelChange)="planId.set($event)">
+                <lv-field label="Plan">
+                  <select lvControl [ngModel]="planId()" (ngModelChange)="planId.set($event)">
+                    <option value="" disabled>Choisir un plan</option>
                     @for (p of plans.hasValue() ? plans.value() : []; track p.id) {
-                      <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                      <option [value]="p.id">{{ p.name }}</option>
                     }
-                  </mat-select>
-                </mat-form-field>
+                  </select>
+                </lv-field>
                 <button
-                  mat-stroked-button
+                  class="lv-secondary"
                   type="button"
                   (click)="changePlan()"
                   [disabled]="!planId() || planId() === l.planId"
@@ -203,13 +184,13 @@ export class LicensesPage {
               </div>
               <div class="flex flex-wrap gap-2">
                 @if (l.status === 'SUSPENDED') {
-                  <button mat-stroked-button type="button" (click)="reactivate()">Réactiver</button>
+                  <button class="lv-secondary" type="button" (click)="reactivate()">
+                    Réactiver
+                  </button>
                 } @else {
-                  <button mat-stroked-button type="button" (click)="suspend()">Suspendre</button>
+                  <button class="lv-secondary" type="button" (click)="suspend()">Suspendre</button>
                 }
-                <button mat-flat-button class="lv-danger" type="button" (click)="revoke()">
-                  Révoquer
-                </button>
+                <button class="lv-danger-button" type="button" (click)="revoke()">Révoquer</button>
               </div>
             </div>
           }

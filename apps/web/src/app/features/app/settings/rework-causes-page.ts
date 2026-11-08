@@ -2,24 +2,28 @@ import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import type { ReworkCauseDto } from '@lavio/shared';
 import { PressingApi } from '../../../core/api/pressing-api';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
 /** Causes de reprise codifiées (docs/03) : liste configurable par la responsable. */
 @Component({
   selector: 'lv-rework-causes-page',
-  imports: [FormsModule, PageHeader],
+  imports: [FormsModule, LV_FIELD, PageHeader],
   template: `
     <lv-page-header
       heading="Causes de reprise"
       subtitle="Motifs proposés lors d’une reprise ou d’un incident."
     />
     <form class="lv-card mb-6 flex flex-wrap items-end gap-3" (ngSubmit)="add()">
-      <div class="w-40">
-        <label class="lv-label" for="cause-code">Code</label>
+      <lv-field
+        label="Code"
+        [errors]="{ required: 'Indiquez le code.', pattern: '2 à 20 lettres, chiffres ou _.' }"
+        class="w-40"
+      >
         <input
-          id="cause-code"
-          class="lv-input uppercase"
+          lvControl
+          class="uppercase"
           name="code"
           maxlength="20"
           required
@@ -27,19 +31,21 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
           [ngModel]="code()"
           (ngModelChange)="code.set($event)"
         />
-      </div>
-      <div class="min-w-64 grow">
-        <label class="lv-label" for="cause-label">Libellé</label>
+      </lv-field>
+      <lv-field
+        label="Libellé"
+        [errors]="{ required: 'Indiquez le libellé.' }"
+        class="min-w-64 grow"
+      >
         <input
-          id="cause-label"
-          class="lv-input"
+          lvControl
           name="label"
           maxlength="80"
           required
           [ngModel]="label()"
           (ngModelChange)="label.set($event)"
         />
-      </div>
+      </lv-field>
       <button type="submit" class="lv-primary" [disabled]="!valid()">Ajouter</button>
     </form>
 

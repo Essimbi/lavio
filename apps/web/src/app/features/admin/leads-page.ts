@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { type LeadDto, LeadStatus } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
 import { FrDateTimePipe, PhonePipe } from '../../shared/format/format';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Pager } from '../../shared/ui/pager/pager';
 import { Toast } from '../../shared/ui/toast/toast.service';
@@ -14,27 +12,19 @@ import { LEAD_STATUS_LABELS } from './labels';
 /** Demandes issues de la landing : statut, notes, contact WhatsApp (docs/06). */
 @Component({
   selector: 'lv-leads-page',
-  imports: [
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    PageHeader,
-    Pager,
-    FrDateTimePipe,
-    PhonePipe,
-  ],
+  imports: [FormsModule, LV_FIELD, PageHeader, Pager, FrDateTimePipe, PhonePipe],
   template: `
     <lv-page-header heading="Demandes" subtitle="Prospects venus de la landing page." />
-    <mat-form-field>
-      <mat-label>Statut</mat-label>
-      <mat-select [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
-        <mat-option [value]="''">Tous</mat-option>
-        @for (s of statuses; track s) {
-          <mat-option [value]="s">{{ label[s] }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <div class="lv-toolbar" role="search">
+      <lv-field label="Statut">
+        <select lvControl [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
+          <option value="">Tous</option>
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ label[s] }}</option>
+          }
+        </select>
+      </lv-field>
+    </div>
     <div class="grid gap-4 lg:grid-cols-2">
       @for (lead of list.hasValue() ? list.value().data : []; track lead.id) {
         <article class="lv-card">
@@ -54,27 +44,25 @@ import { LEAD_STATUS_LABELS } from './labels';
             <p class="mt-3 rounded-field bg-foam-50 p-3">{{ lead.message }}</p>
           }
           <div class="mt-3 lv-form-grid">
-            <mat-form-field>
-              <mat-label>Statut</mat-label>
-              <mat-select
+            <lv-field label="Statut">
+              <select
+                lvControl
                 [ngModel]="lead.status"
                 (ngModelChange)="update(lead, { status: $event })"
               >
                 @for (s of statuses; track s) {
-                  <mat-option [value]="s">{{ label[s] }}</mat-option>
+                  <option [value]="s">{{ label[s] }}</option>
                 }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Notes</mat-label>
+              </select>
+            </lv-field>
+            <lv-field label="Notes" [optional]="true" hint="Enregistrées en quittant le champ.">
               <textarea
-                matInput
+                lvControl
                 rows="2"
                 [ngModel]="lead.notes ?? ''"
                 (blur)="saveNotes(lead, $event)"
               ></textarea>
-              <mat-hint>Enregistrées en quittant le champ.</mat-hint>
-            </mat-form-field>
+            </lv-field>
           </div>
         </article>
       } @empty {

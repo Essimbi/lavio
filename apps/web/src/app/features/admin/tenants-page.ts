@@ -1,14 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
 import type { TenantStatus } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { FrDatePipe, PhonePipe } from '../../shared/format/format';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Pager } from '../../shared/ui/pager/pager';
 import { Chip, LicenseChip } from '../../shared/ui/status-chip/status-chip';
@@ -21,10 +18,7 @@ import { TENANT_STATUS_LABELS } from './labels';
   imports: [
     ReactiveFormsModule,
     FormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
+    LV_FIELD,
     RouterLink,
     PageHeader,
     Pager,
@@ -36,61 +30,76 @@ import { TENANT_STATUS_LABELS } from './labels';
   template: `
     <lv-page-header heading="Pressings" subtitle="Les clients de Lavio.">
       @if (auth.hasPlatformRole('SUPER_ADMIN') && !creating()) {
-        <button mat-flat-button type="button" (click)="creating.set(true)">Nouveau pressing</button>
+        <button class="lv-primary" type="button" (click)="creating.set(true)">
+          Nouveau pressing
+        </button>
       }
     </lv-page-header>
 
     @if (creating()) {
       <form class="lv-card mb-6" [formGroup]="form" (ngSubmit)="create()" novalidate>
         <h2 class="mb-4 text-xl">Nouveau pressing</h2>
-        <div class="lv-form-grid">
-          <mat-form-field
-            ><mat-label>Nom du pressing</mat-label
-            ><input matInput formControlName="name" /><mat-error
-              >Indiquez le nom.</mat-error
-            ></mat-form-field
+        <div class="lv-form-grid gap-y-4">
+          <lv-field
+            label="Nom du pressing"
+            [errors]="{
+              required: 'Indiquez le nom du pressing.',
+              minlength: 'Au moins 2 caractères.',
+            }"
           >
-          <mat-form-field
-            ><mat-label>Téléphone</mat-label
-            ><input matInput formControlName="phone" inputmode="tel"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>Ville</mat-label><input matInput formControlName="city"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>Adresse</mat-label><input matInput formControlName="address"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>NIU (facultatif)</mat-label><input matInput formControlName="niu"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>RCCM (facultatif)</mat-label><input matInput formControlName="rccm"
-          /></mat-form-field>
+            <input lvControl formControlName="name" autocomplete="organization" />
+          </lv-field>
+          <lv-field
+            label="Téléphone"
+            [optional]="true"
+            [errors]="{ pattern: 'Numéro invalide (ex. 6 90 00 00 00).' }"
+          >
+            <input lvControl formControlName="phone" inputmode="tel" autocomplete="tel" />
+          </lv-field>
+          <lv-field label="Ville" [optional]="true">
+            <input lvControl formControlName="city" autocomplete="address-level2" />
+          </lv-field>
+          <lv-field label="Adresse" [optional]="true">
+            <input lvControl formControlName="address" autocomplete="street-address" />
+          </lv-field>
+          <lv-field label="NIU" [optional]="true" hint="Affiché sur les factures.">
+            <input lvControl formControlName="niu" />
+          </lv-field>
+          <lv-field label="RCCM" [optional]="true" hint="Affiché sur les factures.">
+            <input lvControl formControlName="rccm" />
+          </lv-field>
         </div>
         @if (error()) {
           <p class="lv-alert mt-2" role="alert">{{ error() }}</p>
         }
         <div class="mt-4 flex gap-2">
-          <button mat-flat-button type="submit" [disabled]="pending()">Créer le pressing</button>
-          <button mat-button type="button" (click)="creating.set(false)">Annuler</button>
+          <button class="lv-primary" type="submit" [disabled]="pending()">
+            {{ pending() ? 'Création…' : 'Créer le pressing' }}
+          </button>
+          <button class="lv-ghost" type="button" (click)="creating.set(false)">Annuler</button>
         </div>
       </form>
     }
 
-    <div class="mb-4 flex flex-wrap gap-4">
-      <mat-form-field class="min-w-64">
-        <mat-label>Rechercher (nom, ville, téléphone)</mat-label>
-        <input matInput type="search" [ngModel]="q()" (ngModelChange)="search($event)" />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Statut</mat-label>
-        <mat-select [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
-          <mat-option [value]="''">Tous</mat-option>
+    <div class="lv-toolbar" role="search">
+      <lv-field label="Rechercher" class="lv-grow">
+        <input
+          lvControl
+          class="lv-search"
+          type="search"
+          placeholder="Nom, ville ou téléphone"
+          [ngModel]="q()"
+          (ngModelChange)="search($event)"
+        />
+      </lv-field>
+      <lv-field label="Statut">
+        <select lvControl [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
+          <option value="">Tous</option>
           @for (s of statuses; track s) {
-            <mat-option [value]="s">{{ statusLabel[s] }}</mat-option>
+            <option [value]="s">{{ statusLabel[s] }}</option>
           }
-        </mat-select>
-      </mat-form-field>
+        </select>
+      </lv-field>
     </div>
 
     <div class="lv-table-wrap">

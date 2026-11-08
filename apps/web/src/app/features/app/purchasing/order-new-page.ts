@@ -11,6 +11,7 @@ import { Router, RouterLink } from '@angular/router';
 import type { OrderLineInput } from '../../../core/api/management-api';
 import { ManagementApi } from '../../../core/api/management-api';
 import { XafPipe } from '../../../shared/format/format';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
@@ -23,18 +24,16 @@ interface Line {
 /** Nouveau bon de commande (brouillon) : fournisseur, lignes produit, quantité, coût. */
 @Component({
   selector: 'lv-order-new-page',
-  imports: [FormsModule, RouterLink, PageHeader, XafPipe],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, XafPipe],
   template: `
     <lv-page-header heading="Nouvelle commande" subtitle="La commande est créée en brouillon.">
       <a class="lv-link-button" routerLink="/app/purchasing">Annuler</a>
     </lv-page-header>
     <form class="grid max-w-4xl gap-6" (ngSubmit)="save()">
       <div class="lv-card grid gap-4 sm:grid-cols-2">
-        <div>
-          <label class="lv-label" for="po-supplier">Fournisseur</label>
+        <lv-field label="Fournisseur" [errors]="{ required: 'Choisissez le fournisseur.' }">
           <select
-            id="po-supplier"
-            class="lv-select"
+            lvControl
             name="supplier"
             required
             [ngModel]="supplierId()"
@@ -45,29 +44,25 @@ interface Line {
               <option [value]="s.id">{{ s.name }}</option>
             }
           </select>
-        </div>
-        <div>
-          <label class="lv-label" for="po-expected">Livraison prévue</label>
+        </lv-field>
+        <lv-field label="Livraison prévue">
           <input
-            id="po-expected"
-            class="lv-input"
+            lvControl
             type="date"
             name="expected"
             [ngModel]="expectedAt()"
             (ngModelChange)="expectedAt.set($event)"
           />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="lv-label" for="po-notes">Notes</label>
+        </lv-field>
+        <lv-field label="Notes" class="sm:col-span-2">
           <input
-            id="po-notes"
-            class="lv-input"
+            lvControl
             name="notes"
             maxlength="1000"
             [ngModel]="notes()"
             (ngModelChange)="notes.set($event)"
           />
-        </div>
+        </lv-field>
       </div>
 
       <section class="lv-card" aria-labelledby="lines-title">
@@ -75,11 +70,9 @@ interface Line {
         <ol class="grid gap-3" role="list">
           @for (l of lines(); track $index; let i = $index) {
             <li class="grid gap-3 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
-              <div>
-                <label class="lv-label" [for]="'po-item-' + i">Produit {{ i + 1 }}</label>
+              <lv-field [label]="'Produit ' + (i + 1)">
                 <select
-                  class="lv-select"
-                  [id]="'po-item-' + i"
+                  lvControl
                   [name]="'item' + i"
                   [ngModel]="l.itemId"
                   (ngModelChange)="update(i, { itemId: $event, cost: costOf($event) })"
@@ -89,32 +82,33 @@ interface Line {
                     <option [value]="it.id">{{ it.name }} ({{ it.unit }})</option>
                   }
                 </select>
-              </div>
-              <div>
-                <label class="lv-label" [for]="'po-qty-' + i">Quantité</label>
+              </lv-field>
+              <lv-field label="Quantité" [errors]="{ min: 'La quantité doit être positive.' }">
                 <input
-                  class="lv-input tabular"
+                  lvControl
+                  class="tabular"
                   type="number"
                   min="0.001"
                   step="0.001"
-                  [id]="'po-qty-' + i"
                   [name]="'qty' + i"
                   [ngModel]="l.qty"
                   (ngModelChange)="update(i, { qty: $event })"
                 />
-              </div>
-              <div>
-                <label class="lv-label" [for]="'po-cost-' + i">Coût unitaire (FCFA)</label>
+              </lv-field>
+              <lv-field
+                label="Coût unitaire (FCFA)"
+                [errors]="{ min: 'Le coût ne peut pas être négatif.' }"
+              >
                 <input
-                  class="lv-input tabular"
+                  lvControl
+                  class="tabular"
                   type="number"
                   min="0"
-                  [id]="'po-cost-' + i"
                   [name]="'cost' + i"
                   [ngModel]="l.cost"
                   (ngModelChange)="update(i, { cost: $event })"
                 />
-              </div>
+              </lv-field>
               <button
                 type="button"
                 class="lv-link-button text-coral-600"

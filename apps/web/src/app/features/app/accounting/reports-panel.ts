@@ -11,6 +11,7 @@ import { REPORT_TITLES, type ReportCell, type ReportColumn, ReportKey } from '@l
 import { ManagementApi } from '../../../core/api/management-api';
 import { formatDate, formatDateTime, formatXaf, todayInput } from '../../../shared/format/format';
 import { formatQty, saveBlob } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
 /** Rapports à date (sans période). */
@@ -22,7 +23,7 @@ const SNAPSHOTS: ReadonlySet<ReportKey> = new Set(['receivables', 'stock-valuati
  */
 @Component({
   selector: 'lv-reports-panel',
-  imports: [FormsModule],
+  imports: [FormsModule, LV_FIELD],
   template: `
     <div class="mb-4 flex flex-wrap gap-2" role="group" aria-label="Choix du rapport">
       @for (k of keys; track k) {
@@ -37,30 +38,26 @@ const SNAPSHOTS: ReadonlySet<ReportKey> = new Set(['receivables', 'stock-valuati
         </button>
       }
     </div>
-    <form class="mb-6 flex flex-wrap items-end gap-3" (ngSubmit)="report.reload()">
+    <form class="lv-toolbar" role="search" (ngSubmit)="report.reload()">
       @if (!snapshot()) {
-        <div>
-          <label class="lv-label" for="rep-from">Du</label>
+        <lv-field label="Du">
           <input
-            id="rep-from"
-            class="lv-input"
+            lvControl
             type="date"
             name="from"
             [ngModel]="from()"
             (ngModelChange)="from.set($event)"
           />
-        </div>
-        <div>
-          <label class="lv-label" for="rep-to">Au</label>
+        </lv-field>
+        <lv-field label="Au">
           <input
-            id="rep-to"
-            class="lv-input"
+            lvControl
             type="date"
             name="to"
             [ngModel]="to()"
             (ngModelChange)="to.set($event)"
           />
-        </div>
+        </lv-field>
       } @else {
         <p class="min-h-11 content-center">Situation à l’instant présent.</p>
       }

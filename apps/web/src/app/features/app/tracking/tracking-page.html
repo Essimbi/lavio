@@ -3,26 +3,21 @@
 <div class="grid gap-6 xl:grid-cols-[3fr_2fr]">
   <section aria-labelledby="tracking-current">
     <h2 id="tracking-current" class="sr-only">Dépôt en cours de suivi</h2>
-    <form class="mb-4 flex flex-wrap items-end gap-3" (ngSubmit)="search()">
-      <div class="min-w-48 grow">
-        <label class="lv-label" for="tracking-number">Numéro de ticket</label>
+    <form class="lv-toolbar" role="search" (ngSubmit)="search()">
+      <lv-field label="Numéro de ticket" class="lv-grow" [error]="searchError()">
         <input
-          id="tracking-number"
-          class="lv-input tabular"
+          lvControl
+          class="lv-search tabular"
           inputmode="numeric"
           autocomplete="off"
+          placeholder="Ex. 1024"
           name="number"
           [ngModel]="number()"
           (ngModelChange)="number.set($event)"
-          [attr.aria-invalid]="searchError() ? 'true' : null"
-          aria-describedby="tracking-number-error"
         />
-      </div>
+      </lv-field>
       <button type="submit" class="lv-primary">Rechercher</button>
     </form>
-    <p id="tracking-number-error" class="mb-4 text-coral-600" aria-live="polite">
-      {{ searchError() }}
-    </p>
 
     @if (current.hasValue()) {
       @let d = current.value();
@@ -81,17 +76,15 @@
         </ul>
 
         <div class="mt-5 grid gap-3 border-t border-mint-100 pt-4">
-          <div class="max-w-xs">
-            <label class="lv-label" for="tracking-location">Emplacement de rangement</label>
+          <lv-field label="Emplacement de rangement" class="max-w-xs">
             <input
-              id="tracking-location"
-              class="lv-input"
+              lvControl
               maxlength="60"
               placeholder="Ex. : Rayon B2"
               [ngModel]="storageLocation()"
               (ngModelChange)="storageLocation.set($event)"
             />
-          </div>
+          </lv-field>
           <p class="text-sm font-semibold">Passer {{ selected().size }} article(s) au statut :</p>
           <div class="flex flex-wrap gap-2">
             @for (t of targets(); track t.status) {

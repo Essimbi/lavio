@@ -1,13 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
 import { Logo } from '../../shared/ui/logo/logo';
-
-/** Champs encadrés sur les écrans de connexion (à fournir par chaque écran). */
-export const AUTH_FIELD_OPTIONS = {
-  provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-  useValue: { appearance: 'outline' },
-};
 
 /**
  * Mise en page des écrans de connexion : formulaire à gauche, grand disque de marque à droite

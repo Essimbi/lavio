@@ -10,6 +10,7 @@ import {
 import { IncidentType, QUALITY_CHECKLIST, type ReworkCauseDto } from '@lavio/shared';
 import { firstValueFrom } from 'rxjs';
 import { INCIDENT_TYPE_LABELS } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 
 export interface QualityResult {
   checklist: Record<string, boolean>;
@@ -72,36 +73,28 @@ export interface ReworkResult {
 /** Reprise (retour en arrière) : cause codifiée et/ou motif obligatoires ; crée un incident. */
 @Component({
   selector: 'lv-rework-dialog',
-  imports: [MatDialogModule, MatButtonModule, FormsModule],
+  imports: [MatDialogModule, MatButtonModule, FormsModule, LV_FIELD],
   template: `
     <h2 mat-dialog-title>Reprise · {{ data.target }}</h2>
     <mat-dialog-content class="grid gap-4">
       <p>L’article repart en traitement. Un incident « Reprise » est enregistré.</p>
-      <div>
-        <label class="lv-label" for="rework-cause">Cause</label>
-        <select
-          id="rework-cause"
-          class="lv-select"
-          [ngModel]="causeId()"
-          (ngModelChange)="causeId.set($event)"
-        >
+      <lv-field label="Cause">
+        <select lvControl [ngModel]="causeId()" (ngModelChange)="causeId.set($event)">
           <option value="">— Choisir —</option>
           @for (c of data.causes; track c.id) {
             <option [value]="c.id">{{ c.label }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="rework-reason">Précisions</label>
+      </lv-field>
+      <lv-field label="Précisions">
         <textarea
-          id="rework-reason"
-          class="lv-input"
+          lvControl
           rows="3"
           maxlength="500"
           [ngModel]="reason()"
           (ngModelChange)="reason.set($event)"
         ></textarea>
-      </div>
+      </lv-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" mat-dialog-close>Annuler</button>
@@ -136,48 +129,34 @@ export interface IncidentResult {
 /** Signalement d'un incident sur un article (contrôle qualité). */
 @Component({
   selector: 'lv-incident-dialog',
-  imports: [MatDialogModule, MatButtonModule, FormsModule],
+  imports: [MatDialogModule, MatButtonModule, FormsModule, LV_FIELD],
   template: `
     <h2 mat-dialog-title>Incident · article {{ data.labelCode }}</h2>
     <mat-dialog-content class="grid gap-4">
-      <div>
-        <label class="lv-label" for="incident-type">Type</label>
-        <select
-          id="incident-type"
-          class="lv-select"
-          [ngModel]="type()"
-          (ngModelChange)="type.set($event)"
-        >
+      <lv-field label="Type">
+        <select lvControl [ngModel]="type()" (ngModelChange)="type.set($event)">
           @for (t of types; track t) {
             <option [value]="t">{{ typeLabels[t] }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="incident-cause">Cause (facultatif)</label>
-        <select
-          id="incident-cause"
-          class="lv-select"
-          [ngModel]="causeId()"
-          (ngModelChange)="causeId.set($event)"
-        >
+      </lv-field>
+      <lv-field label="Cause (facultatif)">
+        <select lvControl [ngModel]="causeId()" (ngModelChange)="causeId.set($event)">
           <option value="">—</option>
           @for (c of data.causes; track c.id) {
             <option [value]="c.id">{{ c.label }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="incident-desc">Description</label>
+      </lv-field>
+      <lv-field label="Description">
         <textarea
-          id="incident-desc"
-          class="lv-input"
+          lvControl
           rows="3"
           maxlength="1000"
           [ngModel]="description()"
           (ngModelChange)="description.set($event)"
         ></textarea>
-      </div>
+      </lv-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" mat-dialog-close>Annuler</button>

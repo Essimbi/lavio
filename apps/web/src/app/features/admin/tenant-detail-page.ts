@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, resource, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
 import type { TenantUserDto } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
@@ -16,6 +13,7 @@ import {
   XafPipe,
 } from '../../shared/format/format';
 import { confirmAction } from '../../shared/ui/confirm-dialog/confirm-dialog';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { showInvitation } from '../../shared/ui/invitation-dialog/invitation-dialog';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Chip, LicenseChip } from '../../shared/ui/status-chip/status-chip';
@@ -31,9 +29,7 @@ type Panel = 'invite' | 'license' | 'payment' | null;
   selector: 'lv-tenant-detail',
   imports: [
     ReactiveFormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
+    LV_FIELD,
     RouterLink,
     PageHeader,
     Chip,
@@ -55,16 +51,16 @@ type Panel = 'invite' | 'license' | 'payment' | null;
           (t.lastActivityAt ? ' · dernière connexion ' + (t.lastActivityAt | frDateTime) : '')
         "
       >
-        <a mat-button routerLink="/admin/tenants">Tous les pressings</a>
+        <a class="lv-ghost" routerLink="/admin/tenants">Tous les pressings</a>
         @if (admin) {
-          <button mat-stroked-button type="button" (click)="panel.set('invite')">
+          <button class="lv-secondary" type="button" (click)="panel.set('invite')">
             Inviter la responsable
           </button>
-          <button mat-stroked-button type="button" (click)="panel.set('license')">
+          <button class="lv-secondary" type="button" (click)="panel.set('license')">
             Nouvelle licence
           </button>
           <button
-            mat-flat-button
+            class="lv-primary"
             type="button"
             (click)="panel.set('payment')"
             [disabled]="t.licenses.length === 0"
@@ -87,29 +83,32 @@ type Panel = 'invite' | 'license' | 'payment' | null;
               Un lien à usage unique, valable 7 jours, lui permettra de choisir son mot de passe.
             </p>
             <div class="lv-form-grid">
-              <mat-form-field
-                ><mat-label>Nom complet</mat-label
-                ><input matInput formControlName="fullName" /><mat-error
-                  >Indiquez le nom.</mat-error
-                ></mat-form-field
+              <lv-field
+                label="Nom complet"
+                [errors]="{ required: 'Indiquez le nom.', minlength: 'Au moins 2 caractères.' }"
               >
-              <mat-form-field
-                ><mat-label>Téléphone (WhatsApp)</mat-label
-                ><input matInput formControlName="phone" inputmode="tel" /><mat-error
-                  >Indiquez le téléphone.</mat-error
-                ></mat-form-field
+                <input lvControl formControlName="fullName" autocomplete="name" />
+              </lv-field>
+              <lv-field
+                label="Téléphone (WhatsApp)"
+                [errors]="{ required: 'Indiquez le téléphone.' }"
               >
-              <mat-form-field
-                ><mat-label>E-mail (facultatif)</mat-label
-                ><input matInput type="email" formControlName="email"
-              /></mat-form-field>
+                <input lvControl formControlName="phone" inputmode="tel" autocomplete="tel" />
+              </lv-field>
+              <lv-field
+                label="E-mail"
+                [optional]="true"
+                [errors]="{ email: 'Adresse e-mail invalide.' }"
+              >
+                <input lvControl type="email" formControlName="email" autocomplete="email" />
+              </lv-field>
             </div>
             @if (panelError()) {
               <p class="lv-alert mt-2" role="alert">{{ panelError() }}</p>
             }
             <div class="mt-4 flex gap-2">
-              <button mat-flat-button type="submit">Créer le lien d’invitation</button>
-              <button mat-button type="button" (click)="panel.set(null)">Annuler</button>
+              <button class="lv-primary" type="submit">Créer le lien d’invitation</button>
+              <button class="lv-ghost" type="button" (click)="panel.set(null)">Annuler</button>
             </div>
           </form>
         }
@@ -161,11 +160,11 @@ type Panel = 'invite' | 'license' | 'payment' | null;
           @if (admin) {
             <div class="mt-4">
               @if (t.status === 'ACTIVE') {
-                <button mat-stroked-button type="button" (click)="suspend()">
+                <button class="lv-secondary" type="button" (click)="suspend()">
                   Suspendre le pressing
                 </button>
               } @else {
-                <button mat-stroked-button type="button" (click)="reactivate()">
+                <button class="lv-secondary" type="button" (click)="reactivate()">
                   Réactiver le pressing
                 </button>
               }

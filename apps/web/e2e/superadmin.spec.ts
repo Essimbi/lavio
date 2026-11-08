@@ -17,9 +17,11 @@ const run = Date.now().toString(36);
 const date = (offsetDays: number) =>
   new Date(Date.now() + offsetDays * 86_400_000).toISOString().slice(0, 10);
 
+/** Choix dans une liste native par le texte de l'option. */
 async function choose(page: Page, label: string, option: string | RegExp) {
-  await page.getByLabel(label).click();
-  await page.getByRole('option', { name: option }).click();
+  const select = page.getByLabel(label);
+  const value = await select.locator('option', { hasText: option }).first().getAttribute('value');
+  await select.selectOption(value ?? '');
 }
 
 test('superadmin : du nouveau pressing à la lecture seule', async ({ page, browser, isMobile }) => {
@@ -45,7 +47,8 @@ test('superadmin : du nouveau pressing à la lecture seule', async ({ page, brow
   await page.getByRole('link', { name: 'Pressings' }).first().click();
   await page.getByRole('button', { name: 'Nouveau pressing' }).click();
   await page.getByLabel('Nom du pressing').fill(`Pressing E2E ${run}`);
-  await page.getByLabel('Ville', { exact: true }).fill('Douala');
+  // Champ facultatif : son nom accessible est « Ville facultatif ».
+  await page.getByRole('textbox', { name: /^Ville/ }).fill('Douala');
   await page.getByRole('button', { name: 'Créer le pressing' }).click();
   await expect(page.getByRole('heading', { level: 1, name: `Pressing E2E ${run}` })).toBeVisible();
 

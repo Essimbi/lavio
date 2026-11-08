@@ -1,15 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { firstValueFrom } from 'rxjs';
+import { LV_FIELD } from '../field/field';
 
 export interface ConfirmOptions {
   title: string;
@@ -25,30 +23,34 @@ export interface ConfirmOptions {
 
 @Component({
   selector: 'lv-confirm-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, FormsModule],
+  imports: [MatDialogModule, FormsModule, LV_FIELD],
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>
       <p>{{ data.message }}</p>
       @if (data.askReason || data.reasonRequired) {
-        <mat-form-field class="w-full">
-          <mat-label>{{ data.reasonRequired ? 'Motif' : 'Motif (facultatif)' }}</mat-label>
+        <lv-field
+          class="mt-4"
+          label="Motif"
+          [optional]="!data.reasonRequired"
+          [hint]="data.reasonRequired ? 'Au moins 3 caractères.' : undefined"
+        >
           <textarea
-            matInput
+            lvControl
             rows="3"
             maxlength="500"
             [ngModel]="reason()"
             (ngModelChange)="reason.set($event)"
           ></textarea>
-        </mat-form-field>
+        </lv-field>
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button type="button" mat-dialog-close>Annuler</button>
+      <button class="lv-ghost" type="button" mat-dialog-close>Annuler</button>
       <button
-        mat-flat-button
         type="button"
-        [class.lv-danger]="data.danger"
+        [class.lv-primary]="!data.danger"
+        [class.lv-danger-button]="data.danger"
         [disabled]="data.reasonRequired && reason().trim().length < 3"
         (click)="ref.close({ confirmed: true, reason: reason().trim() || undefined })"
       >

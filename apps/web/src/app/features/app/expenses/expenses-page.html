@@ -52,11 +52,9 @@
       <h2 id="expense-form-title" class="text-lg md:col-span-5">
         {{ isManager() ? 'Nouvelle dépense' : 'Dépense payée en espèces (caisse ouverte)' }}
       </h2>
-      <div>
-        <label class="lv-label" for="exp-category">Catégorie</label>
+      <lv-field label="Catégorie">
         <select
-          id="exp-category"
-          class="lv-select"
+          lvControl
           name="category"
           [ngModel]="categoryId()"
           (ngModelChange)="categoryId.set($event)"
@@ -66,12 +64,11 @@
             <option [value]="c.id">{{ c.name }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="exp-amount">Montant (FCFA)</label>
+      </lv-field>
+      <lv-field label="Montant (FCFA)" [errors]="{ min: 'Le montant doit être positif.' }">
         <input
-          id="exp-amount"
-          class="lv-input tabular"
+          lvControl
+          class="tabular"
           type="number"
           min="1"
           inputmode="numeric"
@@ -79,13 +76,11 @@
           [ngModel]="amount()"
           (ngModelChange)="amount.set($event)"
         />
-      </div>
+      </lv-field>
       @if (isManager()) {
-        <div>
-          <label class="lv-label" for="exp-account">Payé depuis</label>
+        <lv-field label="Payé depuis">
           <select
-            id="exp-account"
-            class="lv-select"
+            lvControl
             name="account"
             [ngModel]="accountId()"
             (ngModelChange)="accountId.set($event)"
@@ -97,21 +92,19 @@
               }
             }
           </select>
-        </div>
+        </lv-field>
       } @else {
         <p class="text-sm">Payé depuis la caisse</p>
       }
-      <div>
-        <label class="lv-label" for="exp-description">Description</label>
+      <lv-field label="Description">
         <input
-          id="exp-description"
-          class="lv-input"
+          lvControl
           maxlength="500"
           name="description"
           [ngModel]="description()"
           (ngModelChange)="description.set($event)"
         />
-      </div>
+      </lv-field>
       <button type="submit" class="lv-primary" [disabled]="!canSave() || busy()">
         {{ busy() ? 'Enregistrement…' : 'Enregistrer' }}
       </button>
@@ -128,19 +121,15 @@
       </div>
     </form>
 
-    <div class="mb-4 max-w-xs">
-      <label class="lv-label" for="exp-status">Statut</label>
-      <select
-        id="exp-status"
-        class="lv-select"
-        [ngModel]="status()"
-        (ngModelChange)="status.set($event); page.set(1)"
-      >
-        <option value="">Tous</option>
-        @for (s of statuses; track s) {
-          <option [value]="s">{{ statusLabels[s] }}</option>
-        }
-      </select>
+    <div class="lv-toolbar" role="search">
+      <lv-field label="Statut" class="max-w-xs">
+        <select lvControl [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
+          <option value="">Tous</option>
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ statusLabels[s] }}</option>
+          }
+        </select>
+      </lv-field>
     </div>
     <div class="lv-table-wrap">
       <table class="lv-table">
@@ -233,22 +222,18 @@
       class="lv-card mb-6 grid gap-3 md:grid-cols-[2fr_1.4fr_1fr_0.8fr_1.2fr_auto] md:items-end"
       (ngSubmit)="addRecurring()"
     >
-      <div>
-        <label class="lv-label" for="rec-label">Libellé</label>
+      <lv-field label="Libellé">
         <input
-          id="rec-label"
-          class="lv-input"
+          lvControl
           maxlength="80"
           name="label"
           [ngModel]="rLabel()"
           (ngModelChange)="rLabel.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="rec-category">Catégorie</label>
+      </lv-field>
+      <lv-field label="Catégorie">
         <select
-          id="rec-category"
-          class="lv-select"
+          lvControl
           name="category"
           [ngModel]="rCategory()"
           (ngModelChange)="rCategory.set($event)"
@@ -258,24 +243,22 @@
             <option [value]="c.id">{{ c.name }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="rec-amount">Montant (FCFA)</label>
+      </lv-field>
+      <lv-field label="Montant (FCFA)" [errors]="{ min: 'Le montant doit être positif.' }">
         <input
-          id="rec-amount"
-          class="lv-input tabular"
+          lvControl
+          class="tabular"
           type="number"
           min="1"
           name="amount"
           [ngModel]="rAmount()"
           (ngModelChange)="rAmount.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="rec-day">Jour (1 à 28)</label>
+      </lv-field>
+      <lv-field label="Jour (1 à 28)" [errors]="{ min: 'Entre 1 et 28.', max: 'Entre 1 et 28.' }">
         <input
-          id="rec-day"
-          class="lv-input tabular"
+          lvControl
+          class="tabular"
           type="number"
           min="1"
           max="28"
@@ -283,12 +266,10 @@
           [ngModel]="rDay()"
           (ngModelChange)="rDay.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="rec-account">Compte</label>
+      </lv-field>
+      <lv-field label="Compte">
         <select
-          id="rec-account"
-          class="lv-select"
+          lvControl
           name="account"
           [ngModel]="rAccount()"
           (ngModelChange)="rAccount.set($event)"
@@ -298,7 +279,7 @@
             <option [value]="a.id">{{ a.name }}</option>
           }
         </select>
-      </div>
+      </lv-field>
       <button
         type="submit"
         class="lv-primary"
@@ -343,17 +324,15 @@
 
   @case ('categories') {
     <form class="lv-card mb-6 flex flex-wrap items-end gap-3" (ngSubmit)="addCategory()">
-      <div class="min-w-64 grow">
-        <label class="lv-label" for="cat-name">Nouvelle catégorie</label>
+      <lv-field label="Nouvelle catégorie" class="min-w-64 grow">
         <input
-          id="cat-name"
-          class="lv-input"
+          lvControl
           maxlength="60"
           name="name"
           [ngModel]="newCategory()"
           (ngModelChange)="newCategory.set($event)"
         />
-      </div>
+      </lv-field>
       <button type="submit" class="lv-primary" [disabled]="newCategory().trim().length < 2">
         Ajouter
       </button>

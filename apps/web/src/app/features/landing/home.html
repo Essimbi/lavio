@@ -584,6 +584,9 @@
                   <span class="plan-badge">Essai gratuit · {{ p.trialDays }} jours</span>
                 }
               </div>
+              @if (p.description) {
+                <p class="plan-pitch">{{ p.description }}</p>
+              }
               <p class="plan-price">
                 {{ price(p.priceMonthlyXaf) }}
                 @if (p.priceMonthlyXaf !== null) {
@@ -598,8 +601,12 @@
                 @if (p.extraUserPriceXaf !== null) {
                   <li>Utilisateur supplémentaire : {{ price(p.extraUserPriceXaf) }} / mois</li>
                 }
-                <li>Toutes les fonctionnalités, mises à jour comprises</li>
-                <li>Application sur PC et téléphone</li>
+                @for (h of p.highlights; track $index) {
+                  <li>{{ h }}</li>
+                } @empty {
+                  <li>Toutes les fonctionnalités, mises à jour comprises</li>
+                  <li>Application sur PC et téléphone</li>
+                }
               </ul>
               <div class="plan-actions">
                 @if (planLink(p); as link) {

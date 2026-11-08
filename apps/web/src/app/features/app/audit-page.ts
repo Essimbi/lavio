@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { addDays } from '@lavio/shared';
 import { AppApi } from '../../core/api/app-api';
 import { FrDateTimePipe } from '../../shared/format/format';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Pager } from '../../shared/ui/pager/pager';
 import { actionLabel } from '../admin/labels';
@@ -10,18 +11,16 @@ import { actionLabel } from '../admin/labels';
 /** Journal d'audit du pressing (réservé à la responsable), filtrable par utilisateur, élément et période. */
 @Component({
   selector: 'lv-audit-page',
-  imports: [FormsModule, PageHeader, Pager, FrDateTimePipe],
+  imports: [FormsModule, LV_FIELD, PageHeader, Pager, FrDateTimePipe],
   template: `
     <lv-page-header
       heading="Journal d’audit"
       subtitle="Les actions sensibles enregistrées dans votre pressing."
     />
-    <form class="mb-4 flex flex-wrap items-end gap-3" (submit)="$event.preventDefault()">
-      <div>
-        <label class="lv-label" for="audit-user">Utilisateur</label>
+    <form class="lv-toolbar" role="search" (submit)="$event.preventDefault()">
+      <lv-field label="Utilisateur">
         <select
-          id="audit-user"
-          class="lv-select"
+          lvControl
           [ngModel]="userId()"
           (ngModelChange)="userId.set($event); page.set(1)"
           name="userId"
@@ -31,12 +30,10 @@ import { actionLabel } from '../admin/labels';
             <option [value]="u.id">{{ u.fullName }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="audit-entity">Élément</label>
+      </lv-field>
+      <lv-field label="Élément">
         <select
-          id="audit-entity"
-          class="lv-select"
+          lvControl
           [ngModel]="entity()"
           (ngModelChange)="entity.set($event); page.set(1)"
           name="entity"
@@ -46,31 +43,27 @@ import { actionLabel } from '../admin/labels';
             <option [value]="e.value">{{ e.label }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="audit-from">Du</label>
+      </lv-field>
+      <lv-field label="Du">
         <input
-          id="audit-from"
-          class="lv-input"
+          lvControl
           type="date"
           [ngModel]="from()"
           (ngModelChange)="from.set($event ?? ''); page.set(1)"
           name="from"
           [max]="to() || null"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="audit-to">Au</label>
+      </lv-field>
+      <lv-field label="Au">
         <input
-          id="audit-to"
-          class="lv-input"
+          lvControl
           type="date"
           [ngModel]="to()"
           (ngModelChange)="to.set($event ?? ''); page.set(1)"
           name="to"
           [min]="from() || null"
         />
-      </div>
+      </lv-field>
       @if (userId() || entity() || from() || to()) {
         <button type="button" class="lv-link-button min-h-11" (click)="reset()">
           Effacer les filtres

@@ -1,16 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { TenantRole, type TenantUserDto } from '@lavio/shared';
 import { AppApi } from '../../core/api/app-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/http/api';
 import { FrDateTimePipe, PhonePipe, TENANT_ROLE_LABELS } from '../../shared/format/format';
 import { confirmAction } from '../../shared/ui/confirm-dialog/confirm-dialog';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { showInvitation } from '../../shared/ui/invitation-dialog/invitation-dialog';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Chip } from '../../shared/ui/status-chip/status-chip';
@@ -21,17 +18,7 @@ const ROLES = Object.values(TenantRole);
 /** Utilisateurs du pressing (module 12) : invitation, rôles cumulables, désactivation. */
 @Component({
   selector: 'lv-users-page',
-  imports: [
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatInputModule,
-    PageHeader,
-    Chip,
-    PhonePipe,
-    FrDateTimePipe,
-  ],
+  imports: [ReactiveFormsModule, LV_FIELD, PageHeader, Chip, PhonePipe, FrDateTimePipe],
   template: `
     <lv-page-header
       heading="Utilisateurs"
@@ -39,7 +26,7 @@ const ROLES = Object.values(TenantRole);
     >
       @if (!adding()) {
         <button
-          mat-flat-button
+          class="lv-primary"
           type="button"
           (click)="adding.set(true)"
           [disabled]="auth.isReadOnly()"
@@ -62,33 +49,39 @@ const ROLES = Object.values(TenantRole);
       <form class="lv-card mb-6" [formGroup]="form" (ngSubmit)="create()" novalidate>
         <h2 class="mb-4 text-xl">Nouvel utilisateur</h2>
         <div class="lv-form-grid">
-          <mat-form-field>
-            <mat-label>Nom complet</mat-label>
-            <input matInput formControlName="fullName" autocomplete="off" />
-            <mat-error>Indiquez le nom.</mat-error>
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>Téléphone</mat-label>
+          <lv-field
+            label="Nom complet"
+            [errors]="{ required: 'Indiquez le nom.', minlength: 'Au moins 2 caractères.' }"
+          >
+            <input lvControl formControlName="fullName" autocomplete="off" />
+          </lv-field>
+          <lv-field label="Téléphone">
             <input
-              matInput
+              lvControl
               formControlName="phone"
               inputmode="tel"
               placeholder="+237 6XX XX XX XX"
             />
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>E-mail (facultatif)</mat-label>
-            <input matInput formControlName="email" type="email" />
-          </mat-form-field>
+          </lv-field>
+          <lv-field
+            label="E-mail"
+            [optional]="true"
+            [errors]="{ email: 'Adresse e-mail invalide.' }"
+          >
+            <input lvControl formControlName="email" type="email" />
+          </lv-field>
         </div>
-        <fieldset class="mt-2">
+        <fieldset class="mt-4">
           <legend class="mb-2 font-semibold">Rôles</legend>
-          <div class="flex flex-wrap gap-x-6">
+          <div class="flex flex-wrap gap-x-6 gap-y-2">
             @for (role of roles; track role) {
-              <mat-checkbox
-                [checked]="selected().includes(role)"
-                (change)="toggle(role, $event.checked)"
-                >{{ labels[role] }}</mat-checkbox
+              <label class="lv-check"
+                ><input
+                  #box
+                  type="checkbox"
+                  [checked]="selected().includes(role)"
+                  (change)="toggle(role, box.checked)"
+                />{{ labels[role] }}</label
               >
             }
           </div>
@@ -97,8 +90,8 @@ const ROLES = Object.values(TenantRole);
           <p class="lv-alert mt-4" role="alert">{{ formError() }}</p>
         }
         <div class="mt-4 flex gap-2">
-          <button mat-flat-button type="submit" [disabled]="pending()">Inviter</button>
-          <button mat-button type="button" (click)="cancel()">Annuler</button>
+          <button class="lv-primary" type="submit" [disabled]="pending()">Inviter</button>
+          <button class="lv-ghost" type="button" (click)="cancel()">Annuler</button>
         </div>
       </form>
     }

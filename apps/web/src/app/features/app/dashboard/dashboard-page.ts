@@ -12,6 +12,7 @@ import type { DashboardPeriod } from '@lavio/shared';
 import { ManagementApi } from '../../../core/api/management-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe, FrDateTimePipe, todayInput, XafPipe } from '../../../shared/format/format';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { Icon, type IconName } from '../../../shared/ui/icon/icon';
 
 const PERIODS: { key: DashboardPeriod; label: string }[] = [
@@ -35,7 +36,7 @@ interface Shortcut {
  */
 @Component({
   selector: 'lv-dashboard-page',
-  imports: [FormsModule, RouterLink, XafPipe, FrDatePipe, FrDateTimePipe, Icon],
+  imports: [FormsModule, LV_FIELD, RouterLink, XafPipe, FrDatePipe, FrDateTimePipe, Icon],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

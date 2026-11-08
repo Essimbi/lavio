@@ -31,6 +31,7 @@ import {
   saveBlob,
 } from '../../../shared/format/labels';
 import { confirmAction } from '../../../shared/ui/confirm-dialog/confirm-dialog';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { DepositChip, ItemChip } from '../../../shared/ui/status-chip/deposit-chip';
 import { errorMessage, Toast } from '../../../shared/ui/toast/toast.service';
@@ -48,6 +49,7 @@ const CHECK_LABELS = new Map<string, string>(RECEPTION_CHECKLIST.map((c) => [c.k
   selector: 'lv-deposit-detail',
   imports: [
     FormsModule,
+    LV_FIELD,
     RouterLink,
     PageHeader,
     DepositChip,

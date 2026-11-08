@@ -16,6 +16,7 @@ import { ManagementApi } from '../../../core/api/management-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDateTimePipe, XafPipe } from '../../../shared/format/format';
 import { MOVEMENT_TYPE_LABELS, QtyPipe } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { Toast } from '../../../shared/ui/toast/toast.service';
@@ -26,7 +27,7 @@ type MoveType = 'IN' | 'OUT' | 'ADJUSTMENT';
 /** Fiche produit : quantité, coût moyen, saisie des mouvements et historique. */
 @Component({
   selector: 'lv-stock-item-page',
-  imports: [FormsModule, RouterLink, PageHeader, Pager, XafPipe, QtyPipe, FrDateTimePipe],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, Pager, XafPipe, QtyPipe, FrDateTimePipe],
   template: `
     @if (item.hasValue()) {
       @let i = item.value();
@@ -88,13 +89,18 @@ type MoveType = 'IN' | 'OUT' | 'ADJUSTMENT';
               </div>
             </fieldset>
             <div class="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label class="lv-label" for="move-qty">
-                  {{ type() === 'ADJUSTMENT' ? 'Correction (+ ou −)' : 'Quantité' }} ({{ i.unit }})
-                </label>
+              <lv-field
+                [label]="
+                  (type() === 'ADJUSTMENT' ? 'Correction (+ ou −)' : 'Quantité') +
+                  ' (' +
+                  i.unit +
+                  ')'
+                "
+                [errors]="{ required: 'Indiquez la quantité.' }"
+              >
                 <input
-                  id="move-qty"
-                  class="lv-input tabular"
+                  lvControl
+                  class="tabular"
                   type="number"
                   step="0.001"
                   name="quantity"
@@ -102,26 +108,26 @@ type MoveType = 'IN' | 'OUT' | 'ADJUSTMENT';
                   [ngModel]="quantity()"
                   (ngModelChange)="quantity.set($event)"
                 />
-              </div>
+              </lv-field>
               @if (type() === 'IN') {
-                <div>
-                  <label class="lv-label" for="move-cost">Coût unitaire (FCFA)</label>
+                <lv-field
+                  label="Coût unitaire (FCFA)"
+                  [errors]="{ min: 'Le coût ne peut pas être négatif.' }"
+                >
                   <input
-                    id="move-cost"
-                    class="lv-input tabular"
+                    lvControl
+                    class="tabular"
                     type="number"
                     min="0"
                     name="unitCost"
                     [ngModel]="unitCost()"
                     (ngModelChange)="unitCost.set($event)"
                   />
-                </div>
+                </lv-field>
               } @else {
-                <div>
-                  <label class="lv-label" for="move-reason">Motif</label>
+                <lv-field label="Motif">
                   <select
-                    id="move-reason"
-                    class="lv-select"
+                    lvControl
                     name="reason"
                     [ngModel]="reason()"
                     (ngModelChange)="reason.set($event)"
@@ -131,22 +137,18 @@ type MoveType = 'IN' | 'OUT' | 'ADJUSTMENT';
                       <option [value]="r">{{ reasonLabels[r] }}</option>
                     }
                   </select>
-                </div>
+                </lv-field>
               }
             </div>
-            <div>
-              <label class="lv-label" for="move-note"
-                >Note{{ allowNegative() ? ' (obligatoire)' : '' }}</label
-              >
+            <lv-field [label]="'Note' + (allowNegative() ? ' (obligatoire)' : '')">
               <input
-                id="move-note"
-                class="lv-input"
+                lvControl
                 maxlength="500"
                 name="note"
                 [ngModel]="note()"
                 (ngModelChange)="note.set($event)"
               />
-            </div>
+            </lv-field>
             @if (isOwner() && type() === 'OUT') {
               <label class="flex items-start gap-2">
                 <input

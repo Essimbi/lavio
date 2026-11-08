@@ -10,50 +10,48 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { CustomerDto, CustomerType } from '@lavio/shared';
 import { type CustomerInput, PressingApi } from '../../../core/api/pressing-api';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { errorMessage } from '../../../shared/ui/toast/toast.service';
 
 /** Fiche client (docs/01, module 1) : création ou modification. */
 @Component({
   selector: 'lv-customer-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LV_FIELD],
   template: `
     <form class="lv-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
       <div class="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label class="lv-label" for="cf-name">Nom</label>
-          <input
-            id="cf-name"
-            class="lv-input"
-            formControlName="name"
-            [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
-          />
-        </div>
-        <div>
-          <label class="lv-label" for="cf-type">Type</label>
-          <select id="cf-type" class="lv-select" formControlName="type">
+        <lv-field
+          label="Nom"
+          [errors]="{ required: 'Indiquez le nom.', minlength: 'Au moins 2 caractères.' }"
+        >
+          <input lvControl formControlName="name" />
+        </lv-field>
+        <lv-field label="Type">
+          <select lvControl formControlName="type">
             <option value="INDIVIDUAL">Particulier</option>
             <option value="COMPANY">Entreprise</option>
           </select>
-        </div>
-        <div>
-          <label class="lv-label" for="cf-phone">Téléphone</label>
+        </lv-field>
+        <lv-field
+          label="Téléphone"
+          [errors]="{
+            required: 'Indiquez le téléphone.',
+            pattern: 'Numéro de téléphone invalide.',
+          }"
+        >
           <input
-            id="cf-phone"
-            class="lv-input"
+            lvControl
             inputmode="tel"
             formControlName="phone"
             placeholder="+237 6XX XX XX XX"
-            [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched"
           />
-        </div>
-        <div>
-          <label class="lv-label" for="cf-phone2">Second téléphone</label>
-          <input id="cf-phone2" class="lv-input" inputmode="tel" formControlName="phone2" />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="lv-label" for="cf-address">Adresse</label>
-          <input id="cf-address" class="lv-input" formControlName="address" />
-        </div>
+        </lv-field>
+        <lv-field label="Second téléphone">
+          <input lvControl inputmode="tel" formControlName="phone2" />
+        </lv-field>
+        <lv-field label="Adresse" class="sm:col-span-2">
+          <input lvControl formControlName="address" />
+        </lv-field>
       </div>
       <fieldset class="mt-3">
         <legend class="lv-label">Préférences</legend>
@@ -68,20 +66,15 @@ import { errorMessage } from '../../../shared/ui/toast/toast.service';
         <label class="inline-flex min-h-11 items-center gap-2"
           ><input type="checkbox" formControlName="creditAllowed" /> Crédit autorisé</label
         >
-        <div>
-          <label class="lv-label" for="cf-limit">Plafond de crédit (FCFA)</label>
-          <input
-            id="cf-limit"
-            class="lv-input tabular"
-            type="number"
-            min="0"
-            formControlName="creditLimitXaf"
-          />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="lv-label" for="cf-notes">Remarques</label>
-          <textarea id="cf-notes" class="lv-input" rows="2" formControlName="notes"></textarea>
-        </div>
+        <lv-field
+          label="Plafond de crédit (FCFA)"
+          [errors]="{ min: 'Le plafond ne peut pas être négatif.' }"
+        >
+          <input lvControl class="tabular" type="number" min="0" formControlName="creditLimitXaf" />
+        </lv-field>
+        <lv-field label="Remarques" class="sm:col-span-2">
+          <textarea lvControl rows="2" formControlName="notes"></textarea>
+        </lv-field>
       </div>
       @if (error()) {
         <p class="lv-alert mt-3" role="alert">{{ error() }}</p>

@@ -17,14 +17,16 @@ import { Toast } from '../../shared/ui/toast/toast.service';
     <lv-page-header heading="Notifications" subtitle="Alertes et demandes qui vous concernent.">
       <button type="button" class="lv-secondary" (click)="readAll()">Tout marquer comme lu</button>
     </lv-page-header>
-    <label class="mb-4 flex min-h-11 items-center gap-2">
-      <input
-        type="checkbox"
-        [ngModel]="unreadOnly()"
-        (ngModelChange)="unreadOnly.set($event); page.set(1)"
-      />
-      Non lues seulement
-    </label>
+    <div class="lv-toolbar" role="search">
+      <label class="lv-check">
+        <input
+          type="checkbox"
+          [ngModel]="unreadOnly()"
+          (ngModelChange)="unreadOnly.set($event); page.set(1)"
+        />
+        Non lues seulement
+      </label>
+    </div>
     <ul class="grid gap-3" role="list">
       @for (n of list.hasValue() ? list.value().data : []; track n.id) {
         <li>

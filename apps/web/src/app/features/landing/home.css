@@ -1499,6 +1499,10 @@ main {
   color: var(--lv-teal-900);
 }
 
+.plan-pitch {
+  color: color-mix(in srgb, var(--lv-ink-900) 80%, transparent);
+}
+
 .plan-price {
   font: 700 clamp(30px, 4vw, 40px) / 1.1 var(--lv-font-display);
   color: var(--lv-teal-900);

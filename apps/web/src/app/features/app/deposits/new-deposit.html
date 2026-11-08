@@ -39,28 +39,24 @@
           class="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
           (ngSubmit)="createCustomer()"
         >
-          <div>
-            <label class="lv-label" for="nc-name">Nom du client</label>
+          <lv-field label="Nom du client">
             <input
-              id="nc-name"
-              class="lv-input"
+              lvControl
               autocomplete="off"
               [ngModel]="newCustomer().name"
               (ngModelChange)="newCustomer.set({ name: $event, phone: newCustomer().phone })"
               name="name"
             />
-          </div>
-          <div>
-            <label class="lv-label" for="nc-phone">Téléphone</label>
+          </lv-field>
+          <lv-field label="Téléphone">
             <input
-              id="nc-phone"
-              class="lv-input"
+              lvControl
               inputmode="tel"
               [ngModel]="newCustomer().phone"
               (ngModelChange)="newCustomer.set({ name: newCustomer().name, phone: $event })"
               name="phone"
             />
-          </div>
+          </lv-field>
           <div class="flex gap-2">
             <button type="submit" class="lv-primary">Créer le client</button>
             <button type="button" class="lv-link-button" (click)="creating.set(false)">
@@ -69,40 +65,41 @@
           </div>
         </form>
       } @else {
-        <label class="lv-label" for="client-search">Téléphone, nom ou numéro de ticket</label>
-        <div class="relative">
-          <input
-            #customerSearch
-            id="client-search"
-            class="lv-input"
-            type="search"
-            autocomplete="off"
-            role="combobox"
-            aria-autocomplete="list"
-            aria-controls="client-results"
-            [attr.aria-expanded]="matches().length > 0"
-            [attr.aria-activedescendant]="matches().length ? 'client-' + highlighted() : null"
-            [ngModel]="query()"
-            (ngModelChange)="query.set($event); highlighted.set(0)"
-            (keydown)="onQueryKey($event)"
-          />
-          @if (matches().length) {
-            <ul id="client-results" class="results" role="listbox" aria-label="Clients trouvés">
-              @for (c of matches(); track c.id; let i = $index) {
-                <li
-                  [id]="'client-' + i"
-                  role="option"
-                  [attr.aria-selected]="i === highlighted()"
-                  [class.is-active]="i === highlighted()"
-                  (mousedown)="$event.preventDefault(); pick(c)"
-                >
-                  <span class="font-semibold">{{ c.name }}</span>
-                  <span class="text-sm">{{ c.phone | phone }}</span>
-                </li>
-              }
-            </ul>
-          }
-        </div>
+        <lv-field label="Téléphone, nom ou numéro de ticket">
+          <div class="relative">
+            <input
+              #customerSearch
+              lvControl
+              class="lv-search"
+              type="search"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-controls="client-results"
+              [attr.aria-expanded]="matches().length > 0"
+              [attr.aria-activedescendant]="matches().length ? 'client-' + highlighted() : null"
+              [ngModel]="query()"
+              (ngModelChange)="query.set($event); highlighted.set(0)"
+              (keydown)="onQueryKey($event)"
+            />
+            @if (matches().length) {
+              <ul id="client-results" class="results" role="listbox" aria-label="Clients trouvés">
+                @for (c of matches(); track c.id; let i = $index) {
+                  <li
+                    [id]="'client-' + i"
+                    role="option"
+                    [attr.aria-selected]="i === highlighted()"
+                    [class.is-active]="i === highlighted()"
+                    (mousedown)="$event.preventDefault(); pick(c)"
+                  >
+                    <span class="font-semibold">{{ c.name }}</span>
+                    <span class="text-sm">{{ c.phone | phone }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </lv-field>
         <p class="mt-2 text-sm">
           @if (query().trim().length >= 2 && results.hasValue() && matches().length === 0) {
             Aucun client trouvé.
@@ -330,21 +327,24 @@
       }
     </label>
 
-    <label class="lv-label mt-3" for="discount">Remise (FCFA)</label>
-    <input
-      id="discount"
-      class="lv-input tabular"
-      type="number"
-      min="0"
-      step="50"
-      inputmode="numeric"
-      [ngModel]="discount()"
-      (ngModelChange)="discount.set($event ?? 0)"
-      [attr.aria-invalid]="!!quote().error"
-    />
-    @if (quote().error) {
-      <p class="mt-1 text-sm font-semibold text-coral-600" role="alert">{{ quote().error }}</p>
-    } @else if (needsApproval()) {
+    <lv-field
+      label="Remise (FCFA)"
+      class="mt-3"
+      [error]="quote().error"
+      [errors]="{ min: 'La remise ne peut pas être négative.' }"
+    >
+      <input
+        lvControl
+        class="tabular"
+        type="number"
+        min="0"
+        step="50"
+        inputmode="numeric"
+        [ngModel]="discount()"
+        (ngModelChange)="discount.set($event ?? 0)"
+      />
+    </lv-field>
+    @if (!quote().error && needsApproval()) {
       <p class="mt-1 rounded-field bg-amber-500 p-2 text-sm text-ink-900" role="status">
         Cette remise dépasse
         {{ grid.hasValue() ? grid.value().settings.discountApprovalPercent : '' }} % : la
@@ -352,26 +352,21 @@
       </p>
     }
 
-    <label class="lv-label mt-3" for="due">Date de retrait</label>
-    <input
-      id="due"
-      class="lv-input"
-      type="date"
-      [ngModel]="dueDate()"
-      (ngModelChange)="dueDate.set($event)"
-    />
+    <lv-field label="Date de retrait" class="mt-3">
+      <input lvControl type="date" [ngModel]="dueDate()" (ngModelChange)="dueDate.set($event)" />
+    </lv-field>
     @if (dueDate()) {
       <p class="mt-1 text-sm">Le {{ dueDate() | frDate }}</p>
     }
 
-    <label class="lv-label mt-3" for="notes">Notes</label>
-    <textarea
-      id="notes"
-      class="lv-input"
-      rows="2"
-      [ngModel]="notes()"
-      (ngModelChange)="notes.set($event)"
-    ></textarea>
+    <lv-field label="Notes" class="mt-3">
+      <textarea
+        lvControl
+        rows="2"
+        [ngModel]="notes()"
+        (ngModelChange)="notes.set($event)"
+      ></textarea>
+    </lv-field>
 
     @if (missingPrice()) {
       <p class="mt-3 text-sm font-semibold text-coral-600" role="alert">

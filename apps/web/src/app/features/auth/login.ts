@@ -8,29 +8,20 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
 import type { LoginArea, PublicDemoAccount } from '@lavio/shared';
 import { PublicApi } from '../../core/api/public-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { homeFor } from '../../core/auth/guards';
 import { errorMessage } from '../../shared/ui/toast/toast.service';
-import { AUTH_FIELD_OPTIONS, AuthLayout } from './auth-layout';
+import { LV_FIELD } from '../../shared/ui/field/field';
+import { AuthLayout } from './auth-layout';
 import { PasswordField } from './password-field';
 
 /** Connexion (docs/02) : e-mail ou téléphone + mot de passe. `/login` et `/admin/login`. */
 @Component({
   selector: 'lv-login',
-  imports: [
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    RouterLink,
-    AuthLayout,
-    PasswordField,
-  ],
+  imports: [ReactiveFormsModule, LV_FIELD, MatButtonModule, RouterLink, AuthLayout, PasswordField],
   template: `
     <lv-auth-layout
       [heading]="area() === 'admin' ? 'Superadmin' : 'Connexion'"
@@ -40,28 +31,27 @@ import { PasswordField } from './password-field';
           : 'Accédez à votre pressing.'
       "
     >
-      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-        <mat-form-field class="w-full">
-          <mat-label>E-mail ou téléphone</mat-label>
+      <form class="grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <lv-field
+          label="E-mail ou téléphone"
+          hint="Votre e-mail ou votre numéro, par ex. 6 90 00 00 00"
+          [errors]="{ required: 'Indiquez votre e-mail ou votre numéro de téléphone.' }"
+        >
           <input
-            matInput
+            lvControl
             formControlName="identifier"
             autocomplete="username"
             autocapitalize="none"
             spellcheck="false"
           />
-          <mat-hint>Votre e-mail ou votre numéro, par ex. 6 90 00 00 00</mat-hint>
-          @if (form.controls.identifier.hasError('required')) {
-            <mat-error>Indiquez votre e-mail ou votre numéro de téléphone.</mat-error>
-          }
-        </mat-form-field>
+        </lv-field>
         <lv-password-field [control]="form.controls.password" />
 
         @if (area() === 'app') {
           <p class="forgot">Mot de passe oublié ? Demandez un nouveau lien à votre responsable.</p>
         }
         @if (error()) {
-          <p class="lv-alert mb-4" role="alert">{{ error() }}</p>
+          <p class="lv-alert" role="alert">{{ error() }}</p>
         }
         <button mat-flat-button class="lv-auth-submit w-full" type="submit" [disabled]="pending()">
           {{ pending() ? 'Connexion…' : 'Se connecter' }}
@@ -94,7 +84,7 @@ import { PasswordField } from './password-field';
   `,
   styles: `
     .forgot {
-      margin: -4px 0 18px;
+      margin: -8px 0 4px;
       text-align: right;
       font-size: 13px;
       color: var(--lv-teal-700);
@@ -171,7 +161,6 @@ import { PasswordField } from './password-field';
       }
     }
   `,
-  providers: [AUTH_FIELD_OPTIONS],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
@@ -202,7 +191,7 @@ export class Login {
         (c) => {
           const accounts = c.demo?.accounts ?? [];
           this.demoAccounts.set(accounts);
-          const chosen = accounts.at(Number(this.demo() ?? NaN));
+          const chosen = demoAccount(accounts, this.demo());
           if (chosen) this.useDemo(chosen);
         },
         () => this.demoAccounts.set([]),
@@ -235,4 +224,16 @@ export class Login {
       this.pending.set(false);
     }
   }
+}
+
+/**
+ * Compte de démonstration désigné par `?demo=<index>` : seulement un index entier valide.
+ * Sans paramètre (cas d'un vrai client), rien n'est pré-rempli.
+ */
+export function demoAccount(
+  accounts: readonly PublicDemoAccount[],
+  param: string | undefined,
+): PublicDemoAccount | undefined {
+  if (param === undefined || !/^\d+$/.test(param)) return undefined;
+  return accounts[Number(param)];
 }

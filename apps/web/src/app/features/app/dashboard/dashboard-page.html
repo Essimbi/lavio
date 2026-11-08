@@ -15,26 +15,12 @@
         </button>
       }
       @if (period() === 'custom') {
-        <div>
-          <label class="lv-label" for="dash-from">Du</label>
-          <input
-            id="dash-from"
-            class="lv-input"
-            type="date"
-            [ngModel]="from()"
-            (ngModelChange)="from.set($event)"
-          />
-        </div>
-        <div>
-          <label class="lv-label" for="dash-to">Au</label>
-          <input
-            id="dash-to"
-            class="lv-input"
-            type="date"
-            [ngModel]="to()"
-            (ngModelChange)="to.set($event)"
-          />
-        </div>
+        <lv-field label="Du">
+          <input lvControl type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" />
+        </lv-field>
+        <lv-field label="Au">
+          <input lvControl type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" />
+        </lv-field>
       }
     </div>
   }

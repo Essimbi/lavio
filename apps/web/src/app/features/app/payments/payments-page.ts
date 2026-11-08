@@ -25,6 +25,7 @@ import {
   PAYMENT_METHOD_LABELS,
   saveBlob,
 } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { Toast } from '../../../shared/ui/toast/toast.service';
@@ -38,6 +39,7 @@ type Reconciled = '' | 'yes' | 'no';
   selector: 'lv-payments-page',
   imports: [
     FormsModule,
+    LV_FIELD,
     RouterLink,
     PageHeader,
     Pager,

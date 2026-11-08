@@ -7,17 +7,15 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { AdminApi } from '../../core/api/admin-api';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { errorMessage, Toast } from '../../shared/ui/toast/toast.service';
 
 /** Paramètres de la plateforme : numéro WhatsApp, taux de partage, essai, grâce, messages types. */
 @Component({
   selector: 'lv-admin-settings-page',
-  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, PageHeader],
+  imports: [ReactiveFormsModule, LV_FIELD, PageHeader],
   template: `
     <lv-page-header
       heading="Paramètres"
@@ -26,47 +24,66 @@ import { errorMessage, Toast } from '../../shared/ui/toast/toast.service';
     <form class="lv-card max-w-3xl" [formGroup]="form" (ngSubmit)="save()" novalidate>
       <h2 class="mb-4 text-xl">Service client et abonnements</h2>
       <div class="lv-form-grid">
-        <mat-form-field>
-          <mat-label>Numéro WhatsApp du service client</mat-label>
-          <input matInput formControlName="whatsappNumber" inputmode="numeric" />
-          <mat-hint>Chiffres seuls, indicatif compris (ex. 237…).</mat-hint>
-          <mat-error>Chiffres uniquement (8 à 15).</mat-error>
-        </mat-form-field>
-        <mat-form-field
-          ><mat-label>Taux de partage du Concepteur (%)</mat-label
-          ><input matInput type="number" min="0" max="100" formControlName="shareRatePercent"
-        /></mat-form-field>
-        <mat-form-field
-          ><mat-label>Essai gratuit par défaut (jours)</mat-label
-          ><input matInput type="number" min="0" formControlName="defaultTrialDays"
-        /></mat-form-field>
-        <mat-form-field
-          ><mat-label>Période de grâce par défaut (jours)</mat-label
-          ><input matInput type="number" min="0" formControlName="defaultGraceDays"
-        /></mat-form-field>
+        <lv-field
+          label="Numéro WhatsApp du service client"
+          hint="Chiffres seuls, indicatif compris (ex. 237…)."
+          [optional]="true"
+          [errors]="{ pattern: 'Chiffres uniquement (8 à 15).' }"
+        >
+          <input lvControl formControlName="whatsappNumber" inputmode="numeric" />
+        </lv-field>
+        <lv-field
+          label="Taux de partage du Concepteur (%)"
+          [errors]="{
+            required: 'Indiquez le taux de partage.',
+            min: 'Entre 0 et 100.',
+            max: 'Entre 0 et 100.',
+          }"
+        >
+          <input lvControl type="number" min="0" max="100" formControlName="shareRatePercent" />
+        </lv-field>
+        <lv-field
+          label="Essai gratuit par défaut (jours)"
+          [errors]="{ required: 'Indiquez une durée.', min: '0 ou plus.' }"
+        >
+          <input lvControl type="number" min="0" formControlName="defaultTrialDays" />
+        </lv-field>
+        <lv-field
+          label="Période de grâce par défaut (jours)"
+          [errors]="{ required: 'Indiquez une durée.', min: '0 ou plus.' }"
+        >
+          <input lvControl type="number" min="0" formControlName="defaultGraceDays" />
+        </lv-field>
       </div>
-      <h2 class="mb-2 mt-4 text-xl">Messages WhatsApp types</h2>
+      <h2 class="mb-2 mt-6 text-xl">Messages WhatsApp types</h2>
       <p class="mb-4 text-sm text-ink-900/80">Variables disponibles : {{ variables }}.</p>
-      <mat-form-field class="w-full"
-        ><mat-label>Message de la landing</mat-label
-        ><textarea matInput rows="2" formControlName="whatsappDefaultMessage"></textarea>
-      </mat-form-field>
-      <mat-form-field class="w-full"
-        ><mat-label>Invitation</mat-label
-        ><textarea matInput rows="3" formControlName="whatsappInvitationMessage"></textarea>
-      </mat-form-field>
-      <mat-form-field class="w-full"
-        ><mat-label>Renouvellement de licence</mat-label
-        ><textarea matInput rows="2" formControlName="whatsappRenewalMessage"></textarea>
-      </mat-form-field>
-      <mat-form-field class="w-full"
-        ><mat-label>Utilisateurs supplémentaires</mat-label
-        ><textarea matInput rows="2" formControlName="whatsappExtraUsersMessage"></textarea>
-      </mat-form-field>
+      <div class="grid gap-4">
+        <lv-field
+          label="Message de la landing"
+          [errors]="{ required: 'Indiquez le message de la landing.' }"
+        >
+          <textarea lvControl rows="2" formControlName="whatsappDefaultMessage"></textarea>
+        </lv-field>
+        <lv-field label="Invitation" [errors]="{ required: 'Indiquez le message d’invitation.' }">
+          <textarea lvControl rows="3" formControlName="whatsappInvitationMessage"></textarea>
+        </lv-field>
+        <lv-field
+          label="Renouvellement de licence"
+          [errors]="{ required: 'Indiquez le message de renouvellement.' }"
+        >
+          <textarea lvControl rows="2" formControlName="whatsappRenewalMessage"></textarea>
+        </lv-field>
+        <lv-field
+          label="Utilisateurs supplémentaires"
+          [errors]="{ required: 'Indiquez le message pour les utilisateurs supplémentaires.' }"
+        >
+          <textarea lvControl rows="2" formControlName="whatsappExtraUsersMessage"></textarea>
+        </lv-field>
+      </div>
       @if (error()) {
-        <p class="lv-alert mb-4" role="alert">{{ error() }}</p>
+        <p class="lv-alert mt-4" role="alert">{{ error() }}</p>
       }
-      <button mat-flat-button type="submit" [disabled]="form.pristine">
+      <button class="lv-primary mt-4" type="submit" [disabled]="form.pristine">
         Enregistrer les paramètres
       </button>
     </form>

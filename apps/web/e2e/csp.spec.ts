@@ -12,12 +12,18 @@ const csp = vercel.headers
 test.describe('Politique de sécurité du contenu (CSP)', () => {
   test.beforeEach(async ({ context }) => {
     expect(csp).toBeTruthy();
+    // La CSP s'applique aux documents : seuls eux reçoivent l'en-tête de production.
     await context.route('http://localhost:*/**', async (route) => {
-      const response = await route.fetch();
-      await route.fulfill({
-        response,
-        headers: { ...response.headers(), 'content-security-policy': csp ?? '' },
-      });
+      if (route.request().resourceType() !== 'document') return route.continue();
+      try {
+        const response = await route.fetch();
+        await route.fulfill({
+          response,
+          headers: { ...response.headers(), 'content-security-policy': csp ?? '' },
+        });
+      } catch {
+        // Page fermée pendant la requête (fin du test) : rien à faire.
+      }
     });
   });
 

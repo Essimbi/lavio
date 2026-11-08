@@ -10,24 +10,23 @@ import { FormsModule } from '@angular/forms';
 import type { SupplierInvoiceDto } from '@lavio/shared';
 import { ManagementApi } from '../../../core/api/management-api';
 import { FrDatePipe, todayInput, XafPipe } from '../../../shared/format/format';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
 /** Dettes fournisseurs : factures, échéances, paiement (dépense « Achats matières »). */
 @Component({
   selector: 'lv-invoices-panel',
-  imports: [FormsModule, FrDatePipe, XafPipe, Pager],
+  imports: [FormsModule, LV_FIELD, FrDatePipe, XafPipe, Pager],
   template: `
     <form
       class="lv-card mb-6 grid gap-3 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto] md:items-end"
       (ngSubmit)="add()"
       aria-label="Nouvelle facture fournisseur"
     >
-      <div>
-        <label class="lv-label" for="inv-supplier">Fournisseur</label>
+      <lv-field label="Fournisseur">
         <select
-          id="inv-supplier"
-          class="lv-select"
+          lvControl
           name="supplier"
           [ngModel]="supplierId()"
           (ngModelChange)="supplierId.set($event)"
@@ -37,52 +36,45 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
             <option [value]="s.id">{{ s.name }}</option>
           }
         </select>
-      </div>
-      <div>
-        <label class="lv-label" for="inv-number">N° de facture</label>
+      </lv-field>
+      <lv-field label="N° de facture">
         <input
-          id="inv-number"
-          class="lv-input"
+          lvControl
           maxlength="40"
           name="number"
           [ngModel]="number()"
           (ngModelChange)="number.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="inv-amount">Montant (FCFA)</label>
+      </lv-field>
+      <lv-field label="Montant (FCFA)" [errors]="{ min: 'Le montant doit être positif.' }">
         <input
-          id="inv-amount"
-          class="lv-input tabular"
+          lvControl
+          class="tabular"
           type="number"
           min="1"
           name="amount"
           [ngModel]="amount()"
           (ngModelChange)="amount.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="inv-issued">Date</label>
+      </lv-field>
+      <lv-field label="Date">
         <input
-          id="inv-issued"
-          class="lv-input"
+          lvControl
           type="date"
           name="issued"
           [ngModel]="issuedOn()"
           (ngModelChange)="issuedOn.set($event)"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="inv-due">Échéance</label>
+      </lv-field>
+      <lv-field label="Échéance">
         <input
-          id="inv-due"
-          class="lv-input"
+          lvControl
           type="date"
           name="due"
           [ngModel]="dueOn()"
           (ngModelChange)="dueOn.set($event)"
         />
-      </div>
+      </lv-field>
       <button
         type="submit"
         class="lv-primary"
@@ -92,8 +84,8 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
       </button>
     </form>
 
-    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
-      <label class="flex min-h-11 items-center gap-2">
+    <div class="lv-toolbar justify-between" role="search">
+      <label class="lv-check">
         <input
           type="checkbox"
           [ngModel]="unpaid()"
@@ -101,20 +93,14 @@ import { Toast } from '../../../shared/ui/toast/toast.service';
         />
         Non payées seulement
       </label>
-      <div class="w-64">
-        <label class="lv-label" for="inv-pay-account">Payer depuis</label>
-        <select
-          id="inv-pay-account"
-          class="lv-select"
-          [ngModel]="payAccount()"
-          (ngModelChange)="payAccount.set($event)"
-        >
+      <lv-field label="Payer depuis" class="max-w-xs">
+        <select lvControl [ngModel]="payAccount()" (ngModelChange)="payAccount.set($event)">
           <option value="">Caisse (espèces)</option>
           @for (a of nonCash(); track a.id) {
             <option [value]="a.id">{{ a.name }}</option>
           }
         </select>
-      </div>
+      </lv-field>
     </div>
     <div class="lv-table-wrap">
       <table class="lv-table">

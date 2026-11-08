@@ -26,16 +26,20 @@ describe('DepositsPage', () => {
     const el = fixture.nativeElement as HTMLElement;
     http.expectOne((r) => r.url === '/api/v1/deposits').flush(empty);
 
-    const set = async (id: string, value: string) => {
-      const input = el.querySelector<HTMLInputElement>(`#${id}`);
-      if (!input) throw new Error(id);
+    // Champ retrouvé par son libellé (l'identifiant est généré par lvControl).
+    const set = async (label: string, value: string) => {
+      const forLabel = [...el.querySelectorAll('label')].find(
+        (l) => l.textContent.trim() === label,
+      );
+      const input = forLabel && el.querySelector<HTMLInputElement>(`#${forLabel.htmlFor}`);
+      if (!input) throw new Error(label);
       input.value = value;
       input.dispatchEvent(new Event('input'));
       await settle();
     };
-    await set('deposit-due-from', '2026-10-20');
+    await set('Du', '2026-10-20');
     http.match((r) => r.url === '/api/v1/deposits').forEach((r) => r.flush(empty));
-    await set('deposit-due-to', '2026-10-24');
+    await set('Au', '2026-10-24');
     const req = http.expectOne((r) => r.url === '/api/v1/deposits');
     expect(req.request.params.get('dueFrom')).toBe('2026-10-20');
     expect(req.request.params.get('dueTo')).toBe('2026-10-24');

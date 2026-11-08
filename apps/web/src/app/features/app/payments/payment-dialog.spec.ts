@@ -58,23 +58,23 @@ describe('PaymentDialog', () => {
   it('propose le reste à payer et refuse un montant supérieur', async () => {
     const { submit, set } = await render();
     expect(submit()?.disabled).toBe(false);
-    await set('#pay-amount', '5001');
+    await set('input[name="amount"]', '5001');
     expect(submit()?.disabled).toBe(true);
   });
 
   it('exige la référence pour Mobile Money', async () => {
     const { el, submit, set, choose } = await render();
     await choose('Orange Money');
-    expect(el.querySelector('#pay-ref')).not.toBeNull();
+    expect(el.querySelector('input[name="operatorRef"]')).not.toBeNull();
     expect(submit()?.disabled).toBe(true);
-    await set('#pay-ref', 'OM-123456');
+    await set('input[name="operatorRef"]', 'OM-123456');
     expect(submit()?.disabled).toBe(false);
   });
 
   it('envoie une clé d’idempotence et demande une confirmation explicite en cas de doublon', async () => {
     const { el, fixture, http, submit, set, choose } = await render();
     await choose('MTN MoMo');
-    await set('#pay-ref', 'MP-777');
+    await set('input[name="operatorRef"]', 'MP-777');
     submit()?.click();
     const first = http.expectOne('/api/v1/payments');
     expect(first.request.headers.get('Idempotency-Key')).toMatch(/^[\w-]{8,}$/);

@@ -22,7 +22,15 @@ export interface PlanDto {
   trialDays: number;
   features: Record<string, boolean>;
   isActive: boolean;
+  /** Présenté sur la landing comme type d'offre. */
+  isPublic: boolean;
+  description: string | null;
+  /** Avantages affichés sur la landing (8 au plus). */
+  highlights: string[];
 }
+
+/** Bornes des textes publics d'un plan. */
+export const PLAN_HIGHLIGHTS = Object.freeze({ max: 8, maxLength: 120, descriptionMaxLength: 200 });
 
 export interface LicenseDto {
   id: string;

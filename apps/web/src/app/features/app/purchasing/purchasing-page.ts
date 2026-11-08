@@ -14,6 +14,7 @@ import { ManagementApi } from '../../../core/api/management-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe, PhonePipe, XafPipe } from '../../../shared/format/format';
 import { ORDER_STATUS_LABELS } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { Toast } from '../../../shared/ui/toast/toast.service';
@@ -23,7 +24,7 @@ type Tab = 'orders' | 'suppliers';
 /** Achats (docs/01, module 7) : bons de commande et fournisseurs. */
 @Component({
   selector: 'lv-purchasing-page',
-  imports: [FormsModule, RouterLink, PageHeader, Pager, FrDatePipe, PhonePipe, XafPipe],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, Pager, FrDatePipe, PhonePipe, XafPipe],
   template: `
     <lv-page-header heading="Achats" subtitle="Commandes fournisseurs et réceptions.">
       @if (isKeeper()) {
@@ -55,19 +56,15 @@ type Tab = 'orders' | 'suppliers';
     </div>
 
     @if (view() === 'orders') {
-      <div class="mb-4 max-w-xs">
-        <label class="lv-label" for="po-status">Statut</label>
-        <select
-          id="po-status"
-          class="lv-select"
-          [ngModel]="status()"
-          (ngModelChange)="status.set($event); page.set(1)"
-        >
-          <option value="">Tous</option>
-          @for (s of statuses; track s) {
-            <option [value]="s">{{ statusLabels[s] }}</option>
-          }
-        </select>
+      <div class="lv-toolbar" role="search">
+        <lv-field label="Statut" class="max-w-xs">
+          <select lvControl [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
+            <option value="">Tous</option>
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ statusLabels[s] }}</option>
+            }
+          </select>
+        </lv-field>
       </div>
       <div class="lv-table-wrap">
         <table class="lv-table">
@@ -117,40 +114,34 @@ type Tab = 'orders' | 'suppliers';
           class="lv-card mb-6 grid gap-3 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end"
           (ngSubmit)="addSupplier()"
         >
-          <div>
-            <label class="lv-label" for="sup-name">Nom du fournisseur</label>
+          <lv-field label="Nom du fournisseur">
             <input
-              id="sup-name"
-              class="lv-input"
+              lvControl
               name="name"
               maxlength="120"
               [ngModel]="name()"
               (ngModelChange)="name.set($event)"
             />
-          </div>
-          <div>
-            <label class="lv-label" for="sup-phone">Téléphone</label>
+          </lv-field>
+          <lv-field label="Téléphone">
             <input
-              id="sup-phone"
-              class="lv-input"
+              lvControl
               name="phone"
               inputmode="tel"
               maxlength="30"
               [ngModel]="phone()"
               (ngModelChange)="phone.set($event)"
             />
-          </div>
-          <div>
-            <label class="lv-label" for="sup-terms">Conditions de paiement</label>
+          </lv-field>
+          <lv-field label="Conditions de paiement">
             <input
-              id="sup-terms"
-              class="lv-input"
+              lvControl
               name="terms"
               maxlength="100"
               [ngModel]="terms()"
               (ngModelChange)="terms.set($event)"
             />
-          </div>
+          </lv-field>
           <button type="submit" class="lv-primary" [disabled]="name().trim().length < 2">
             Ajouter
           </button>

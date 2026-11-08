@@ -10,6 +10,7 @@ import {
 import type { StockItemDto, SupplierDto } from '@lavio/shared';
 import { firstValueFrom } from 'rxjs';
 import { ManagementApi } from '../../../core/api/management-api';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { errorMessage } from '../../../shared/ui/toast/toast.service';
 
 interface Data {
@@ -20,53 +21,60 @@ interface Data {
 /** Fiche produit : création ou modification (magasinier). */
 @Component({
   selector: 'lv-stock-item-dialog',
-  imports: [MatDialogModule, MatButtonModule, ReactiveFormsModule],
+  imports: [MatDialogModule, MatButtonModule, ReactiveFormsModule, LV_FIELD],
   template: `
     <h2 mat-dialog-title>{{ data.item ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
     <form [formGroup]="form" (ngSubmit)="save()">
       <mat-dialog-content class="grid gap-4 sm:grid-cols-2">
-        <div class="sm:col-span-2">
-          <label class="lv-label" for="si-name">Nom</label>
-          <input id="si-name" class="lv-input" formControlName="name" maxlength="80" />
-        </div>
-        <div>
-          <label class="lv-label" for="si-category">Catégorie</label>
-          <input id="si-category" class="lv-input" formControlName="category" maxlength="60" />
-        </div>
-        <div>
-          <label class="lv-label" for="si-unit">Unité (L, kg, pièce…)</label>
-          <input id="si-unit" class="lv-input" formControlName="unit" maxlength="20" />
-        </div>
-        <div>
-          <label class="lv-label" for="si-price">Prix d’achat (FCFA)</label>
+        <lv-field
+          label="Nom"
+          [errors]="{ required: 'Indiquez le nom.', minlength: 'Au moins 2 caractères.' }"
+          class="sm:col-span-2"
+        >
+          <input lvControl formControlName="name" maxlength="80" />
+        </lv-field>
+        <lv-field label="Catégorie">
+          <input lvControl formControlName="category" maxlength="60" />
+        </lv-field>
+        <lv-field label="Unité (L, kg, pièce…)" [errors]="{ required: 'Indiquez l’unité.' }">
+          <input lvControl formControlName="unit" maxlength="20" />
+        </lv-field>
+        <lv-field
+          label="Prix d’achat (FCFA)"
+          [errors]="{
+            required: 'Indiquez le prix d’achat.',
+            min: 'Le prix ne peut pas être négatif.',
+          }"
+        >
           <input
-            id="si-price"
-            class="lv-input tabular"
+            lvControl
+            class="tabular"
             type="number"
             min="0"
             formControlName="purchasePriceXaf"
           />
-        </div>
-        <div>
-          <label class="lv-label" for="si-threshold">Seuil d’alerte</label>
+        </lv-field>
+        <lv-field
+          label="Seuil d’alerte"
+          [errors]="{ required: 'Indiquez le seuil.', min: 'Le seuil ne peut pas être négatif.' }"
+        >
           <input
-            id="si-threshold"
-            class="lv-input tabular"
+            lvControl
+            class="tabular"
             type="number"
             min="0"
             step="0.001"
             formControlName="alertThreshold"
           />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="lv-label" for="si-supplier">Fournisseur habituel</label>
-          <select id="si-supplier" class="lv-select" formControlName="supplierId">
+        </lv-field>
+        <lv-field label="Fournisseur habituel" class="sm:col-span-2">
+          <select lvControl formControlName="supplierId">
             <option [ngValue]="null">—</option>
             @for (s of data.suppliers; track s.id) {
               <option [ngValue]="s.id">{{ s.name }}</option>
             }
           </select>
-        </div>
+        </lv-field>
         @if (error(); as e) {
           <p class="lv-alert sm:col-span-2" role="alert">{{ e }}</p>
         }

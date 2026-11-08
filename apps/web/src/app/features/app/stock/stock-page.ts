@@ -13,6 +13,7 @@ import { ManagementApi } from '../../../core/api/management-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { XafPipe } from '../../../shared/format/format';
 import { QtyPipe } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { Toast } from '../../../shared/ui/toast/toast.service';
@@ -21,7 +22,7 @@ import { openStockItemDialog } from './stock-item-dialog';
 /** Stock (docs/01, module 7) : produits, quantités, seuils, valorisation au coût moyen. */
 @Component({
   selector: 'lv-stock-page',
-  imports: [FormsModule, RouterLink, PageHeader, Pager, XafPipe, QtyPipe],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, Pager, XafPipe, QtyPipe],
   template: `
     <lv-page-header heading="Stock" subtitle="Produits, quantités et alertes de seuil.">
       @if (isKeeper()) {
@@ -40,18 +41,18 @@ import { openStockItemDialog } from './stock-item-dialog';
       </p>
     }
 
-    <div class="mb-4 flex flex-wrap items-end gap-3">
-      <div class="min-w-64 grow">
-        <label class="lv-label" for="stock-search">Rechercher un produit</label>
+    <div class="lv-toolbar" role="search">
+      <lv-field label="Rechercher un produit" class="lv-grow">
         <input
-          id="stock-search"
-          class="lv-input"
+          lvControl
+          class="lv-search"
           type="search"
+          placeholder="Nom du produit"
           [ngModel]="q()"
           (ngModelChange)="q.set($event); page.set(1)"
         />
-      </div>
-      <label class="flex min-h-11 items-center gap-2">
+      </lv-field>
+      <label class="lv-check">
         <input type="checkbox" [ngModel]="low()" (ngModelChange)="low.set($event); page.set(1)" />
         Sous le seuil seulement
       </label>

@@ -27,12 +27,10 @@
 </div>
 
 @if (view() === 'payments') {
-  <form class="mb-4 flex flex-wrap items-end gap-3" (ngSubmit)="exportCsv()">
-    <div>
-      <label class="lv-label" for="pay-method">Mode</label>
+  <form class="lv-toolbar" role="search" (ngSubmit)="exportCsv()">
+    <lv-field label="Mode">
       <select
-        id="pay-method"
-        class="lv-select"
+        lvControl
         name="method"
         [disabled]="mobileMoney()"
         [ngModel]="method()"
@@ -43,8 +41,8 @@
           <option [value]="m">{{ methodLabels[m] }}</option>
         }
       </select>
-    </div>
-    <label class="flex min-h-11 items-center gap-2">
+    </lv-field>
+    <label class="lv-check">
       <input
         type="checkbox"
         name="mobileMoney"
@@ -53,11 +51,9 @@
       />
       Mobile Money seulement
     </label>
-    <div>
-      <label class="lv-label" for="pay-reconciled">Rapprochement</label>
+    <lv-field label="Rapprochement">
       <select
-        id="pay-reconciled"
-        class="lv-select"
+        lvControl
         name="reconciled"
         [ngModel]="reconciled()"
         (ngModelChange)="reconciled.set($event); page.set(1)"
@@ -66,29 +62,25 @@
         <option value="no">À rapprocher</option>
         <option value="yes">Rapprochés</option>
       </select>
-    </div>
-    <div>
-      <label class="lv-label" for="pay-from">Du</label>
+    </lv-field>
+    <lv-field label="Du">
       <input
-        id="pay-from"
-        class="lv-input"
+        lvControl
         type="date"
         name="from"
         [ngModel]="from()"
         (ngModelChange)="from.set($event); page.set(1)"
       />
-    </div>
-    <div>
-      <label class="lv-label" for="pay-to">Au</label>
+    </lv-field>
+    <lv-field label="Au">
       <input
-        id="pay-to"
-        class="lv-input"
+        lvControl
         type="date"
         name="to"
         [ngModel]="to()"
         (ngModelChange)="to.set($event); page.set(1)"
       />
-    </div>
+    </lv-field>
     <button type="submit" class="lv-secondary" [disabled]="exporting()">
       {{ exporting() ? 'Export…' : 'Exporter Mobile Money (CSV)' }}
     </button>

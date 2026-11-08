@@ -10,13 +10,10 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { SubscriptionPaymentMethod, type SubscriptionPaymentDto } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
 import { dateInputToIso, LICENSE_STATUS_LABELS, todayInput } from '../../shared/format/format';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { errorMessage } from '../../shared/ui/toast/toast.service';
 import { PAYMENT_METHOD_LABELS } from './labels';
 
@@ -26,13 +23,7 @@ import { PAYMENT_METHOD_LABELS } from './labels';
  */
 @Component({
   selector: 'lv-payment-form',
-  imports: [
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-  ],
+  imports: [ReactiveFormsModule, LV_FIELD],
   template: `
     <form class="lv-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <h3 class="mb-1 text-lg">Enregistrer un paiement</h3>
@@ -41,87 +32,82 @@ import { PAYMENT_METHOD_LABELS } from './labels';
       </p>
       <div class="lv-form-grid">
         @if (!tenantId()) {
-          <mat-form-field>
-            <mat-label>Pressing</mat-label>
-            <mat-select formControlName="tenantId">
+          <lv-field label="Pressing" [errors]="{ required: 'Choisissez le pressing.' }">
+            <select lvControl formControlName="tenantId">
+              <option value="" disabled>Choisir un pressing</option>
               @for (t of tenants.hasValue() ? tenants.value().data : []; track t.id) {
-                <mat-option [value]="t.id">{{ t.name }}</mat-option>
+                <option [value]="t.id">{{ t.name }}</option>
               }
-            </mat-select>
-            <mat-error>Choisissez le pressing.</mat-error>
-          </mat-form-field>
+            </select>
+          </lv-field>
         }
-        <mat-form-field>
-          <mat-label>Licence</mat-label>
-          <mat-select formControlName="licenseId">
+        <lv-field label="Licence" [errors]="{ required: 'Choisissez la licence.' }">
+          <select lvControl formControlName="licenseId">
+            <option value="" disabled>Choisir une licence</option>
             @for (l of licenses(); track l.id) {
-              <mat-option [value]="l.id">{{ l.key }} · {{ statusLabel[l.status] }}</mat-option>
+              <option [value]="l.id">{{ l.key }} · {{ statusLabel[l.status] }}</option>
             }
-          </mat-select>
-          <mat-error>Choisissez la licence.</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Montant reçu (FCFA)</mat-label>
+          </select>
+        </lv-field>
+        <lv-field
+          label="Montant reçu (FCFA)"
+          [errors]="{ required: 'Indiquez le montant reçu.', min: 'Montant entier positif.' }"
+        >
           <input
-            matInput
+            lvControl
             type="number"
             min="0"
             step="1"
             formControlName="amountXaf"
             inputmode="numeric"
           />
-          <mat-error>Montant entier positif.</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Mode de paiement</mat-label>
-          <mat-select formControlName="method">
+        </lv-field>
+        <lv-field label="Mode de paiement">
+          <select lvControl formControlName="method">
             @for (m of methods; track m) {
-              <mat-option [value]="m">{{ methodLabel[m] }}</mat-option>
+              <option [value]="m">{{ methodLabel[m] }}</option>
             }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Référence</mat-label>
-          <input matInput formControlName="reference" />
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Reçu le</mat-label>
-          <input matInput type="date" formControlName="receivedAt" />
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Période du</mat-label>
-          <input matInput type="date" formControlName="periodStart" />
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Au</mat-label>
-          <input matInput type="date" formControlName="periodEnd" />
-          <mat-error>Indiquez la fin de période.</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Déductions (FCFA)</mat-label>
+          </select>
+        </lv-field>
+        <lv-field label="Référence" [optional]="true">
+          <input lvControl formControlName="reference" />
+        </lv-field>
+        <lv-field label="Reçu le">
+          <input lvControl type="date" formControlName="receivedAt" />
+        </lv-field>
+        <lv-field label="Période du">
+          <input lvControl type="date" formControlName="periodStart" />
+        </lv-field>
+        <lv-field label="Au" [errors]="{ required: 'Indiquez la fin de période.' }">
+          <input lvControl type="date" formControlName="periodEnd" />
+        </lv-field>
+        <lv-field
+          label="Déductions (FCFA)"
+          hint="Frais de transaction, commission de revendeur."
+          [optional]="true"
+          [errors]="{ min: 'Montant entier positif.' }"
+        >
           <input
-            matInput
+            lvControl
             type="number"
             min="0"
             step="1"
             formControlName="deductionsXaf"
             inputmode="numeric"
           />
-          <mat-hint>Frais de transaction, commission de revendeur.</mat-hint>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Motif des déductions</mat-label>
-          <input matInput formControlName="deductionNote" />
-        </mat-form-field>
+        </lv-field>
+        <lv-field label="Motif des déductions" [optional]="true">
+          <input lvControl formControlName="deductionNote" />
+        </lv-field>
       </div>
       @if (error()) {
         <p class="lv-alert mt-2" role="alert">{{ error() }}</p>
       }
       <div class="mt-4 flex gap-2">
-        <button mat-flat-button type="submit" [disabled]="pending()">
+        <button class="lv-primary" type="submit" [disabled]="pending()">
           Enregistrer le paiement
         </button>
-        <button mat-button type="button" (click)="cancelled.emit()">Annuler</button>
+        <button class="lv-ghost" type="button" (click)="cancelled.emit()">Annuler</button>
       </div>
     </form>
   `,

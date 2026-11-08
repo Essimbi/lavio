@@ -44,15 +44,15 @@
     </fieldset>
     <div class="grid gap-4 md:grid-cols-2">
       <div class="relative">
-        <label class="lv-label" for="tour-customer">Client (nom ou téléphone)</label>
-        <input
-          id="tour-customer"
-          class="lv-input"
-          autocomplete="off"
-          name="customer"
-          [ngModel]="search()"
-          (ngModelChange)="search.set($event); customer.set(null)"
-        />
+        <lv-field label="Client (nom ou téléphone)">
+          <input
+            lvControl
+            autocomplete="off"
+            name="customer"
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event); customer.set(null)"
+          />
+        </lv-field>
         @if (!customer() && customers.hasValue() && customers.value().data.length) {
           <ul
             class="lv-card absolute z-10 mt-1 grid w-full gap-1 p-2"
@@ -80,16 +80,16 @@
         }
       </div>
       <div>
-        <label class="lv-label" for="tour-date">Date de tournée</label>
-        <input
-          id="tour-date"
-          class="lv-input"
-          type="date"
-          name="date"
-          [min]="day.hasValue() ? day.value().nextTourDates[0] : ''"
-          [ngModel]="tourDate()"
-          (ngModelChange)="tourDate.set($event)"
-        />
+        <lv-field label="Date de tournée">
+          <input
+            lvControl
+            type="date"
+            name="date"
+            [min]="day.hasValue() ? day.value().nextTourDates[0] : ''"
+            [ngModel]="tourDate()"
+            (ngModelChange)="tourDate.set($event)"
+          />
+        </lv-field>
         @if (day.hasValue()) {
           <div class="mt-2 flex flex-wrap gap-2">
             @for (d of day.value().nextTourDates; track d) {
@@ -105,23 +105,19 @@
           </div>
         }
       </div>
-      <div class="md:col-span-2">
-        <label class="lv-label" for="tour-address">Adresse</label>
+      <lv-field label="Adresse" class="md:col-span-2">
         <input
-          id="tour-address"
-          class="lv-input"
+          lvControl
           maxlength="300"
           name="address"
           [ngModel]="address()"
           (ngModelChange)="address.set($event)"
         />
-      </div>
+      </lv-field>
       @if (type() === 'DELIVERY') {
-        <div>
-          <label class="lv-label" for="tour-deposit">Dépôt à livrer</label>
+        <lv-field label="Dépôt à livrer">
           <select
-            id="tour-deposit"
-            class="lv-select"
+            lvControl
             name="deposit"
             [ngModel]="depositId()"
             (ngModelChange)="depositId.set($event)"
@@ -133,33 +129,33 @@
               </option>
             }
           </select>
-        </div>
+        </lv-field>
       }
       @if (!depositId()) {
-        <div>
-          <label class="lv-label" for="tour-amount">Montant à encaisser (FCFA)</label>
+        <lv-field
+          label="Montant à encaisser (FCFA)"
+          [errors]="{ min: 'Le montant ne peut pas être négatif.' }"
+        >
           <input
-            id="tour-amount"
-            class="lv-input tabular"
+            lvControl
+            class="tabular"
             type="number"
             min="0"
             name="amount"
             [ngModel]="amount()"
             (ngModelChange)="amount.set($event)"
           />
-        </div>
+        </lv-field>
       }
-      <div class="md:col-span-2">
-        <label class="lv-label" for="tour-notes">Notes</label>
+      <lv-field label="Notes" class="md:col-span-2">
         <input
-          id="tour-notes"
-          class="lv-input"
+          lvControl
           maxlength="500"
           name="notes"
           [ngModel]="notes()"
           (ngModelChange)="notes.set($event)"
         />
-      </div>
+      </lv-field>
     </div>
     @if (offDay()) {
       <div class="lv-alert" role="alert">
@@ -189,17 +185,10 @@
 
 @if (day.hasValue()) {
   @let dl = day.value();
-  <div class="mb-4 flex flex-wrap items-end gap-3">
-    <div>
-      <label class="lv-label" for="tour-day">Jour</label>
-      <input
-        id="tour-day"
-        class="lv-input"
-        type="date"
-        [ngModel]="dl.date"
-        (ngModelChange)="go($event)"
-      />
-    </div>
+  <div class="lv-toolbar" role="group" aria-label="Jour de tournée">
+    <lv-field label="Jour" class="max-w-xs">
+      <input lvControl type="date" [ngModel]="dl.date" (ngModelChange)="go($event)" />
+    </lv-field>
     @for (d of dl.nextTourDates; track d) {
       <button type="button" class="lv-choice" [class.bg-mint-100]="dl.date === d" (click)="go(d)">
         {{ d | frDate }}

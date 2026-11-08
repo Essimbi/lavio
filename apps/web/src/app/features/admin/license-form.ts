@@ -8,69 +8,56 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import type { LicenseDto } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
 import { dateInputToIso, todayInput } from '../../shared/format/format';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { errorMessage } from '../../shared/ui/toast/toast.service';
 
 /** Création d'une licence (docs/06, étape 3) : plan, essai ou active, période. */
 @Component({
   selector: 'lv-license-form',
-  imports: [
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-  ],
+  imports: [ReactiveFormsModule, LV_FIELD],
   template: `
     <form class="lv-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <h3 class="mb-4 text-lg">Nouvelle licence</h3>
       <div class="lv-form-grid">
-        <mat-form-field>
-          <mat-label>Plan</mat-label>
-          <mat-select formControlName="planId">
+        <lv-field label="Plan" [errors]="{ required: 'Choisissez un plan.' }">
+          <select lvControl formControlName="planId">
+            <option value="" disabled>Choisir un plan</option>
             @for (p of plans.hasValue() ? plans.value() : []; track p.id) {
               @if (p.isActive) {
-                <mat-option [value]="p.id"
-                  >{{ p.name }} ({{ p.includedUsers }} utilisateurs)</mat-option
-                >
+                <option [value]="p.id">{{ p.name }} ({{ p.includedUsers }} utilisateurs)</option>
               }
             }
-          </mat-select>
-          <mat-error>Choisissez un plan.</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Type</mat-label>
-          <mat-select formControlName="status">
-            <mat-option value="TRIAL">Essai gratuit</mat-option>
-            <mat-option value="ACTIVE">Active (payée)</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Début</mat-label>
-          <input matInput type="date" formControlName="startsAt" />
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Fin</mat-label>
-          <input matInput type="date" formControlName="endsAt" />
-          <mat-hint>{{
+          </select>
+        </lv-field>
+        <lv-field label="Type">
+          <select lvControl formControlName="status">
+            <option value="TRIAL">Essai gratuit</option>
+            <option value="ACTIVE">Active (payée)</option>
+          </select>
+        </lv-field>
+        <lv-field label="Début">
+          <input lvControl type="date" formControlName="startsAt" />
+        </lv-field>
+        <lv-field
+          label="Fin"
+          [hint]="
             form.controls.status.value === 'TRIAL'
               ? 'Vide : durée d’essai du plan.'
               : 'Obligatoire.'
-          }}</mat-hint>
-        </mat-form-field>
+          "
+        >
+          <input lvControl type="date" formControlName="endsAt" />
+        </lv-field>
       </div>
       @if (error()) {
         <p class="lv-alert mt-2" role="alert">{{ error() }}</p>
       }
       <div class="mt-4 flex gap-2">
-        <button mat-flat-button type="submit" [disabled]="pending()">Créer la licence</button>
-        <button mat-button type="button" (click)="cancelled.emit()">Annuler</button>
+        <button class="lv-primary" type="submit" [disabled]="pending()">Créer la licence</button>
+        <button class="lv-ghost" type="button" (click)="cancelled.emit()">Annuler</button>
       </div>
     </form>
   `,

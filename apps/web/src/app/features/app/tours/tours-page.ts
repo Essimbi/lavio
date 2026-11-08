@@ -24,6 +24,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ApiError } from '../../../core/http/api';
 import { FrDatePipe, PhonePipe, todayInput, XafPipe } from '../../../shared/format/format';
 import { confirmAction } from '../../../shared/ui/confirm-dialog/confirm-dialog';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Toast } from '../../../shared/ui/toast/toast.service';
 
@@ -39,7 +40,7 @@ const WEEKDAYS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi',
 /** Tournées (docs/05, « Tournées ») : demandes, liste du jour, statuts, impression. */
 @Component({
   selector: 'lv-tours-page',
-  imports: [FormsModule, RouterLink, PageHeader, XafPipe, FrDatePipe, PhonePipe],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, XafPipe, FrDatePipe, PhonePipe],
   templateUrl: './tours-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

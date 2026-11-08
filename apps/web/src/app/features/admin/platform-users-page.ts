@@ -1,15 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { PlatformRole, type PlatformUserDto } from '@lavio/shared';
 import { AdminApi } from '../../core/api/admin-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { FrDateTimePipe } from '../../shared/format/format';
 import { confirmAction } from '../../shared/ui/confirm-dialog/confirm-dialog';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { showInvitation } from '../../shared/ui/invitation-dialog/invitation-dialog';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Chip } from '../../shared/ui/status-chip/status-chip';
@@ -19,20 +16,11 @@ import { PLATFORM_ROLE_LABELS } from './labels';
 /** Utilisateurs de la plateforme : Concepteur (SUPER_ADMIN) et Exploitant (PARTNER_VIEWER). */
 @Component({
   selector: 'lv-platform-users-page',
-  imports: [
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    PageHeader,
-    Chip,
-    FrDateTimePipe,
-  ],
+  imports: [ReactiveFormsModule, LV_FIELD, PageHeader, Chip, FrDateTimePipe],
   template: `
     <lv-page-header heading="Utilisateurs plateforme" subtitle="Accès au superadmin.">
       @if (!adding()) {
-        <button mat-flat-button type="button" (click)="adding.set(true)">
+        <button class="lv-primary" type="button" (click)="adding.set(true)">
           Inviter un utilisateur
         </button>
       }
@@ -40,34 +28,35 @@ import { PLATFORM_ROLE_LABELS } from './labels';
     @if (adding()) {
       <form class="lv-card mb-6" [formGroup]="form" (ngSubmit)="create()" novalidate>
         <div class="lv-form-grid">
-          <mat-form-field
-            ><mat-label>Nom complet</mat-label><input matInput formControlName="fullName"
-          /></mat-form-field>
-          <mat-form-field
-            ><mat-label>E-mail</mat-label
-            ><input matInput type="email" formControlName="email" /><mat-error
-              >E-mail valide obligatoire.</mat-error
-            ></mat-form-field
+          <lv-field label="Nom complet" [errors]="{ required: 'Indiquez le nom complet.' }">
+            <input lvControl formControlName="fullName" autocomplete="name" />
+          </lv-field>
+          <lv-field
+            label="E-mail"
+            [errors]="{
+              required: 'E-mail valide obligatoire.',
+              email: 'E-mail valide obligatoire.',
+            }"
           >
-          <mat-form-field
-            ><mat-label>Téléphone (WhatsApp)</mat-label
-            ><input matInput formControlName="phone" inputmode="tel"
-          /></mat-form-field>
-          <mat-form-field>
-            <mat-label>Rôle</mat-label>
-            <mat-select formControlName="platformRole">
+            <input lvControl type="email" formControlName="email" autocomplete="email" />
+          </lv-field>
+          <lv-field label="Téléphone (WhatsApp)" [optional]="true">
+            <input lvControl formControlName="phone" inputmode="tel" autocomplete="tel" />
+          </lv-field>
+          <lv-field label="Rôle">
+            <select lvControl formControlName="platformRole">
               @for (r of roles; track r) {
-                <mat-option [value]="r">{{ label[r] }}</mat-option>
+                <option [value]="r">{{ label[r] }}</option>
               }
-            </mat-select>
-          </mat-form-field>
+            </select>
+          </lv-field>
         </div>
         @if (error()) {
           <p class="lv-alert mt-2" role="alert">{{ error() }}</p>
         }
         <div class="mt-4 flex gap-2">
-          <button mat-flat-button type="submit">Inviter</button>
-          <button mat-button type="button" (click)="adding.set(false)">Annuler</button>
+          <button class="lv-primary" type="submit">Inviter</button>
+          <button class="lv-ghost" type="button" (click)="adding.set(false)">Annuler</button>
         </div>
       </form>
     }

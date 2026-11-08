@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { firstValueFrom } from 'rxjs';
 import { AdminApi } from '../../core/api/admin-api';
 import { FrDatePipe, XafPipe } from '../../shared/format/format';
+import { LV_FIELD } from '../../shared/ui/field/field';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Toast } from '../../shared/ui/toast/toast.service';
 
@@ -19,30 +17,23 @@ const currentMonth = () =>
 /** Relevé mensuel de partage des revenus 50/50 (docs/06), exportable en CSV, XLSX et PDF. */
 @Component({
   selector: 'lv-statements-page',
-  imports: [
-    FormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    PageHeader,
-    FrDatePipe,
-    XafPipe,
-  ],
+  imports: [FormsModule, LV_FIELD, PageHeader, FrDatePipe, XafPipe],
   template: `
     <lv-page-header
       heading="Relevé mensuel"
       subtitle="Partage des revenus des abonnements, calculé à partir des paiements."
     >
       @for (f of formats; track f) {
-        <button mat-stroked-button type="button" (click)="download(f)" [disabled]="downloading()">
+        <button class="lv-secondary" type="button" (click)="download(f)" [disabled]="downloading()">
           Exporter en {{ f.toUpperCase() }}
         </button>
       }
     </lv-page-header>
-    <mat-form-field>
-      <mat-label>Mois</mat-label>
-      <input matInput type="month" [ngModel]="month()" (ngModelChange)="month.set($event)" />
-    </mat-form-field>
+    <div class="lv-toolbar" role="search">
+      <lv-field label="Mois">
+        <input lvControl type="month" [ngModel]="month()" (ngModelChange)="month.set($event)" />
+      </lv-field>
+    </div>
 
     @if (statement.hasValue()) {
       @let s = statement.value();

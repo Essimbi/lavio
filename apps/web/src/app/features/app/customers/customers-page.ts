@@ -5,6 +5,7 @@ import type { CustomerDto } from '@lavio/shared';
 import { PressingApi } from '../../../core/api/pressing-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PhonePipe } from '../../../shared/format/format';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { CustomerForm } from './customer-form';
@@ -12,7 +13,7 @@ import { CustomerForm } from './customer-form';
 /** Clients : recherche par nom, téléphone ou numéro de ticket ; création. */
 @Component({
   selector: 'lv-customers-page',
-  imports: [FormsModule, RouterLink, PageHeader, Pager, CustomerForm, PhonePipe],
+  imports: [FormsModule, LV_FIELD, RouterLink, PageHeader, Pager, CustomerForm, PhonePipe],
   template: `
     <lv-page-header heading="Clients" subtitle="Fiches, préférences et historique.">
       @if (auth.hasTenantRole('CASHIER') && !creating()) {
@@ -28,16 +29,18 @@ import { CustomerForm } from './customer-form';
         (cancelled)="creating.set(false)"
       />
     }
-    <div class="mb-4 max-w-xl">
-      <label class="lv-label" for="customer-search">Nom, téléphone ou numéro de ticket</label>
-      <input
-        id="customer-search"
-        class="lv-input"
-        type="search"
-        autocomplete="off"
-        [ngModel]="q()"
-        (ngModelChange)="q.set($event); page.set(1)"
-      />
+    <div class="lv-toolbar" role="search">
+      <lv-field label="Nom, téléphone ou numéro de ticket" class="lv-grow">
+        <input
+          lvControl
+          class="lv-search"
+          type="search"
+          autocomplete="off"
+          placeholder="Nom, téléphone ou n° de ticket"
+          [ngModel]="q()"
+          (ngModelChange)="q.set($event); page.set(1)"
+        />
+      </lv-field>
     </div>
     <div class="lv-table-wrap">
       <table class="lv-table">

@@ -12,7 +12,7 @@ import { PASSWORD_POLICY } from '@lavio/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { homeFor } from '../../core/auth/guards';
 import { errorMessage } from '../../shared/ui/toast/toast.service';
-import { AUTH_FIELD_OPTIONS, AuthLayout } from './auth-layout';
+import { AuthLayout } from './auth-layout';
 import { PasswordField } from './password-field';
 
 export function matchValidator(group: AbstractControl): ValidationErrors | null {
@@ -42,7 +42,7 @@ export function matchValidator(group: AbstractControl): ValidationErrors | null 
           Ce lien est incomplet. Demandez un nouveau lien d’invitation.
         </p>
       } @else {
-        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <form class="grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <lv-password-field
             [control]="form.controls.password"
             label="Nouveau mot de passe"
@@ -55,7 +55,7 @@ export function matchValidator(group: AbstractControl): ValidationErrors | null 
             autocomplete="new-password"
           />
           @if (error()) {
-            <p class="lv-alert mb-4" role="alert">{{ error() }}</p>
+            <p class="lv-alert" role="alert">{{ error() }}</p>
           }
           <button
             mat-flat-button
@@ -69,7 +69,6 @@ export function matchValidator(group: AbstractControl): ValidationErrors | null 
       }
     </lv-auth-layout>
   `,
-  providers: [AUTH_FIELD_OPTIONS],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Invitation {

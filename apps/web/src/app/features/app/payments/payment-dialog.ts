@@ -14,6 +14,7 @@ import { PressingApi } from '../../../core/api/pressing-api';
 import { ApiError } from '../../../core/http/api';
 import { XafPipe } from '../../../shared/format/format';
 import { PAYMENT_KIND_LABELS, PAYMENT_METHOD_LABELS } from '../../../shared/format/labels';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { errorMessage } from '../../../shared/ui/toast/toast.service';
 
 export interface PaymentDialogData {
@@ -29,7 +30,7 @@ export interface PaymentDialogData {
  */
 @Component({
   selector: 'lv-payment-dialog',
-  imports: [MatDialogModule, MatButtonModule, FormsModule, RouterLink, XafPipe],
+  imports: [MatDialogModule, MatButtonModule, FormsModule, LV_FIELD, RouterLink, XafPipe],
   template: `
     <h2 mat-dialog-title>Encaisser · dépôt n° {{ data.ticketNumber }}</h2>
     <form (ngSubmit)="submit()" id="payment-form">
@@ -37,11 +38,17 @@ export interface PaymentDialogData {
         <p class="tabular">
           Reste à payer : <strong>{{ data.balanceXaf | xaf }}</strong>
         </p>
-        <div>
-          <label class="lv-label" for="pay-amount">Montant (FCFA)</label>
+        <lv-field
+          label="Montant (FCFA)"
+          [errors]="{
+            required: 'Indiquez le montant.',
+            min: 'Le montant doit être positif.',
+            max: 'Le montant dépasse le reste à payer.',
+          }"
+        >
           <input
-            id="pay-amount"
-            class="lv-input tabular"
+            lvControl
+            class="tabular"
             type="number"
             inputmode="numeric"
             min="1"
@@ -51,7 +58,7 @@ export interface PaymentDialogData {
             [ngModel]="amount()"
             (ngModelChange)="amount.set($event)"
           />
-        </div>
+        </lv-field>
         <fieldset>
           <legend class="lv-label">Mode de paiement</legend>
           <div class="flex flex-wrap gap-2">
@@ -69,27 +76,21 @@ export interface PaymentDialogData {
             }
           </div>
         </fieldset>
-        <div>
-          <label class="lv-label" for="pay-kind">Nature</label>
-          <select
-            id="pay-kind"
-            class="lv-select"
-            name="kind"
-            [ngModel]="kind()"
-            (ngModelChange)="kind.set($event)"
-          >
+        <lv-field label="Nature">
+          <select lvControl name="kind" [ngModel]="kind()" (ngModelChange)="kind.set($event)">
             @for (k of kinds; track k) {
               <option [value]="k">{{ kindLabels[k] }}</option>
             }
           </select>
-        </div>
+        </lv-field>
         @if (mobileMoney()) {
           <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="lv-label" for="pay-ref">Référence de la transaction</label>
+            <lv-field
+              label="Référence de la transaction"
+              [errors]="{ required: 'Indiquez la référence de la transaction.' }"
+            >
               <input
-                id="pay-ref"
-                class="lv-input"
+                lvControl
                 name="operatorRef"
                 autocomplete="off"
                 required
@@ -97,19 +98,17 @@ export interface PaymentDialogData {
                 [ngModel]="operatorRef()"
                 (ngModelChange)="operatorRef.set($event); duplicate.set(false)"
               />
-            </div>
-            <div>
-              <label class="lv-label" for="pay-phone">Téléphone du payeur (facultatif)</label>
+            </lv-field>
+            <lv-field label="Téléphone du payeur (facultatif)">
               <input
-                id="pay-phone"
-                class="lv-input"
+                lvControl
                 name="payerPhone"
                 inputmode="tel"
                 autocomplete="off"
                 [ngModel]="payerPhone()"
                 (ngModelChange)="payerPhone.set($event)"
               />
-            </div>
+            </lv-field>
           </div>
         }
         @if (duplicate()) {

@@ -26,6 +26,7 @@ import { ApiError } from '../../../core/http/api';
 import { PressingApi } from '../../../core/api/pressing-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe, PhonePipe, XafPipe } from '../../../shared/format/format';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { errorMessage, Toast } from '../../../shared/ui/toast/toast.service';
 
 interface Line {
@@ -72,7 +73,7 @@ const emptyLine = (): Line => ({
  */
 @Component({
   selector: 'lv-new-deposit',
-  imports: [FormsModule, XafPipe, FrDatePipe, PhonePipe],
+  imports: [FormsModule, LV_FIELD, XafPipe, FrDatePipe, PhonePipe],
   templateUrl: './new-deposit.html',
   styleUrl: './new-deposit.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

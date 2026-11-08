@@ -5,6 +5,7 @@ import { type DepositStatus, parseTicketNumber } from '@lavio/shared';
 import { PressingApi } from '../../../core/api/pressing-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FrDatePipe, XafPipe } from '../../../shared/format/format';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { Pager } from '../../../shared/ui/pager/pager';
 import { DEPOSIT_STATUS_LABELS, DepositChip } from '../../../shared/ui/status-chip/deposit-chip';
@@ -16,7 +17,7 @@ import { errorMessage } from '../../../shared/ui/toast/toast.service';
  */
 @Component({
   selector: 'lv-deposits-page',
-  imports: [FormsModule, RouterLink, PageHeader, Pager, DepositChip, FrDatePipe, XafPipe],
+  imports: [FormsModule, RouterLink, LV_FIELD, PageHeader, Pager, DepositChip, FrDatePipe, XafPipe],
   template: `
     <lv-page-header heading="Dépôts" subtitle="Retrouvez un dépôt par son numéro de ticket.">
       @if (auth.hasTenantRole('CASHIER')) {
@@ -24,24 +25,22 @@ import { errorMessage } from '../../../shared/ui/toast/toast.service';
       }
     </lv-page-header>
 
-    <form class="mb-4 flex flex-wrap items-end gap-3" (ngSubmit)="open()">
-      <div class="min-w-64 grow">
-        <label class="lv-label" for="deposit-search">Numéro de ticket, client ou téléphone</label>
+    <form class="lv-toolbar" role="search" (ngSubmit)="open()">
+      <lv-field label="Numéro de ticket, client ou téléphone" class="lv-grow">
         <input
-          id="deposit-search"
-          class="lv-input"
+          lvControl
+          class="lv-search"
           type="search"
           autocomplete="off"
+          placeholder="N° de ticket, nom ou téléphone"
           [ngModel]="q()"
           (ngModelChange)="q.set($event); page.set(1)"
           name="q"
         />
-      </div>
-      <div>
-        <label class="lv-label" for="deposit-status">Statut</label>
+      </lv-field>
+      <lv-field label="Statut">
         <select
-          id="deposit-status"
-          class="lv-select"
+          lvControl
           [ngModel]="status()"
           (ngModelChange)="status.set($event); page.set(1)"
           name="status"
@@ -51,39 +50,34 @@ import { errorMessage } from '../../../shared/ui/toast/toast.service';
             <option [value]="s">{{ labels[s] }}</option>
           }
         </select>
-      </div>
-      <fieldset class="flex items-end gap-2">
+      </lv-field>
+      <fieldset>
         <legend class="lv-label">Retrait prévu</legend>
-        <div>
-          <label class="sr-only" for="deposit-due-from">Retrait à partir du</label>
+        <lv-field label="Du">
           <input
-            id="deposit-due-from"
-            class="lv-input"
+            lvControl
             type="date"
             [ngModel]="dueFrom()"
             (ngModelChange)="dueFrom.set($event ?? ''); page.set(1)"
             name="dueFrom"
             [max]="dueTo() || null"
           />
-        </div>
-        <span class="pb-3" aria-hidden="true">au</span>
-        <div>
-          <label class="sr-only" for="deposit-due-to">Retrait jusqu’au</label>
+        </lv-field>
+        <lv-field label="Au">
           <input
-            id="deposit-due-to"
-            class="lv-input"
+            lvControl
             type="date"
             [ngModel]="dueTo()"
             (ngModelChange)="dueTo.set($event ?? ''); page.set(1)"
             name="dueTo"
             [min]="dueFrom() || null"
           />
-        </div>
+        </lv-field>
         @if (dueFrom() || dueTo()) {
           <button type="button" class="lv-link-button pb-3" (click)="clearDue()">Effacer</button>
         }
       </fieldset>
-      <label class="flex min-h-11 items-center gap-2"
+      <label class="lv-check"
         ><input
           type="checkbox"
           [ngModel]="late()"

@@ -511,6 +511,11 @@ Déploiement de production (docs/11, `docs/EXPLOITATION.md`), après votre accor
   - journal d'audit du pressing filtrable par utilisateur, élément et période.
 - Région d'hébergement de la base validée par le Concepteur (16/10/2026) ; formalités APDP encore à faire avant des données réelles.
 
+- **Plans et formulaires** (08/11/2026) :
+  - la landing ne présente plus que les types d'offre publics, avec leur accroche et leurs avantages ; les plans négociés (ex. licence d'un client) restent privés ;
+  - champs, listes, filtres, cases et interrupteurs modernisés dans toute l'application et le superadmin (composant `lv-field`) ;
+  - correctif : la page de connexion pré-remplissait le compte de démonstration sans `?demo`.
+
 ### Écarts avec docs/13
 
 - Le seed compte 22 produits de stock (3 sous le seuil) au lieu des 15 décrits, à la demande du pressing pilote.

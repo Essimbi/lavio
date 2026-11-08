@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PressingApi } from '../../../core/api/pressing-api';
+import { LV_FIELD } from '../../../shared/ui/field/field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { errorMessage, Toast } from '../../../shared/ui/toast/toast.service';
 import { compressImage, uploadToBlob } from '../../../shared/upload/photo-upload';
@@ -17,7 +18,7 @@ const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Sa
 /** Paramètres du pressing (module 12) : identité, ticket, TVA, tournées, seuils. */
 @Component({
   selector: 'lv-pressing-settings-page',
-  imports: [ReactiveFormsModule, PageHeader],
+  imports: [ReactiveFormsModule, LV_FIELD, PageHeader],
   template: `
     <lv-page-header
       heading="Paramètres du pressing"
@@ -27,30 +28,30 @@ const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Sa
       <section class="lv-card">
         <h2 class="mb-3 text-xl">Identité</h2>
         <div class="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label class="lv-label" for="ps-name">Nom du pressing</label
-            ><input id="ps-name" class="lv-input" formControlName="name" />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-phone">Téléphone</label
-            ><input id="ps-phone" class="lv-input" inputmode="tel" formControlName="phone" />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-address">Adresse</label
-            ><input id="ps-address" class="lv-input" formControlName="address" />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-city">Ville</label
-            ><input id="ps-city" class="lv-input" formControlName="city" />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-niu">NIU</label
-            ><input id="ps-niu" class="lv-input" formControlName="niu" />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-rccm">RCCM</label
-            ><input id="ps-rccm" class="lv-input" formControlName="rccm" />
-          </div>
+          <lv-field
+            label="Nom du pressing"
+            [errors]="{
+              required: 'Indiquez le nom du pressing.',
+              minlength: 'Au moins 2 caractères.',
+            }"
+          >
+            <input lvControl formControlName="name" />
+          </lv-field>
+          <lv-field label="Téléphone">
+            <input lvControl inputmode="tel" formControlName="phone" />
+          </lv-field>
+          <lv-field label="Adresse">
+            <input lvControl formControlName="address" />
+          </lv-field>
+          <lv-field label="Ville">
+            <input lvControl formControlName="city" />
+          </lv-field>
+          <lv-field label="NIU">
+            <input lvControl formControlName="niu" />
+          </lv-field>
+          <lv-field label="RCCM">
+            <input lvControl formControlName="rccm" />
+          </lv-field>
         </div>
         <div class="mt-4 flex flex-wrap items-center gap-4">
           @if (logoUrl()) {
@@ -76,34 +77,28 @@ const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Sa
       <section class="lv-card">
         <h2 class="mb-3 text-xl">Ticket et TVA</h2>
         <div class="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label class="lv-label" for="ps-prefix">Préfixe du numéro de ticket</label
-            ><input
-              id="ps-prefix"
-              class="lv-input"
-              formControlName="ticketPrefix"
-              placeholder="Aucun"
-            />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-footer">Pied de ticket</label
-            ><input id="ps-footer" class="lv-input" formControlName="ticketFooter" />
-          </div>
+          <lv-field
+            label="Préfixe du numéro de ticket"
+            [errors]="{ pattern: '6 caractères au plus : lettres, chiffres ou tiret.' }"
+          >
+            <input lvControl formControlName="ticketPrefix" placeholder="Aucun" />
+          </lv-field>
+          <lv-field label="Pied de ticket">
+            <input lvControl formControlName="ticketFooter" />
+          </lv-field>
           <label class="inline-flex min-h-11 items-center gap-2"
             ><input type="checkbox" formControlName="vatEnabled" /> Assujetti à la TVA</label
           >
-          <div>
-            <label class="lv-label" for="ps-vat">Taux de TVA (%)</label
-            ><input
-              id="ps-vat"
-              class="lv-input"
+          <lv-field label="Taux de TVA (%)">
+            <input
+              lvControl
               type="number"
               min="0"
               max="100"
               step="0.01"
               formControlName="vatRate"
             />
-          </div>
+          </lv-field>
         </div>
       </section>
 
@@ -129,91 +124,36 @@ const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Sa
       <section class="lv-card" formGroupName="settings">
         <h2 class="mb-3 text-xl">Seuils et règles</h2>
         <div class="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label class="lv-label" for="ps-discount">Remise à valider au-delà de (%)</label
-            ><input
-              id="ps-discount"
-              class="lv-input"
+          <lv-field label="Remise à valider au-delà de (%)">
+            <input
+              lvControl
               type="number"
               min="0"
               max="100"
               formControlName="discountApprovalPercent"
             />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-express">Majoration express (%)</label
-            ><input
-              id="ps-express"
-              class="lv-input"
-              type="number"
-              min="0"
-              formControlName="expressSurchargePercent"
-            />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-advance"
-              >Acompte exigé au-delà de (FCFA, vide : jamais)</label
-            ><input
-              id="ps-advance"
-              class="lv-input"
-              type="number"
-              min="0"
-              formControlName="advanceRequiredAbove"
-            />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-advance-pct">Acompte minimal (%)</label
-            ><input
-              id="ps-advance-pct"
-              class="lv-input"
-              type="number"
-              min="0"
-              max="100"
-              formControlName="advanceMinPercent"
-            />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-days">Délai de traitement (jours)</label
-            ><input
-              id="ps-days"
-              class="lv-input"
-              type="number"
-              min="0"
-              formControlName="processingDays"
-            />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-late">Alerte « non retiré » après (jours)</label
-            ><input
-              id="ps-late"
-              class="lv-input"
-              type="number"
-              min="1"
-              formControlName="lateAfterDays"
-            />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-expense"
-              >Dépense à valider au-delà de (FCFA, vide : jamais)</label
-            ><input
-              id="ps-expense"
-              class="lv-input"
-              type="number"
-              min="0"
-              formControlName="largeExpenseAbove"
-            />
-          </div>
-          <div>
-            <label class="lv-label" for="ps-unpaid"
-              >Alerte impayé au-delà de (FCFA, vide : jamais)</label
-            ><input
-              id="ps-unpaid"
-              class="lv-input"
-              type="number"
-              min="0"
-              formControlName="unpaidAlertAbove"
-            />
-          </div>
+          </lv-field>
+          <lv-field label="Majoration express (%)">
+            <input lvControl type="number" min="0" formControlName="expressSurchargePercent" />
+          </lv-field>
+          <lv-field label="Acompte exigé au-delà de (FCFA, vide : jamais)">
+            <input lvControl type="number" min="0" formControlName="advanceRequiredAbove" />
+          </lv-field>
+          <lv-field label="Acompte minimal (%)">
+            <input lvControl type="number" min="0" max="100" formControlName="advanceMinPercent" />
+          </lv-field>
+          <lv-field label="Délai de traitement (jours)">
+            <input lvControl type="number" min="0" formControlName="processingDays" />
+          </lv-field>
+          <lv-field label="Alerte « non retiré » après (jours)">
+            <input lvControl type="number" min="1" formControlName="lateAfterDays" />
+          </lv-field>
+          <lv-field label="Dépense à valider au-delà de (FCFA, vide : jamais)">
+            <input lvControl type="number" min="0" formControlName="largeExpenseAbove" />
+          </lv-field>
+          <lv-field label="Alerte impayé au-delà de (FCFA, vide : jamais)">
+            <input lvControl type="number" min="0" formControlName="unpaidAlertAbove" />
+          </lv-field>
         </div>
       </section>
 
